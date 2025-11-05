@@ -3,6 +3,7 @@ import {
   investments,
   cashflows,
   alerts,
+  userSettings,
   type Platform,
   type InsertPlatform,
   type Investment,
@@ -11,6 +12,8 @@ import {
   type InsertCashflow,
   type Alert,
   type InsertAlert,
+  type UserSettings,
+  type InsertUserSettings,
   type PortfolioStats,
   type AnalyticsData,
   type InvestmentWithPlatform,
@@ -43,6 +46,10 @@ export interface IStorage {
   // Analytics
   getPortfolioStats(): Promise<PortfolioStats>;
   getAnalyticsData(): Promise<AnalyticsData>;
+  
+  // Settings
+  getSettings(): Promise<UserSettings>;
+  updateSettings(settings: Partial<InsertUserSettings>): Promise<UserSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -303,6 +310,44 @@ export class DatabaseStorage implements IStorage {
       actual: t.year === currentYear ? Math.round(currentValue) : 0,
       target: t.target,
     }));
+  }
+
+  // Settings
+  async getSettings(): Promise<UserSettings> {
+    // Get the first settings record, or create default if none exists
+    const allSettings = await db.select().from(userSettings);
+    
+    if (allSettings.length === 0) {
+      // Create default settings
+      const [newSettings] = await db
+        .insert(userSettings)
+        .values({
+          theme: "dark",
+          language: "en",
+          viewMode: "pro",
+          fontSize: "medium",
+          autoReinvest: 1,
+          currency: "SAR",
+        })
+        .returning();
+      return newSettings;
+    }
+    
+    return allSettings[0];
+  }
+
+  async updateSettings(settings: Partial<InsertUserSettings>): Promise<UserSettings> {
+    // Get current settings first
+    const currentSettings = await this.getSettings();
+    
+    // Update the settings
+    const [updatedSettings] = await db
+      .update(userSettings)
+      .set(settings)
+      .where(eq(userSettings.id, currentSettings.id))
+      .returning();
+    
+    return updatedSettings;
   }
 }
 

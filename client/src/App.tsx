@@ -14,6 +14,7 @@ import Analytics from "@/pages/analytics";
 import Timeline from "@/pages/timeline";
 import Alerts from "@/pages/alerts";
 import Reinvestment from "@/pages/reinvestment";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/timeline" component={Timeline} />
       <Route path="/alerts" component={Alerts} />
       <Route path="/reinvestment" component={Reinvestment} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );

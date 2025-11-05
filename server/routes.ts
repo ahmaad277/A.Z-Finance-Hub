@@ -7,6 +7,7 @@ import {
   insertInvestmentSchema,
   insertCashflowSchema,
   insertAlertSchema,
+  insertUserSettingsSchema,
 } from "@shared/schema";
 
 // API schema that accepts date strings and coerces to Date objects with validation
@@ -164,6 +165,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(analytics);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch analytics data" });
+    }
+  });
+
+  // Settings
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/settings", async (req, res) => {
+    try {
+      const data = insertUserSettingsSchema.partial().parse(req.body);
+      const settings = await storage.updateSettings(data);
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Settings update error:", error);
+      res.status(400).json({ error: error.message || "Invalid settings data" });
     }
   });
 

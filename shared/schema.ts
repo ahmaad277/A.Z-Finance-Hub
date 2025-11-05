@@ -79,6 +79,8 @@ export const userSettings = pgTable("user_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   theme: text("theme").notNull().default("dark"), // 'dark' | 'light'
   language: text("language").notNull().default("en"), // 'en' | 'ar'
+  viewMode: text("view_mode").notNull().default("pro"), // 'pro' | 'lite'
+  fontSize: text("font_size").notNull().default("medium"), // 'small' | 'medium' | 'large'
   autoReinvest: integer("auto_reinvest").notNull().default(1), // 0 = no, 1 = yes
   targetCapital2040: numeric("target_capital_2040", { precision: 15, scale: 2 }),
   currency: text("currency").notNull().default("SAR"),
