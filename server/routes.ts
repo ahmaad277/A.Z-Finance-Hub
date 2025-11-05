@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
 import {
   insertPlatformSchema,
@@ -7,6 +8,12 @@ import {
   insertCashflowSchema,
   insertAlertSchema,
 } from "@shared/schema";
+
+// API schema that accepts date strings and coerces to Date objects with validation
+const apiInvestmentSchema = insertInvestmentSchema.extend({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Platforms
@@ -41,7 +48,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/investments", async (req, res) => {
     try {
-      const data = insertInvestmentSchema.parse(req.body);
+      // Use API schema that coerces date strings to Date objects with validation
+      const data = apiInvestmentSchema.parse(req.body);
       const investment = await storage.createInvestment(data);
       res.status(201).json(investment);
     } catch (error: any) {
@@ -53,7 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/investments/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const data = insertInvestmentSchema.partial().parse(req.body);
+      // Use API schema that coerces date strings to Date objects with validation
+      const data = apiInvestmentSchema.partial().parse(req.body);
       const investment = await storage.updateInvestment(id, data);
       
       if (!investment) {

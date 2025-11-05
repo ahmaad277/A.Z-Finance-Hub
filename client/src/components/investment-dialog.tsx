@@ -141,6 +141,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    // Send date strings directly - server will convert to Date objects
     if (investment) {
       updateMutation.mutate(data);
     } else {
