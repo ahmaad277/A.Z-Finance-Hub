@@ -1,18 +1,113 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, numeric, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
+// Platform types: Sukuk, Manfa'a, Lendo
+export const platforms = pgTable("platforms", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'sukuk' | 'manfaa' | 'lendo'
+  logoUrl: text("logo_url"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertPlatformSchema = createInsertSchema(platforms).omit({ id: true });
+export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
+export type Platform = typeof platforms.$inferSelect;
+
+// Investment opportunities
+export const investments = pgTable("investments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  platformId: varchar("platform_id").notNull(),
+  name: text("name").notNull(),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  expectedIrr: numeric("expected_irr", { precision: 5, scale: 2 }).notNull(), // percentage
+  actualIrr: numeric("actual_irr", { precision: 5, scale: 2 }),
+  status: text("status").notNull().default("active"), // 'active' | 'completed' | 'pending'
+  riskScore: integer("risk_score").default(50), // 0-100
+  distributionFrequency: text("distribution_frequency").notNull(), // 'quarterly' | 'semi-annual' | 'annual'
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
+  id: true, 
+  actualIrr: true 
+});
+export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
+export type Investment = typeof investments.$inferSelect;
+
+// Cashflow distributions (profits/returns)
+export const cashflows = pgTable("cashflows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  investmentId: varchar("investment_id").notNull(),
+  dueDate: timestamp("due_date").notNull(),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  receivedDate: timestamp("received_date"),
+  status: text("status").notNull().default("upcoming"), // 'received' | 'expected' | 'upcoming'
+  type: text("type").notNull().default("profit"), // 'profit' | 'principal'
+});
+
+export const insertCashflowSchema = createInsertSchema(cashflows).omit({ 
+  id: true,
+  receivedDate: true 
+});
+export type InsertCashflow = z.infer<typeof insertCashflowSchema>;
+export type Cashflow = typeof cashflows.$inferSelect;
+
+// Smart alerts and notifications
+export const alerts = pgTable("alerts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(), // 'distribution' | 'maturity' | 'opportunity' | 'risk'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  investmentId: varchar("investment_id"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  read: integer("read").notNull().default(0), // 0 = unread, 1 = read
+  severity: text("severity").notNull().default("info"), // 'info' | 'warning' | 'success' | 'error'
+});
+
+export const insertAlertSchema = createInsertSchema(alerts).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export type InsertAlert = z.infer<typeof insertAlertSchema>;
+export type Alert = typeof alerts.$inferSelect;
+
+// User preferences and settings
+export const userSettings = pgTable("user_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  theme: text("theme").notNull().default("dark"), // 'dark' | 'light'
+  language: text("language").notNull().default("en"), // 'en' | 'ar'
+  autoReinvest: integer("auto_reinvest").notNull().default(1), // 0 = no, 1 = yes
+  targetCapital2040: numeric("target_capital_2040", { precision: 15, scale: 2 }),
+  currency: text("currency").notNull().default("SAR"),
+});
+
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
+export type UserSettings = typeof userSettings.$inferSelect;
+
+// Extended types for frontend use
+export type InvestmentWithPlatform = Investment & {
+  platform: Platform;
+};
+
+export type CashflowWithInvestment = Cashflow & {
+  investment: InvestmentWithPlatform;
+};
+
+export type PortfolioStats = {
+  totalCapital: number;
+  totalReturns: number;
+  averageIrr: number;
+  activeInvestments: number;
+  upcomingCashflow: number;
+  progressTo2040: number;
+};
+
+export type AnalyticsData = {
+  monthlyReturns: Array<{ month: string; amount: number }>;
+  platformAllocation: Array<{ platform: string; amount: number; percentage: number }>;
+  performanceVsTarget: Array<{ year: number; actual: number; target: number }>;
+};
