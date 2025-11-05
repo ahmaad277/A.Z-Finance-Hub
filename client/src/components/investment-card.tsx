@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil } from "@/lib/utils";
+import { useLanguage } from "@/lib/language-provider";
 import { Edit, TrendingUp, Calendar, Target } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
 
@@ -11,6 +12,7 @@ interface InvestmentCardProps {
 }
 
 export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
+  const { t } = useLanguage();
   const daysRemaining = calculateDaysUntil(investment.endDate);
   const isActive = investment.status === "active";
 
@@ -37,8 +39,8 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
             </Badge>
             <CardTitle className="text-lg line-clamp-2">{investment.name}</CardTitle>
           </div>
-          <Badge className={getStatusColor(investment.status)} variant="outline">
-            {investment.status}
+          <Badge className={getStatusColor(investment.status)} variant="outline" data-testid={`badge-status-${investment.status}`}>
+            {t(`investments.${investment.status}`)}
           </Badge>
         </div>
       </CardHeader>
@@ -46,13 +48,13 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Amount</div>
+            <div className="text-xs text-muted-foreground mb-1">{t("investments.amount")}</div>
             <div className="text-lg font-bold">{formatCurrency(investment.amount)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              Expected IRR
+              {t("investments.irr")}
             </div>
             <div className="text-lg font-bold text-chart-1">{formatPercentage(investment.expectedIrr)}</div>
           </div>
@@ -61,22 +63,22 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>Start: {formatDate(investment.startDate)}</span>
+            <span>{t("investments.startDate")}: {formatDate(investment.startDate)}</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Target className="h-4 w-4" />
-            <span>End: {formatDate(investment.endDate)}</span>
+            <span>{t("investments.endDate")}: {formatDate(investment.endDate)}</span>
           </div>
           {isActive && daysRemaining > 0 && (
             <div className="text-xs text-primary font-medium">
-              {daysRemaining} days remaining
+              {daysRemaining} {t("investments.daysRemaining")}
             </div>
           )}
         </div>
 
         {investment.riskScore !== null && (
           <div>
-            <div className="text-xs text-muted-foreground mb-2">Risk Score</div>
+            <div className="text-xs text-muted-foreground mb-2">{t("investments.riskScore")}</div>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -105,7 +107,7 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
           className="w-full hover-elevate"
         >
           <Edit className="h-4 w-4 mr-2" />
-          Edit Investment
+          {t("investments.editInvestment")}
         </Button>
       </CardFooter>
     </Card>

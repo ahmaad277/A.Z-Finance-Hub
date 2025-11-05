@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useLanguage } from "@/lib/language-provider";
 import { TrendingUp } from "lucide-react";
 import type { CashflowWithInvestment } from "@shared/schema";
 
 export function UpcomingCashflows() {
+  const { t } = useLanguage();
   const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
   });
@@ -16,11 +18,11 @@ export function UpcomingCashflows() {
 
   if (!upcoming || upcoming.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="flex flex-col items-center justify-center py-8 text-center" data-testid="empty-state-upcoming-cashflows">
         <div className="rounded-full bg-muted p-3 mb-3">
           <TrendingUp className="h-6 w-6 text-muted-foreground" />
         </div>
-        <p className="text-sm text-muted-foreground">No upcoming cashflows</p>
+        <p className="text-sm text-muted-foreground">{t("cashflows.noCashflows")}</p>
       </div>
     );
   }
@@ -52,8 +54,9 @@ export function UpcomingCashflows() {
                   ? "bg-primary/10 text-primary"
                   : "bg-muted"
               }`}
+              data-testid={`badge-status-${cashflow.status}`}
             >
-              {cashflow.status}
+              {t(`cashflows.${cashflow.status}`)}
             </Badge>
           </div>
         </div>

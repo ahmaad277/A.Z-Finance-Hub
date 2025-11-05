@@ -131,6 +131,7 @@ const translations = {
     "dialog.platform": "Platform",
     "dialog.selectPlatform": "Select a platform",
     "dialog.investmentName": "Investment Name",
+    "dialog.investmentNamePlaceholder": "e.g., Sukuk 2025-A",
     "dialog.amountSAR": "Amount (SAR)",
     "dialog.expectedIRR": "Expected IRR (%)",
     "dialog.distributionFrequency": "Distribution Frequency",
@@ -142,6 +143,9 @@ const translations = {
     "dialog.saving": "Saving...",
     "dialog.update": "Update Investment",
     "dialog.add": "Add Investment",
+    "dialog.error": "Error",
+    "dialog.createError": "Failed to create investment",
+    "dialog.updateError": "Failed to update investment",
   },
   ar: {
     // Common
@@ -257,6 +261,7 @@ const translations = {
     "dialog.platform": "المنصة",
     "dialog.selectPlatform": "اختر منصة",
     "dialog.investmentName": "اسم الاستثمار",
+    "dialog.investmentNamePlaceholder": "مثال: صكوك 2025-أ",
     "dialog.amountSAR": "المبلغ (ريال سعودي)",
     "dialog.expectedIRR": "العائد المتوقع (%)",
     "dialog.distributionFrequency": "تكرار التوزيع",
@@ -268,6 +273,9 @@ const translations = {
     "dialog.saving": "جاري الحفظ...",
     "dialog.update": "تحديث الاستثمار",
     "dialog.add": "إضافة استثمار",
+    "dialog.error": "خطأ",
+    "dialog.createError": "فشل إنشاء الاستثمار",
+    "dialog.updateError": "فشل تحديث الاستثمار",
   },
 };
 

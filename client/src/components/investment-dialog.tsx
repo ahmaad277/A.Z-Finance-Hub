@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
@@ -44,6 +45,7 @@ interface InvestmentDialogProps {
 }
 
 export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentDialogProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   const { data: platforms } = useQuery<Platform[]>({
@@ -101,16 +103,16 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
       toast({
-        title: "Success",
-        description: "Investment created successfully",
+        title: t("dialog.save"),
+        description: t("dialog.add"),
       });
       onOpenChange(false);
       form.reset();
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to create investment",
+        title: t("dialog.error"),
+        description: t("dialog.createError"),
         variant: "destructive",
       });
     },
@@ -124,15 +126,15 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
       toast({
-        title: "Success",
-        description: "Investment updated successfully",
+        title: t("dialog.save"),
+        description: t("dialog.update"),
       });
       onOpenChange(false);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to update investment",
+        title: t("dialog.error"),
+        description: t("dialog.updateError"),
         variant: "destructive",
       });
     },
@@ -150,11 +152,11 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{investment ? "Edit Investment" : "Add New Investment"}</DialogTitle>
+          <DialogTitle>{investment ? t("dialog.editInvestment") : t("dialog.addInvestment")}</DialogTitle>
           <DialogDescription>
             {investment
-              ? "Update the details of your investment"
-              : "Enter the details of your new investment opportunity"}
+              ? t("dialog.editInvestmentDesc")
+              : t("dialog.addInvestmentDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -165,11 +167,11 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
               name="platformId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Platform</FormLabel>
+                  <FormLabel>{t("dialog.platform")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-platform">
-                        <SelectValue placeholder="Select a platform" />
+                        <SelectValue placeholder={t("dialog.selectPlatform")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -190,9 +192,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Investment Name</FormLabel>
+                  <FormLabel>{t("dialog.investmentName")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Sukuk 2025-A" {...field} data-testid="input-investment-name" />
+                    <Input placeholder={t("dialog.investmentNamePlaceholder")} {...field} data-testid="input-investment-name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -205,7 +207,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount (SAR)</FormLabel>
+                    <FormLabel>{t("dialog.amountSAR")}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="100000" {...field} data-testid="input-amount" />
                     </FormControl>
@@ -219,7 +221,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="expectedIrr"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Expected IRR (%)</FormLabel>
+                    <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="12.5" {...field} data-testid="input-irr" />
                     </FormControl>
@@ -235,7 +237,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="startDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Date</FormLabel>
+                    <FormLabel>{t("investments.startDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} data-testid="input-start-date" />
                     </FormControl>
@@ -249,7 +251,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="endDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Date</FormLabel>
+                    <FormLabel>{t("investments.endDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} data-testid="input-end-date" />
                     </FormControl>
@@ -265,7 +267,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="distributionFrequency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Distribution Frequency</FormLabel>
+                    <FormLabel>{t("dialog.distributionFrequency")}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-frequency">
@@ -273,9 +275,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="quarterly">Quarterly</SelectItem>
-                        <SelectItem value="semi-annual">Semi-Annual</SelectItem>
-                        <SelectItem value="annual">Annual</SelectItem>
+                        <SelectItem value="quarterly">{t("dialog.quarterly")}</SelectItem>
+                        <SelectItem value="semi-annual">{t("dialog.semiAnnual")}</SelectItem>
+                        <SelectItem value="annual">{t("dialog.annual")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -288,7 +290,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>{t("investments.status")}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-status">
@@ -296,9 +298,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="active">{t("investments.active")}</SelectItem>
+                        <SelectItem value="pending">{t("investments.pending")}</SelectItem>
+                        <SelectItem value="completed">{t("investments.completed")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -312,7 +314,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
               name="riskScore"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Risk Score (0-100)</FormLabel>
+                  <FormLabel>{t("investments.riskScore")} (0-100)</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -335,7 +337,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 onClick={() => onOpenChange(false)}
                 data-testid="button-cancel"
               >
-                Cancel
+                {t("dialog.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -343,10 +345,10 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 data-testid="button-save-investment"
               >
                 {createMutation.isPending || updateMutation.isPending
-                  ? "Saving..."
+                  ? t("dialog.saving")
                   : investment
-                  ? "Update Investment"
-                  : "Add Investment"}
+                  ? t("dialog.update")
+                  : t("dialog.add")}
               </Button>
             </div>
           </form>
