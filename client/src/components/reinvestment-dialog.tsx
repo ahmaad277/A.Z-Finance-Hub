@@ -62,19 +62,16 @@ export function ReinvestmentDialog({
       const oneYearFromNow = new Date(today);
       oneYearFromNow.setFullYear(today.getFullYear() + 1);
 
-      return apiRequest("/api/investments", {
-        method: "POST",
-        body: JSON.stringify({
-          platformId: investment.platform.id,
-          name: `${investment.name} (Reinvestment ${today.toLocaleDateString()})`,
-          amount: data.amount.toString(),
-          startDate: today.toISOString(),
-          endDate: oneYearFromNow.toISOString(),
-          expectedIrr: investment.expectedIrr,
-          status: "active",
-          riskScore: investment.riskScore || 50,
-          distributionFrequency: investment.distributionFrequency,
-        }),
+      return apiRequest("POST", "/api/investments", {
+        platformId: investment.platform.id,
+        name: `${investment.name} (Reinvestment ${today.toLocaleDateString()})`,
+        amount: data.amount.toString(),
+        startDate: today.toISOString(),
+        endDate: oneYearFromNow.toISOString(),
+        expectedIrr: investment.expectedIrr,
+        status: "active",
+        riskScore: investment.riskScore || 50,
+        distributionFrequency: investment.distributionFrequency,
       });
     },
     onSuccess: () => {
