@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Edit, TrendingUp, Calendar, Target } from "lucide-react";
+import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
 
 interface InvestmentCardProps {
@@ -15,6 +15,14 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
   const { t } = useLanguage();
   const daysRemaining = calculateDaysUntil(investment.endDate);
   const isActive = investment.status === "active";
+  const isCompleted = investment.status === "completed";
+  
+  // Calculate delay duration for completed investments
+  const delayDays = isCompleted && investment.actualEndDate
+    ? Math.floor((new Date(investment.actualEndDate).getTime() - new Date(investment.endDate).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const isDelayed = delayDays > 0;
+  const isDistressed = delayDays >= 90; // 3+ months delay
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -67,11 +75,26 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Target className="h-4 w-4" />
-            <span>{t("investments.endDate")}: {formatDate(investment.endDate)}</span>
+            <span>{t("investments.expectedEndDate")}: {formatDate(investment.endDate)}</span>
           </div>
+          {isCompleted && investment.actualEndDate && (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className={isDelayed ? "text-destructive font-medium" : "text-muted-foreground"}>
+                {t("investments.actualEndDate")}: {formatDate(investment.actualEndDate)}
+              </span>
+            </div>
+          )}
           {isActive && daysRemaining > 0 && (
             <div className="text-xs text-primary font-medium">
               {daysRemaining} {t("investments.daysRemaining")}
+            </div>
+          )}
+          {isDelayed && (
+            <div className={`flex items-center gap-2 text-xs font-medium ${isDistressed ? "text-destructive" : "text-orange-500"}`} data-testid="delay-indicator">
+              <AlertTriangle className="h-4 w-4" />
+              <span>{t("investments.delayed")} {delayDays} {t("investments.days")}</span>
+              {isDistressed && <Badge variant="destructive" className="ml-1 text-xs">{t("investments.distressed")}</Badge>}
             </div>
           )}
         </div>

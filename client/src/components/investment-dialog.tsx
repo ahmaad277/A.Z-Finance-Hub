@@ -36,6 +36,7 @@ import type { InvestmentWithPlatform, Platform } from "@shared/schema";
 const formSchema = insertInvestmentSchema.extend({
   startDate: z.string(),
   endDate: z.string(),
+  actualEndDate: z.string().optional(),
 });
 
 interface InvestmentDialogProps {
@@ -75,6 +76,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
         amount: investment.amount,
         startDate: new Date(investment.startDate).toISOString().split("T")[0],
         endDate: new Date(investment.endDate).toISOString().split("T")[0],
+        actualEndDate: investment.actualEndDate 
+          ? new Date(investment.actualEndDate).toISOString().split("T")[0]
+          : undefined,
         expectedIrr: investment.expectedIrr,
         status: investment.status,
         riskScore: investment.riskScore || 50,
@@ -209,9 +213,24 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("dialog.amountSAR")}</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="100000" {...field} data-testid="input-amount" />
-                    </FormControl>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input type="number" placeholder="100000" {...field} data-testid="input-amount" />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        onClick={() => {
+                          const currentAmount = parseFloat(field.value || "0");
+                          field.onChange((currentAmount + 1000).toString());
+                        }}
+                        data-testid="button-add-1000"
+                        className="whitespace-nowrap"
+                      >
+                        +1000
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -252,7 +271,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 name="endDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("investments.endDate")}</FormLabel>
+                    <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} data-testid="input-end-date" />
                     </FormControl>
@@ -261,6 +280,23 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 )}
               />
             </div>
+
+            {/* Actual End Date - Only for Completed Investments */}
+            {form.watch("status") === "completed" && (
+              <FormField
+                control={form.control}
+                name="actualEndDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("dialog.actualEndDate")}</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ""} data-testid="input-actual-end-date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid gap-6 md:grid-cols-2">
               <FormField

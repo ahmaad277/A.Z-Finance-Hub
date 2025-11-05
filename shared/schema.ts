@@ -22,7 +22,8 @@ export const investments = pgTable("investments", {
   name: text("name").notNull(),
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
+  endDate: timestamp("end_date").notNull(), // Expected end date
+  actualEndDate: timestamp("actual_end_date"), // Actual completion date
   expectedIrr: numeric("expected_irr", { precision: 5, scale: 2 }).notNull(), // percentage
   actualIrr: numeric("actual_irr", { precision: 5, scale: 2 }),
   status: text("status").notNull().default("active"), // 'active' | 'completed' | 'pending'
