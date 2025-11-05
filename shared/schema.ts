@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { sql, relations } from "drizzle-orm";
 import { pgTable, text, varchar, numeric, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -111,3 +111,31 @@ export type AnalyticsData = {
   platformAllocation: Array<{ platform: string; amount: number; percentage: number }>;
   performanceVsTarget: Array<{ year: number; actual: number; target: number }>;
 };
+
+// Relations
+export const platformsRelations = relations(platforms, ({ many }) => ({
+  investments: many(investments),
+}));
+
+export const investmentsRelations = relations(investments, ({ one, many }) => ({
+  platform: one(platforms, {
+    fields: [investments.platformId],
+    references: [platforms.id],
+  }),
+  cashflows: many(cashflows),
+  alerts: many(alerts),
+}));
+
+export const cashflowsRelations = relations(cashflows, ({ one }) => ({
+  investment: one(investments, {
+    fields: [cashflows.investmentId],
+    references: [investments.id],
+  }),
+}));
+
+export const alertsRelations = relations(alerts, ({ one }) => ({
+  investment: one(investments, {
+    fields: [alerts.investmentId],
+    references: [investments.id],
+  }),
+}));

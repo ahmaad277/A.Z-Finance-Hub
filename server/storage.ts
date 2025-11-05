@@ -1,4 +1,8 @@
 import {
+  platforms,
+  investments,
+  cashflows,
+  alerts,
   type Platform,
   type InsertPlatform,
   type Investment,
@@ -12,7 +16,8 @@ import {
   type InvestmentWithPlatform,
   type CashflowWithInvestment,
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc, and, or, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // Platforms
@@ -40,263 +45,140 @@ export interface IStorage {
   getAnalyticsData(): Promise<AnalyticsData>;
 }
 
-export class MemStorage implements IStorage {
-  private platforms: Map<string, Platform>;
-  private investments: Map<string, Investment>;
-  private cashflows: Map<string, Cashflow>;
-  private alerts: Map<string, Alert>;
-
-  constructor() {
-    this.platforms = new Map();
-    this.investments = new Map();
-    this.cashflows = new Map();
-    this.alerts = new Map();
-    this.seedInitialData();
-  }
-
-  private seedInitialData() {
-    // Seed platforms
-    const sukuk: Platform = {
-      id: randomUUID(),
-      name: "Sukuk",
-      type: "sukuk",
-      logoUrl: null,
-    };
-    const manfaa: Platform = {
-      id: randomUUID(),
-      name: "Manfa'a",
-      type: "manfaa",
-      logoUrl: null,
-    };
-    const lendo: Platform = {
-      id: randomUUID(),
-      name: "Lendo",
-      type: "lendo",
-      logoUrl: null,
-    };
-
-    this.platforms.set(sukuk.id, sukuk);
-    this.platforms.set(manfaa.id, manfaa);
-    this.platforms.set(lendo.id, lendo);
-
-    // Seed sample investment
-    const investment1: Investment = {
-      id: randomUUID(),
-      platformId: sukuk.id,
-      name: "Sukuk 2025-A",
-      amount: "250000",
-      startDate: new Date("2025-01-01"),
-      endDate: new Date("2027-12-31"),
-      expectedIrr: "12.5",
-      actualIrr: null,
-      status: "active",
-      riskScore: 35,
-      distributionFrequency: "quarterly",
-    };
-
-    const investment2: Investment = {
-      id: randomUUID(),
-      platformId: manfaa.id,
-      name: "Manfa'a Growth Fund",
-      amount: "150000",
-      startDate: new Date("2024-06-01"),
-      endDate: new Date("2026-06-01"),
-      expectedIrr: "14.2",
-      actualIrr: null,
-      status: "active",
-      riskScore: 45,
-      distributionFrequency: "semi-annual",
-    };
-
-    this.investments.set(investment1.id, investment1);
-    this.investments.set(investment2.id, investment2);
-
-    // Seed sample cashflows
-    const cashflow1: Cashflow = {
-      id: randomUUID(),
-      investmentId: investment1.id,
-      dueDate: new Date("2025-03-31"),
-      amount: "8500",
-      receivedDate: new Date("2025-03-31"),
-      status: "received",
-      type: "profit",
-    };
-
-    const cashflow2: Cashflow = {
-      id: randomUUID(),
-      investmentId: investment1.id,
-      dueDate: new Date("2025-06-30"),
-      amount: "8750",
-      receivedDate: null,
-      status: "expected",
-      type: "profit",
-    };
-
-    const cashflow3: Cashflow = {
-      id: randomUUID(),
-      investmentId: investment2.id,
-      dueDate: new Date("2025-08-15"),
-      amount: "11000",
-      receivedDate: null,
-      status: "upcoming",
-      type: "profit",
-    };
-
-    this.cashflows.set(cashflow1.id, cashflow1);
-    this.cashflows.set(cashflow2.id, cashflow2);
-    this.cashflows.set(cashflow3.id, cashflow3);
-
-    // Seed sample alert
-    const alert1: Alert = {
-      id: randomUUID(),
-      type: "distribution",
-      title: "Upcoming Distribution",
-      message: "You have a profit distribution of SAR 8,750 expected on June 30, 2025 from Sukuk 2025-A",
-      investmentId: investment1.id,
-      createdAt: new Date(),
-      read: 0,
-      severity: "info",
-    };
-
-    this.alerts.set(alert1.id, alert1);
-  }
-
+export class DatabaseStorage implements IStorage {
   // Platforms
   async getPlatforms(): Promise<Platform[]> {
-    return Array.from(this.platforms.values());
+    return await db.select().from(platforms);
   }
 
   async createPlatform(insertPlatform: InsertPlatform): Promise<Platform> {
-    const id = randomUUID();
-    const platform: Platform = { ...insertPlatform, id };
-    this.platforms.set(id, platform);
+    const [platform] = await db
+      .insert(platforms)
+      .values(insertPlatform)
+      .returning();
     return platform;
   }
 
   // Investments
   async getInvestments(): Promise<InvestmentWithPlatform[]> {
-    return Array.from(this.investments.values()).map((inv) => ({
-      ...inv,
-      platform: this.platforms.get(inv.platformId)!,
-    }));
+    const results = await db.query.investments.findMany({
+      with: {
+        platform: true,
+      },
+    });
+    return results;
   }
 
   async getInvestment(id: string): Promise<Investment | undefined> {
-    return this.investments.get(id);
+    const [investment] = await db
+      .select()
+      .from(investments)
+      .where(eq(investments.id, id));
+    return investment || undefined;
   }
 
   async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
-    const id = randomUUID();
-    const investment: Investment = {
-      ...insertInvestment,
-      id,
-      actualIrr: null,
-      startDate: new Date(insertInvestment.startDate),
-      endDate: new Date(insertInvestment.endDate),
-    };
-    this.investments.set(id, investment);
+    const [investment] = await db
+      .insert(investments)
+      .values({
+        ...insertInvestment,
+        actualIrr: null,
+      })
+      .returning();
     return investment;
   }
 
   async updateInvestment(id: string, update: Partial<InsertInvestment>): Promise<Investment | undefined> {
-    const investment = this.investments.get(id);
-    if (!investment) return undefined;
-
-    const updated: Investment = {
-      ...investment,
-      ...update,
-      startDate: update.startDate ? new Date(update.startDate) : investment.startDate,
-      endDate: update.endDate ? new Date(update.endDate) : investment.endDate,
-    };
-    this.investments.set(id, updated);
-    return updated;
+    const [investment] = await db
+      .update(investments)
+      .set(update)
+      .where(eq(investments.id, id))
+      .returning();
+    return investment || undefined;
   }
 
   // Cashflows
   async getCashflows(): Promise<CashflowWithInvestment[]> {
-    return Array.from(this.cashflows.values()).map((cf) => {
-      const investment = this.investments.get(cf.investmentId)!;
-      const platform = this.platforms.get(investment.platformId)!;
-      return {
-        ...cf,
-        investment: { ...investment, platform },
-      };
+    const results = await db.query.cashflows.findMany({
+      with: {
+        investment: {
+          with: {
+            platform: true,
+          },
+        },
+      },
     });
+    return results;
   }
 
   async createCashflow(insertCashflow: InsertCashflow): Promise<Cashflow> {
-    const id = randomUUID();
-    const cashflow: Cashflow = {
-      ...insertCashflow,
-      id,
-      receivedDate: null,
-      dueDate: new Date(insertCashflow.dueDate),
-    };
-    this.cashflows.set(id, cashflow);
+    const [cashflow] = await db
+      .insert(cashflows)
+      .values({
+        ...insertCashflow,
+        receivedDate: null,
+      })
+      .returning();
     return cashflow;
   }
 
   async updateCashflow(id: string, update: Partial<InsertCashflow>): Promise<Cashflow | undefined> {
-    const cashflow = this.cashflows.get(id);
-    if (!cashflow) return undefined;
-
-    const updated: Cashflow = {
-      ...cashflow,
-      ...update,
-      dueDate: update.dueDate ? new Date(update.dueDate) : cashflow.dueDate,
-    };
-    this.cashflows.set(id, updated);
-    return updated;
+    const [cashflow] = await db
+      .update(cashflows)
+      .set(update)
+      .where(eq(cashflows.id, id))
+      .returning();
+    return cashflow || undefined;
   }
 
   // Alerts
   async getAlerts(): Promise<Alert[]> {
-    return Array.from(this.alerts.values()).sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+    return await db
+      .select()
+      .from(alerts)
+      .orderBy(desc(alerts.createdAt));
   }
 
   async createAlert(insertAlert: InsertAlert): Promise<Alert> {
-    const id = randomUUID();
-    const alert: Alert = {
-      ...insertAlert,
-      id,
-      createdAt: new Date(),
-      read: 0,
-    };
-    this.alerts.set(id, alert);
+    const [alert] = await db
+      .insert(alerts)
+      .values({
+        ...insertAlert,
+        read: 0,
+      })
+      .returning();
     return alert;
   }
 
   async markAlertAsRead(id: string): Promise<Alert | undefined> {
-    const alert = this.alerts.get(id);
-    if (!alert) return undefined;
-
-    alert.read = 1;
-    this.alerts.set(id, alert);
-    return alert;
+    const [alert] = await db
+      .update(alerts)
+      .set({ read: 1 })
+      .where(eq(alerts.id, id))
+      .returning();
+    return alert || undefined;
   }
 
   // Analytics
   async getPortfolioStats(): Promise<PortfolioStats> {
-    const investments = Array.from(this.investments.values());
-    const cashflows = Array.from(this.cashflows.values());
+    const allInvestments = await db.select().from(investments);
+    const allCashflows = await db.select().from(cashflows);
 
-    const totalCapital = investments
+    const totalCapital = allInvestments
       .filter((inv) => inv.status === "active")
       .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
 
-    const totalReturns = cashflows
+    const totalReturns = allCashflows
       .filter((cf) => cf.status === "received")
       .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
 
-    const activeInvestments = investments.filter((inv) => inv.status === "active").length;
+    const activeInvestments = allInvestments.filter((inv) => inv.status === "active").length;
 
-    const averageIrr = investments.length > 0
-      ? investments.reduce((sum, inv) => sum + parseFloat(inv.expectedIrr), 0) / investments.length
+    const averageIrr = allInvestments.length > 0
+      ? allInvestments.reduce((sum, inv) => sum + parseFloat(inv.expectedIrr), 0) / allInvestments.length
       : 0;
 
-    const upcomingCashflow = cashflows
+    const upcomingCashflow = allCashflows
       .filter((cf) => cf.status === "expected" || cf.status === "upcoming")
       .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
 
@@ -314,29 +196,24 @@ export class MemStorage implements IStorage {
   }
 
   async getAnalyticsData(): Promise<AnalyticsData> {
-    const investments = Array.from(this.investments.values());
-    const platforms = Array.from(this.platforms.values());
+    const allInvestments = await db.select().from(investments);
+    const allPlatforms = await db.select().from(platforms);
+    const allCashflows = await db.select().from(cashflows);
 
-    // Monthly returns for the past 6 months
-    const monthlyReturns = [
-      { month: "Jan", amount: 12500 },
-      { month: "Feb", amount: 14200 },
-      { month: "Mar", amount: 13800 },
-      { month: "Apr", amount: 15600 },
-      { month: "May", amount: 16200 },
-      { month: "Jun", amount: 17400 },
-    ];
+    // Calculate real monthly returns from cashflow data
+    const now = new Date();
+    const monthlyReturns = this.calculateMonthlyReturns(allCashflows, now);
 
     // Platform allocation
-    const platformAllocation = platforms.map((platform) => {
-      const platformInvestments = investments.filter(
+    const platformAllocation = allPlatforms.map((platform) => {
+      const platformInvestments = allInvestments.filter(
         (inv) => inv.platformId === platform.id
       );
       const amount = platformInvestments.reduce(
         (sum, inv) => sum + parseFloat(inv.amount),
         0
       );
-      const totalAmount = investments.reduce(
+      const totalAmount = allInvestments.reduce(
         (sum, inv) => sum + parseFloat(inv.amount),
         0
       );
@@ -349,13 +226,8 @@ export class MemStorage implements IStorage {
       };
     }).filter((p) => p.amount > 0);
 
-    // Performance vs target
-    const performanceVsTarget = [
-      { year: 2025, actual: 400000, target: 500000 },
-      { year: 2030, actual: 0, target: 2000000 },
-      { year: 2035, actual: 0, target: 5000000 },
-      { year: 2040, actual: 0, target: 10000000 },
-    ];
+    // Calculate real performance vs target based on actual data
+    const performanceVsTarget = this.calculatePerformanceVsTarget(allInvestments, allCashflows);
 
     return {
       monthlyReturns,
@@ -363,6 +235,75 @@ export class MemStorage implements IStorage {
       performanceVsTarget,
     };
   }
+
+  private calculateMonthlyReturns(cashflows: Cashflow[], currentDate: Date): Array<{ month: string; amount: number }> {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyData: { [key: string]: number } = {};
+
+    // Get last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      const monthLabel = monthNames[date.getMonth()];
+      monthlyData[monthKey] = 0;
+      monthlyData[monthLabel] = 0; // Store with label for final output
+    }
+
+    // Sum up cashflows that were received in each month
+    cashflows
+      .filter((cf) => cf.status === "received" && cf.receivedDate)
+      .forEach((cf) => {
+        const receivedDate = new Date(cf.receivedDate!);
+        const monthKey = `${receivedDate.getFullYear()}-${receivedDate.getMonth()}`;
+        const monthLabel = monthNames[receivedDate.getMonth()];
+        
+        if (monthlyData[monthKey] !== undefined) {
+          monthlyData[monthLabel] += parseFloat(cf.amount);
+        }
+      });
+
+    // Return formatted data for last 6 months
+    const result: Array<{ month: string; amount: number }> = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthLabel = monthNames[date.getMonth()];
+      result.push({
+        month: monthLabel,
+        amount: Math.round(monthlyData[monthLabel] || 0),
+      });
+    }
+
+    return result;
+  }
+
+  private calculatePerformanceVsTarget(investments: Investment[], cashflows: Cashflow[]): Array<{ year: number; actual: number; target: number }> {
+    const currentYear = new Date().getFullYear();
+    
+    // Calculate actual portfolio value (invested capital + received returns)
+    const investedCapital = investments
+      .filter((inv) => inv.status === "active")
+      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    
+    const receivedReturns = cashflows
+      .filter((cf) => cf.status === "received")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+    
+    const currentValue = investedCapital + receivedReturns;
+
+    // Vision 2040 progressive targets
+    const targets = [
+      { year: 2025, target: 500000 },
+      { year: 2030, target: 2000000 },
+      { year: 2035, target: 5000000 },
+      { year: 2040, target: 10000000 },
+    ];
+
+    return targets.map((t) => ({
+      year: t.year,
+      actual: t.year === currentYear ? Math.round(currentValue) : 0,
+      target: t.target,
+    }));
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
