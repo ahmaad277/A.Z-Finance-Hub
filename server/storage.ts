@@ -192,6 +192,38 @@ export class DatabaseStorage implements IStorage {
     const target2040 = 10000000; // 10M SAR target
     const progressTo2040 = (totalCapital / target2040) * 100;
 
+    // Cash balance calculations
+    const totalCashBalance = allCashflows
+      .filter((cf) => cf.status === "received")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+
+    // Only count active/pending reinvestments - completed ones have returned to cash
+    const reinvestedAmount = allInvestments
+      .filter((inv) => inv.isReinvestment === 1 && (inv.status === "active" || inv.status === "pending"))
+      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+
+    const availableCash = totalCashBalance - reinvestedAmount;
+
+    // Average duration calculation (for completed investments)
+    const completedInvestments = allInvestments.filter((inv) => inv.status === "completed");
+    const averageDuration = completedInvestments.length > 0
+      ? completedInvestments.reduce((sum, inv) => {
+          const start = new Date(inv.startDate);
+          const end = new Date(inv.endDate);
+          const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          return sum + duration;
+        }, 0) / completedInvestments.length
+      : 0;
+
+    // Distressed investments count (delayed 3+ months past end date)
+    const now = new Date();
+    const distressedCount = allInvestments.filter((inv) => {
+      if (inv.status !== "active") return false;
+      const endDate = new Date(inv.endDate);
+      const monthsDelayed = (now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      return monthsDelayed >= 3;
+    }).length;
+
     return {
       totalCapital,
       totalReturns,
@@ -199,6 +231,11 @@ export class DatabaseStorage implements IStorage {
       activeInvestments,
       upcomingCashflow,
       progressTo2040,
+      totalCashBalance,
+      availableCash,
+      reinvestedAmount,
+      averageDuration: Math.round(averageDuration),
+      distressedCount,
     };
   }
 

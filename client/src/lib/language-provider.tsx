@@ -45,6 +45,15 @@ const translations = {
     "dashboard.upcomingCashflows": "Upcoming Cashflows",
     "dashboard.recentInvestments": "Recent Investments",
     "dashboard.noDataYet": "No data available yet",
+    "dashboard.availableCash": "Available Cash",
+    "dashboard.totalCashBalance": "Total Cash Balance",
+    "dashboard.reinvestedAmount": "Reinvested",
+    "dashboard.averageDuration": "Avg Duration",
+    "dashboard.distressedCount": "Distressed",
+    "dashboard.days": "days",
+    "dashboard.investments": "investments",
+    "dashboard.cashManagement": "Cash Management",
+    "dashboard.additionalMetrics": "Additional Metrics",
     
     // Investments
     "investments.title": "Investments",
@@ -249,6 +258,15 @@ const translations = {
     "dashboard.upcomingCashflows": "التدفقات القادمة",
     "dashboard.recentInvestments": "الاستثمارات الأخيرة",
     "dashboard.noDataYet": "لا توجد بيانات متاحة بعد",
+    "dashboard.availableCash": "النقد المتاح",
+    "dashboard.totalCashBalance": "الرصيد النقدي الإجمالي",
+    "dashboard.reinvestedAmount": "المعاد استثماره",
+    "dashboard.averageDuration": "متوسط المدة",
+    "dashboard.distressedCount": "متعثرة",
+    "dashboard.days": "يوم",
+    "dashboard.investments": "استثمارات",
+    "dashboard.cashManagement": "إدارة النقد",
+    "dashboard.additionalMetrics": "مقاييس إضافية",
     
     // Investments
     "investments.title": "الاستثمارات",

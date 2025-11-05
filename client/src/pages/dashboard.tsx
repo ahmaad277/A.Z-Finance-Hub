@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { TrendingUp, Wallet, BarChart3, Target, Download } from "lucide-react";
+import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
@@ -37,7 +37,7 @@ export default function Dashboard() {
     }
   };
 
-  const statCards = [
+  const mainStatCards = [
     {
       key: "totalCapital",
       value: stats ? formatCurrency(stats.totalCapital) : "-",
@@ -68,9 +68,51 @@ export default function Dashboard() {
     },
   ];
 
+  const cashStatCards = [
+    {
+      key: "availableCash",
+      value: stats ? formatCurrency(stats.availableCash) : "-",
+      icon: Banknote,
+      color: "text-chart-2",
+      bgColor: "bg-chart-2/10",
+    },
+    {
+      key: "totalCashBalance",
+      value: stats ? formatCurrency(stats.totalCashBalance) : "-",
+      icon: Wallet,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
+      key: "reinvestedAmount",
+      value: stats ? formatCurrency(stats.reinvestedAmount) : "-",
+      icon: TrendingUp,
+      color: "text-chart-1",
+      bgColor: "bg-chart-1/10",
+    },
+  ];
+
+  const additionalStatCards = [
+    {
+      key: "averageDuration",
+      value: stats ? `${stats.averageDuration} ${t("dashboard.days")}` : "-",
+      icon: Clock,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
+      key: "distressedCount",
+      value: stats ? `${stats.distressedCount} ${t("dashboard.investments")}` : "-",
+      icon: AlertTriangle,
+      color: stats && stats.distressedCount > 0 ? "text-destructive" : "text-muted-foreground",
+      bgColor: stats && stats.distressedCount > 0 ? "bg-destructive/10" : "bg-muted/10",
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -83,6 +125,14 @@ export default function Dashboard() {
             </Card>
           ))}
         </div>
+        <Card className="animate-pulse">
+          <CardHeader>
+            <div className="h-6 w-32 rounded bg-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-24 w-full rounded bg-muted" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -115,7 +165,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((card) => (
+        {mainStatCards.map((card) => (
           <Card key={card.key} className="hover-elevate transition-all duration-200" data-testid={`card-stat-${card.key}`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -133,6 +183,50 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Cash Management Section */}
+      <Card data-testid="card-cash-management">
+        <CardHeader>
+          <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-3">
+            {cashStatCards.map((card) => (
+              <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
+                <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                  <card.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                  <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Additional Metrics Section */}
+      <Card data-testid="card-additional-metrics">
+        <CardHeader>
+          <CardTitle>{t("dashboard.additionalMetrics")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            {additionalStatCards.map((card) => (
+              <div key={card.key} className="flex items-center gap-4" data-testid={`additional-stat-${card.key}`}>
+                <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                  <card.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                  <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-7">
         <Card className="lg:col-span-4" data-testid="card-portfolio-performance">

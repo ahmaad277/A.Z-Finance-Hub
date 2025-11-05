@@ -72,6 +72,7 @@ export function ReinvestmentDialog({
         status: "active",
         riskScore: investment.riskScore || 50,
         distributionFrequency: investment.distributionFrequency,
+        isReinvestment: 1,
       });
     },
     onSuccess: () => {

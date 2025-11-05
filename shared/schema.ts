@@ -28,6 +28,7 @@ export const investments = pgTable("investments", {
   status: text("status").notNull().default("active"), // 'active' | 'completed' | 'pending'
   riskScore: integer("risk_score").default(50), // 0-100
   distributionFrequency: text("distribution_frequency").notNull(), // 'quarterly' | 'semi-annual' | 'annual'
+  isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
 });
 
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
@@ -106,6 +107,19 @@ export type PortfolioStats = {
   activeInvestments: number;
   upcomingCashflow: number;
   progressTo2040: number;
+  totalCashBalance: number;
+  availableCash: number;
+  reinvestedAmount: number;
+  averageDuration: number;
+  distressedCount: number;
+};
+
+export type PlatformCashBreakdown = {
+  platformId: string;
+  platformName: string;
+  totalReceived: number;
+  reinvested: number;
+  available: number;
 };
 
 export type AnalyticsData = {
