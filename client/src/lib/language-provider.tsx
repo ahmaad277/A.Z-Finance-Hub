@@ -22,6 +22,7 @@ const translations = {
     "app.name": "A.Z Finance Hub",
     "app.subtitle": "Vision 2040",
     "app.copyright": "© 2025 A.Z Finance",
+    "common.sar": "SAR",
     
     // Navigation
     "nav.dashboard": "Dashboard",
@@ -30,6 +31,7 @@ const translations = {
     "nav.analytics": "Analytics",
     "nav.timeline": "Timeline",
     "nav.alerts": "Alerts",
+    "nav.reinvestment": "Reinvestment",
     
     // Dashboard
     "dashboard.title": "Dashboard",
@@ -53,6 +55,8 @@ const translations = {
     "investments.editInvestment": "Edit Investment",
     "investments.amount": "Amount",
     "investments.irr": "Expected IRR",
+    "investments.expectedIrr": "Expected IRR",
+    "investments.risk": "Risk",
     "investments.startDate": "Start Date",
     "investments.endDate": "End Date",
     "investments.status": "Status",
@@ -123,6 +127,26 @@ const translations = {
     "alerts.error": "Error",
     "alerts.info": "Info",
     
+    // Reinvestment
+    "reinvestment.title": "Profit Reinvestment",
+    "reinvestment.description": "Track available cash and reinvest your profits strategically",
+    "reinvestment.availableCash": "Available Cash",
+    "reinvestment.fromDistributions": "From received distributions",
+    "reinvestment.totalInvested": "Total Invested",
+    "reinvestment.currentCapital": "Current portfolio capital",
+    "reinvestment.receivedCount": "Distributions",
+    "reinvestment.distributions": "received distributions",
+    "reinvestment.opportunitiesTitle": "Reinvestment Opportunities",
+    "reinvestment.opportunitiesDescription": "Best performing active investments ranked by expected IRR",
+    "reinvestment.noOpportunities": "No active investments available for reinvestment",
+    "reinvestment.reinvest": "Reinvest",
+    "reinvestment.reinvestIn": "Reinvest in",
+    "reinvestment.reinvestDescription": "Enter the amount you want to reinvest into this opportunity",
+    "reinvestment.confirmReinvest": "Confirm Reinvestment",
+    "reinvestment.recentDistributions": "Recent Distributions",
+    "reinvestment.recentDistributionsDescription": "Cash received from your investments",
+    "reinvestment.noDistributions": "No distributions received yet",
+    
     // Dialog
     "dialog.addInvestment": "Add New Investment",
     "dialog.editInvestment": "Edit Investment",
@@ -144,6 +168,7 @@ const translations = {
     "dialog.update": "Update Investment",
     "dialog.add": "Add Investment",
     "dialog.error": "Error",
+    "dialog.success": "Success",
     "dialog.createError": "Failed to create investment",
     "dialog.updateError": "Failed to update investment",
     
@@ -157,6 +182,7 @@ const translations = {
     "app.name": "مركز A.Z المالي",
     "app.subtitle": "رؤية 2040",
     "app.copyright": "© 2025 A.Z المالية",
+    "common.sar": "ريال",
     
     // Navigation
     "nav.dashboard": "لوحة التحكم",
@@ -165,6 +191,7 @@ const translations = {
     "nav.analytics": "التحليلات",
     "nav.timeline": "الخط الزمني",
     "nav.alerts": "التنبيهات",
+    "nav.reinvestment": "إعادة الاستثمار",
     
     // Dashboard
     "dashboard.title": "لوحة التحكم",
@@ -188,6 +215,8 @@ const translations = {
     "investments.editInvestment": "تعديل الاستثمار",
     "investments.amount": "المبلغ",
     "investments.irr": "العائد المتوقع",
+    "investments.expectedIrr": "العائد المتوقع",
+    "investments.risk": "المخاطرة",
     "investments.startDate": "تاريخ البداية",
     "investments.endDate": "تاريخ النهاية",
     "investments.status": "الحالة",
@@ -258,6 +287,26 @@ const translations = {
     "alerts.error": "خطأ",
     "alerts.info": "معلومات",
     
+    // Reinvestment
+    "reinvestment.title": "إعادة استثمار الأرباح",
+    "reinvestment.description": "تتبع النقد المتاح وأعد استثمار أرباحك بشكل استراتيجي",
+    "reinvestment.availableCash": "النقد المتاح",
+    "reinvestment.fromDistributions": "من التوزيعات المستلمة",
+    "reinvestment.totalInvested": "إجمالي المستثمر",
+    "reinvestment.currentCapital": "رأس مال المحفظة الحالي",
+    "reinvestment.receivedCount": "التوزيعات",
+    "reinvestment.distributions": "توزيعات مستلمة",
+    "reinvestment.opportunitiesTitle": "فرص إعادة الاستثمار",
+    "reinvestment.opportunitiesDescription": "أفضل الاستثمارات النشطة مرتبة حسب العائد المتوقع",
+    "reinvestment.noOpportunities": "لا توجد استثمارات نشطة متاحة لإعادة الاستثمار",
+    "reinvestment.reinvest": "إعادة الاستثمار",
+    "reinvestment.reinvestIn": "إعادة الاستثمار في",
+    "reinvestment.reinvestDescription": "أدخل المبلغ الذي تريد إعادة استثماره في هذه الفرصة",
+    "reinvestment.confirmReinvest": "تأكيد إعادة الاستثمار",
+    "reinvestment.recentDistributions": "التوزيعات الأخيرة",
+    "reinvestment.recentDistributionsDescription": "النقد المستلم من استثماراتك",
+    "reinvestment.noDistributions": "لم يتم استلام توزيعات بعد",
+    
     // Dialog
     "dialog.addInvestment": "إضافة استثمار جديد",
     "dialog.editInvestment": "تعديل الاستثمار",
@@ -279,6 +328,7 @@ const translations = {
     "dialog.update": "تحديث الاستثمار",
     "dialog.add": "إضافة استثمار",
     "dialog.error": "خطأ",
+    "dialog.success": "نجاح",
     "dialog.createError": "فشل إنشاء الاستثمار",
     "dialog.updateError": "فشل تحديث الاستثمار",
     

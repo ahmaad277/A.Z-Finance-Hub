@@ -13,6 +13,7 @@ import Cashflows from "@/pages/cashflows";
 import Analytics from "@/pages/analytics";
 import Timeline from "@/pages/timeline";
 import Alerts from "@/pages/alerts";
+import Reinvestment from "@/pages/reinvestment";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/timeline" component={Timeline} />
       <Route path="/alerts" component={Alerts} />
+      <Route path="/reinvestment" component={Reinvestment} />
       <Route component={NotFound} />
     </Switch>
   );
