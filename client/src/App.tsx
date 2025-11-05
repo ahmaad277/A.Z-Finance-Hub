@@ -46,15 +46,15 @@ function App() {
           <TooltipProvider>
             <SidebarProvider style={style as React.CSSProperties}>
               <div className="flex h-screen w-full">
-                <AppSidebar />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                  <header className="flex items-center justify-between border-b p-4">
+                  <header className="flex items-center justify-end border-b p-4">
                     <SidebarTrigger data-testid="button-sidebar-toggle" />
                   </header>
                   <main className="flex-1 overflow-y-auto p-6">
                     <Router />
                   </main>
                 </div>
+                <AppSidebar />
               </div>
             </SidebarProvider>
             <Toaster />
