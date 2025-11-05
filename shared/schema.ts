@@ -92,6 +92,10 @@ export const userSettings = pgTable("user_settings", {
   autoReinvest: integer("auto_reinvest").notNull().default(1), // 0 = no, 1 = yes
   targetCapital2040: numeric("target_capital_2040", { precision: 15, scale: 2 }),
   currency: text("currency").notNull().default("SAR"),
+  securityEnabled: integer("security_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
+  pinHash: text("pin_hash"), // Hashed PIN for authentication
+  biometricEnabled: integer("biometric_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
+  biometricCredentialId: text("biometric_credential_id"), // WebAuthn credential ID
 });
 
 export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });

@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings2, Plus, Type, Palette, Globe, TrendingUp } from "lucide-react";
+import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { UserSettings, Platform } from "@shared/schema";
+import { checkBiometricSupport, registerBiometric, hashPIN } from "@/lib/biometric-auth";
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
@@ -26,6 +27,10 @@ export default function Settings() {
   const { toast } = useToast();
   const [newPlatformName, setNewPlatformName] = useState("");
   const [newPlatformType, setNewPlatformType] = useState<string>("sukuk");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [isRegisteringBiometric, setIsRegisteringBiometric] = useState(false);
 
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
@@ -42,6 +47,15 @@ export default function Settings() {
         settings.fontSize === "small" ? "14px" : settings.fontSize === "large" ? "18px" : "16px";
     }
   }, [settings?.fontSize]);
+
+  // Check biometric support on load
+  useEffect(() => {
+    async function check() {
+      const support = await checkBiometricSupport();
+      setBiometricAvailable(support.platformAuthenticator);
+    }
+    check();
+  }, []);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<UserSettings>) => {
@@ -119,6 +133,81 @@ export default function Settings() {
       return;
     }
     addPlatformMutation.mutate({ name: newPlatformName, type: newPlatformType });
+  };
+
+  const handleSetPIN = async () => {
+    if (newPin.length < 4) {
+      toast({
+        variant: "destructive",
+        title: t("dialog.error"),
+        description: t("settings.pinTooShort"),
+      });
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      toast({
+        variant: "destructive",
+        title: t("dialog.error"),
+        description: t("settings.pinMismatch"),
+      });
+      return;
+    }
+
+    const pinHashValue = await hashPIN(newPin);
+    updateSettingsMutation.mutate(
+      { 
+        pinHash: pinHashValue,
+        securityEnabled: 1,
+      },
+      {
+        onSuccess: () => {
+          setNewPin("");
+          setConfirmPin("");
+          toast({
+            title: t("settings.pinSet"),
+            description: t("settings.pinSetDesc"),
+          });
+        },
+      }
+    );
+  };
+
+  const handleRegisterBiometric = async () => {
+    setIsRegisteringBiometric(true);
+    try {
+      const credentialId = await registerBiometric(settings?.id || "user");
+      if (credentialId) {
+        updateSettingsMutation.mutate(
+          {
+            biometricCredentialId: credentialId,
+            biometricEnabled: 1,
+          },
+          {
+            onSuccess: () => {
+              toast({
+                title: t("settings.biometricRegistered"),
+                description: t("settings.biometricRegisteredDesc"),
+              });
+            },
+          }
+        );
+      } else {
+        toast({
+          variant: "destructive",
+          title: t("dialog.error"),
+          description: t("settings.biometricRegisterError"),
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("dialog.error"),
+        description: t("settings.biometricRegisterError"),
+      });
+    } finally {
+      setIsRegisteringBiometric(false);
+    }
   };
 
   if (settingsLoading || platformsLoading) {
@@ -339,6 +428,133 @@ export default function Settings() {
                   {addPlatformMutation.isPending ? t("dialog.saving") : t("settings.addPlatform")}
                 </Button>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security & Privacy */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <CardTitle>{t("settings.security")}</CardTitle>
+            </div>
+            <CardDescription>{t("settings.securityDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Enable Security */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("settings.enableSecurity")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.enableSecurityDesc")}</p>
+              </div>
+              <Switch
+                checked={settings?.securityEnabled === 1}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ securityEnabled: checked ? 1 : 0 })
+                }
+                data-testid="switch-security-enabled"
+              />
+            </div>
+
+            <Separator />
+
+            {/* PIN Setup */}
+            <div className="space-y-4">
+              <div className="space-y-0.5">
+                <Label>{t("settings.setupPIN")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.setupPINDesc")}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-pin">{t("settings.enterPIN")}</Label>
+                  <Input
+                    id="new-pin"
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••••"
+                    data-testid="input-new-pin"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-pin">{t("settings.confirmPIN")}</Label>
+                  <Input
+                    id="confirm-pin"
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••••"
+                    data-testid="input-confirm-pin"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleSetPIN}
+                disabled={newPin.length < 4 || confirmPin.length < 4 || updateSettingsMutation.isPending}
+                data-testid="button-set-pin"
+              >
+                {updateSettingsMutation.isPending ? t("dialog.saving") : t("settings.setPIN")}
+              </Button>
+              {settings?.pinHash && (
+                <p className="text-sm text-muted-foreground">
+                  ✓ PIN configured
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Biometric Authentication */}
+            <div className="space-y-4">
+              <div className="space-y-0.5">
+                <Label>{t("settings.biometric")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.biometricDesc")}</p>
+              </div>
+              
+              {!biometricAvailable ? (
+                <p className="text-sm text-muted-foreground">{t("settings.biometricNotSupported")}</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>{t("settings.enableBiometric")}</Label>
+                    </div>
+                    <Switch
+                      checked={settings?.biometricEnabled === 1}
+                      onCheckedChange={(checked) => 
+                        updateSettingsMutation.mutate({ biometricEnabled: checked ? 1 : 0 })
+                      }
+                      disabled={!settings?.biometricCredentialId}
+                      data-testid="switch-biometric-enabled"
+                    />
+                  </div>
+                  
+                  {!settings?.biometricCredentialId && (
+                    <Button
+                      onClick={handleRegisterBiometric}
+                      disabled={isRegisteringBiometric}
+                      variant="outline"
+                      data-testid="button-register-biometric"
+                    >
+                      <Fingerprint className="w-4 h-4 mr-2" />
+                      {isRegisteringBiometric ? t("dialog.saving") : t("settings.registerBiometric")}
+                    </Button>
+                  )}
+                  
+                  {settings?.biometricCredentialId && (
+                    <p className="text-sm text-muted-foreground">
+                      ✓ Biometric registered
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
