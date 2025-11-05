@@ -9,12 +9,16 @@ import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
-import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData } from "@shared/schema";
+import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings } from "@shared/schema";
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { data: stats, isLoading } = useQuery<PortfolioStats>({
     queryKey: ["/api/portfolio/stats"],
+  });
+
+  const { data: settings } = useQuery<UserSettings>({
+    queryKey: ["/api/settings"],
   });
 
   const { data: investments } = useQuery<InvestmentWithPlatform[]>({
@@ -184,78 +188,87 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Cash Management Section */}
-      <Card data-testid="card-cash-management">
-        <CardHeader>
-          <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
-            {cashStatCards.map((card) => (
-              <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
-                <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
-                  <card.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
-                  <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Additional Metrics Section */}
-      <Card data-testid="card-additional-metrics">
-        <CardHeader>
-          <CardTitle>{t("dashboard.additionalMetrics")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            {additionalStatCards.map((card) => (
-              <div key={card.key} className="flex items-center gap-4" data-testid={`additional-stat-${card.key}`}>
-                <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
-                  <card.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
-                  <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-7">
-        <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
+      {/* Cash Management Section - Pro Mode Only */}
+      {(!settings || settings.viewMode === "pro") && (
+        <Card data-testid="card-cash-management">
           <CardHeader>
-            <CardTitle>{t("dashboard.portfolioPerformance")}</CardTitle>
+            <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <PortfolioChart />
+            <div className="grid gap-6 md:grid-cols-3">
+              {cashStatCards.map((card) => (
+                <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
+                  <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                    <card.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                    <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
+      {/* Additional Metrics Section - Pro Mode Only */}
+      {(!settings || settings.viewMode === "pro") && (
+        <Card data-testid="card-additional-metrics">
           <CardHeader>
-            <CardTitle>{t("dashboard.upcomingCashflows")}</CardTitle>
+            <CardTitle>{t("dashboard.additionalMetrics")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <UpcomingCashflows />
+            <div className="grid gap-6 md:grid-cols-2">
+              {additionalStatCards.map((card) => (
+                <div key={card.key} className="flex items-center gap-4" data-testid={`additional-stat-${card.key}`}>
+                  <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                    <card.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                    <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
-      <Card data-testid="card-recent-investments">
-        <CardHeader>
-          <CardTitle>{t("dashboard.recentInvestments")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecentInvestments />
-        </CardContent>
-      </Card>
+      {/* Analytics Charts and Lists - Pro Mode Only */}
+      {(!settings || settings.viewMode === "pro") && (
+        <>
+          <div className="grid gap-6 lg:grid-cols-7">
+            <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
+              <CardHeader>
+                <CardTitle>{t("dashboard.portfolioPerformance")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PortfolioChart />
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
+              <CardHeader>
+                <CardTitle>{t("dashboard.upcomingCashflows")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <UpcomingCashflows />
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card data-testid="card-recent-investments">
+            <CardHeader>
+              <CardTitle>{t("dashboard.recentInvestments")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RecentInvestments />
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

@@ -187,6 +187,10 @@ const translations = {
     "export.monthly": "Monthly Report",
     "export.quarterly": "Quarterly Report",
     
+    // View Mode
+    "viewMode.pro": "Professional Mode",
+    "viewMode.lite": "Lite Mode",
+    
     // Settings
     "settings.title": "Settings",
     "settings.description": "Customize your investment hub experience",
@@ -399,6 +403,10 @@ const translations = {
     "export.report": "تصدير",
     "export.monthly": "تقرير شهري",
     "export.quarterly": "تقرير ربع سنوي",
+    
+    // View Mode
+    "viewMode.pro": "الوضع الاحترافي",
+    "viewMode.lite": "الوضع المبسط",
     
     // Settings
     "settings.title": "الإعدادات",
