@@ -1,0 +1,104 @@
+Continuation Request: A.Z Finance Hub — Dashboard & Functional Upgrades (Phase II)
+Objective:
+
+Please continue developing the current A.Z Finance Hub project while integrating the following new features and interface improvements.
+Ensure all previous specifications remain active and consistent.
+
+1. Authentication Upgrade
+
+Add biometric login (fingerprint / Face ID) for mobile and tablet devices.
+
+Keep the classic password option as a fallback method.
+
+2. Dashboard Enhancements
+
+Display “Total Cash Balance” for the full portfolio next to the total portfolio value.
+
+Add “Available Cash per Platform” indicator (e.g., Sukuk, Manfa’a, Lendo).
+
+Introduce more analytics widgets in the dashboard (e.g., ROI trends, average duration, distressed ratio, investment progress, etc.).
+
+Maintain optimized UI (small icons, dark/light theme switch, responsive layout).
+
+3. Professional & Lite Modes
+
+Add a toggle option beside the language selector to switch between:
+
+Pro Mode: Full detailed analytics, complete breakdowns, advanced charts, and full visibility.
+
+Lite Mode: Simplified interface showing only main metrics (Total ROI, Total Capital, Active Opportunities, etc.).
+
+This helps different user levels — investors who prefer simplicity vs. advanced users who need full control.
+
+4. Settings Page (⚙️)
+
+Add a dedicated Settings Page, accessible beside the language icon, including:
+
+Font size control (increase/decrease text size).
+
+Add new investment platforms (manual addition of new crowdfunding providers such as Sukuk, Manfa’a, etc.).
+
+Theme and mode customization (Dark/Light, Pro/Lite).
+
+Language toggle (Arabic / English Hybrid).
+
+5. Investment Entry Improvements
+
+When entering an investment amount, add a quick input button that increases in thousands (e.g., +1,000 SAR) instead of single riyals.
+
+For each opportunity, display three key dates:
+
+Start Date (Investment initiation)
+
+Expected End Date (Planned maturity)
+
+Actual End Date (when principal + profit returned)
+
+Add a small box showing delay duration if applicable (in days or months).
+
+Example: 30ي → 30 days delay, 2ش → 2 months delay.
+
+Automatically flag any opportunity delayed 3+ months as “Distressed.”
+
+6. Navigation Menu (Position Change)
+
+Move the main navigation menu (currently on the left) to the right side of the screen,
+for easier accessibility with the right hand on mobile devices.
+
+7. Help & Guide Page
+
+Add a Help / Instructions page that includes:
+
+Overview of the app and its main features.
+
+How to add new investments.
+
+How to customize settings and dashboard.
+
+Explanation of color indicators and key financial metrics.
+
+This should be accessible from the main menu.
+
+8. Stability & Testing (Replit Issue)
+
+Currently, when testing “Add Opportunity” on Replit, an error message appears, the app crashes, and restarts automatically.
+
+Please investigate and fix the crash loop during investment creation testing.
+
+Ensure stable session handling and data save state between restarts.
+
+9. Confirmation
+
+✅ All previous dashboard KPIs, analytics, and visualization requests must remain intact (including ROI, status breakdowns, cash vs deployed capital, goal tracking, etc.).
+✅ Apply all new additions without overwriting existing functionality.
+✅ Ensure compatibility with mobile, iPad, and web versions as one unified ecosystem.
+
+10. Optional Enhancements (Recommended)
+
+If possible, please also include:
+
+Animated feedback when switching between Pro/Lite or Dark/Light modes.
+
+Ability to collapse dashboard sections to save space.
+
+Persistent cache so dashboard data loads instantly after reopening the app.
