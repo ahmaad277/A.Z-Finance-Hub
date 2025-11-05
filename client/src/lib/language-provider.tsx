@@ -103,6 +103,9 @@ const translations = {
     "timeline.newInvestment": "New investment in {0}",
     "timeline.matured": "{0} reached maturity",
     "timeline.payment": "{0} payment received",
+    "timeline.investment": "Investment",
+    "timeline.cashflow": "Cashflow",
+    "timeline.maturity": "Maturity",
     
     // Alerts
     "alerts.title": "Alerts",
@@ -115,6 +118,10 @@ const translations = {
     "alerts.maturity": "maturity",
     "alerts.opportunity": "opportunity",
     "alerts.risk": "risk",
+    "alerts.success": "Success",
+    "alerts.warning": "Warning",
+    "alerts.error": "Error",
+    "alerts.info": "Info",
     
     // Dialog
     "dialog.addInvestment": "Add New Investment",
@@ -222,6 +229,9 @@ const translations = {
     "timeline.newInvestment": "استثمار جديد في {0}",
     "timeline.matured": "{0} وصل للاستحقاق",
     "timeline.payment": "استلام دفعة {0}",
+    "timeline.investment": "استثمار",
+    "timeline.cashflow": "تدفق نقدي",
+    "timeline.maturity": "استحقاق",
     
     // Alerts
     "alerts.title": "التنبيهات",
@@ -234,6 +244,10 @@ const translations = {
     "alerts.maturity": "استحقاق",
     "alerts.opportunity": "فرصة",
     "alerts.risk": "خطر",
+    "alerts.success": "نجاح",
+    "alerts.warning": "تحذير",
+    "alerts.error": "خطأ",
+    "alerts.info": "معلومات",
     
     // Dialog
     "dialog.addInvestment": "إضافة استثمار جديد",

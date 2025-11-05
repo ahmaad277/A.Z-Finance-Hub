@@ -35,9 +35,9 @@ export default function Timeline() {
       id: `inv-start-${inv.id}`,
       date: inv.startDate,
       type: "investment",
-      title: "Investment Started",
+      title: t("timeline.investmentStarted"),
       amount: parseFloat(inv.amount),
-      description: `New investment in ${inv.name}`,
+      description: t("timeline.newInvestment").replace("{0}", inv.name),
       icon: Plus,
       iconColor: "text-primary",
       bgColor: "bg-primary/10",
@@ -48,9 +48,9 @@ export default function Timeline() {
         id: `inv-end-${inv.id}`,
         date: inv.endDate,
         type: "maturity",
-        title: "Investment Matured",
+        title: t("timeline.investmentMatured"),
         amount: parseFloat(inv.amount),
-        description: `${inv.name} reached maturity`,
+        description: t("timeline.matured").replace("{0}", inv.name),
         icon: CheckCircle2,
         iconColor: "text-chart-2",
         bgColor: "bg-chart-2/10",
@@ -63,9 +63,9 @@ export default function Timeline() {
       id: `cashflow-${cf.id}`,
       date: cf.receivedDate || cf.dueDate,
       type: "cashflow",
-      title: "Profit Distribution Received",
+      title: t("timeline.profitReceived"),
       amount: parseFloat(cf.amount),
-      description: `${cf.type} payment received`,
+      description: t("timeline.payment").replace("{0}", t(`cashflows.${cf.type}`) || cf.type),
       icon: TrendingUp,
       iconColor: "text-chart-2",
       bgColor: "bg-chart-2/10",
@@ -129,8 +129,8 @@ export default function Timeline() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="capitalize">
-                      {event.type}
+                    <Badge variant="outline" className="capitalize" data-testid={`badge-type-${event.type}`}>
+                      {t(`timeline.${event.type}`)}
                     </Badge>
                   </div>
                 </div>

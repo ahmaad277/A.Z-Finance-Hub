@@ -18,21 +18,21 @@ export default function Cashflows() {
         return (
           <Badge className="bg-chart-2/10 text-chart-2 hover:bg-chart-2/20" data-testid={`badge-status-received`}>
             <CheckCircle2 className="h-3 w-3 mr-1" />
-            Received
+            {t("cashflows.received")}
           </Badge>
         );
       case "expected":
         return (
           <Badge className="bg-primary/10 text-primary hover:bg-primary/20" data-testid={`badge-status-expected`}>
             <Clock className="h-3 w-3 mr-1" />
-            Expected
+            {t("cashflows.expected")}
           </Badge>
         );
       case "upcoming":
         return (
           <Badge variant="outline" data-testid={`badge-status-upcoming`}>
             <TrendingUp className="h-3 w-3 mr-1" />
-            Upcoming
+            {t("cashflows.upcoming")}
           </Badge>
         );
       default:
@@ -114,19 +114,19 @@ export default function Cashflows() {
             <table className="w-full">
               <thead className="border-b">
                 <tr className="text-left text-sm text-muted-foreground">
-                  <th className="p-4 font-medium">Date</th>
-                  <th className="p-4 font-medium">Investment</th>
-                  <th className="p-4 font-medium">Platform</th>
-                  <th className="p-4 font-medium">Amount</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Type</th>
+                  <th className="p-4 font-medium">{t("cashflows.date")}</th>
+                  <th className="p-4 font-medium">{t("cashflows.investment")}</th>
+                  <th className="p-4 font-medium">{t("cashflows.platform")}</th>
+                  <th className="p-4 font-medium">{t("cashflows.amount")}</th>
+                  <th className="p-4 font-medium">{t("cashflows.status")}</th>
+                  <th className="p-4 font-medium">{t("cashflows.type")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {cashflows && cashflows.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-12 text-center text-muted-foreground">
-                      No cashflows recorded yet
+                      {t("cashflows.noCashflows")}
                     </td>
                   </tr>
                 ) : (
@@ -140,7 +140,7 @@ export default function Cashflows() {
                         <div className="font-medium">{formatDate(cashflow.dueDate)}</div>
                         {cashflow.status === "upcoming" && (
                           <div className="text-xs text-muted-foreground">
-                            in {calculateDaysUntil(cashflow.dueDate)} days
+                            {t("cashflows.inDays").replace("{0}", calculateDaysUntil(cashflow.dueDate).toString())}
                           </div>
                         )}
                       </td>
@@ -159,8 +159,8 @@ export default function Cashflows() {
                       </td>
                       <td className="p-4">{getStatusBadge(cashflow.status)}</td>
                       <td className="p-4">
-                        <Badge variant="outline" className="capitalize">
-                          {cashflow.type}
+                        <Badge variant="outline" className="capitalize" data-testid={`badge-type-${cashflow.type}`}>
+                          {t(`cashflows.${cashflow.type}`)}
                         </Badge>
                       </td>
                     </tr>

@@ -52,8 +52,8 @@ export default function Alerts() {
     };
 
     return (
-      <Badge className={colors[severity] || colors.info} variant="outline">
-        {severity}
+      <Badge className={colors[severity] || colors.info} variant="outline" data-testid={`badge-severity-${severity}`}>
+        {t(`alerts.${severity}`)}
       </Badge>
     );
   };
@@ -138,7 +138,7 @@ export default function Alerts() {
                               data-testid={`button-mark-read-${alert.id}`}
                             >
                               <Check className="h-4 w-4 mr-1" />
-                              Mark as read
+                              {t("alerts.markAsRead")}
                             </Button>
                           )}
                         </div>
@@ -146,8 +146,8 @@ export default function Alerts() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{formatDate(alert.createdAt)}</span>
                         <span>•</span>
-                        <Badge variant="outline" className="capitalize">
-                          {alert.type}
+                        <Badge variant="outline" className="capitalize" data-testid={`badge-type-${alert.type}`}>
+                          {t(`alerts.${alert.type}`)}
                         </Badge>
                       </div>
                     </div>

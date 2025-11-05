@@ -1,0 +1,103 @@
+Feature Request: Enhanced Dashboard Update – A.Z Finance Hub (Vision 2040)
+Objective:
+
+Upgrade the dashboard design and analytics of A.Z Finance Hub to deliver a more compact, data-rich, and visually powerful user experience — aligned with all previously defined specifications and user requirements.
+
+1. UI/UX Enhancements
+
+Reduce icon size by 30–40% across the dashboard and side menu to allow more data to be displayed within the same screen area.
+
+Ensure responsive layout for mobile, tablet, and web versions, with a clean and minimalistic design.
+
+Maintain Dark/Light Mode toggle and theme consistency across all components.
+
+Include language hybrid support (Arabic base interface with English financial and technical terms).
+
+2. Dashboard KPIs and Metrics
+
+Add or confirm inclusion of the following main metrics and analytics (ensure full data linkage with the portfolio database and auto-updating logic):
+
+Portfolio Summary
+
+Total Active Investments
+
+Total ROI (Overall Return %)
+
+Average Duration (months) – full portfolio + per platform
+
+Platform Breakdown Table:
+
+of Active Opportunities
+
+Average Duration
+
+ROI %
+
+Platform Capital Distribution (%)
+
+Status Overview
+
+Active Opportunities (%)
+
+Completed Opportunities (%)
+
+Delayed (<3 months) (%)
+
+Distressed (>3 months) (%) — highlighted visually (e.g., red/orange)
+
+Additional Financial Indicators
+
+Reinvestment Ratio (% reinvested profits)
+
+Cash vs Deployed Capital visualization
+
+Expected Upcoming Returns (30 / 90 / 180 days)
+
+IRR (Internal Rate of Return) — full and per platform
+
+3. Data Visualization Requirements
+
+Implement or enhance the following interactive charts:
+
+Chart Type	Title	Function
+Donut Chart	Portfolio Allocation	Capital distribution by platform
+Stacked Bar Chart	Status by Platform	Compare active/completed/delayed/distressed
+Timeline Graph	Maturity Map	Visualize start–end periods for all opportunities
+Line Chart	ROI Growth Over Time	Show monthly/quarterly cumulative ROI
+Heatmap	Distribution Density	Highlight months with highest distributions
+Gauge Chart	Vision 2040 Progress	Track progress toward long-term financial goals
+4. Advanced Analytics & Automation
+
+Enable Drill-Down Mode: click any metric for deeper analytics (platform-specific).
+
+Add Historical Trend Comparison (Year-over-Year).
+
+Implement a Risk Index Meter: combines late + distressed data into a single “Portfolio Health” score.
+
+Include a Milestone Tracker for 2030 / 2035 / 2040 with projected progress and trend lines.
+
+Maintain auto-update for delayed/distressed status based on real-time date difference (>3 months logic).
+
+Add History Log System:
+
+Tracks all edits, new investments, withdrawals, and changes in goals.
+
+Includes timestamps and user identity for each action.
+
+5. Integration & Continuity
+
+Confirm that all previously requested features and logic (from prior specification documents) are fully integrated and consistent.
+
+Maintain data synchronization between the mobile app, iPad version, and web dashboard.
+
+Ensure compatibility with AI-assisted portfolio management modules for future expansion.
+
+6. Deliverables
+
+Updated dashboard layout with resized icons and confirmed metric placement.
+
+Full integration of analytics, visualizations, and goal-tracking logic.
+
+Test and confirm all auto-calculations (ROI, IRR, Reinvestment, etc.).
+
+Deliver updated UI mockups + working prototype build for review.
