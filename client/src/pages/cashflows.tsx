@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, calculateDaysUntil } from "@/lib/utils";
+import { useLanguage } from "@/lib/language-provider";
 import { CheckCircle2, Clock, TrendingUp } from "lucide-react";
 import type { CashflowWithInvestment } from "@shared/schema";
 
 export default function Cashflows() {
+  const { t } = useLanguage();
   const { data: cashflows, isLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
   });
@@ -63,17 +65,17 @@ export default function Cashflows() {
   return (
     <div className="space-y-6" data-testid="page-cashflows">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Cashflows</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("cashflows.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Track all profit distributions and returns from your investments
+          {t("cashflows.subtitle")}
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="hover-elevate transition-all duration-200">
+        <Card className="hover-elevate transition-all duration-200" data-testid="card-stat-totalReceived">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Received
+              {t("cashflows.totalReceived")}
             </CardTitle>
             <div className="bg-chart-2/10 text-chart-2 rounded-lg p-2">
               <CheckCircle2 className="h-4 w-4" />
@@ -86,10 +88,10 @@ export default function Cashflows() {
           </CardContent>
         </Card>
 
-        <Card className="hover-elevate transition-all duration-200">
+        <Card className="hover-elevate transition-all duration-200" data-testid="card-stat-expectedThisQuarter">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Expected This Quarter
+              {t("cashflows.expectedThisQuarter")}
             </CardTitle>
             <div className="bg-primary/10 text-primary rounded-lg p-2">
               <Clock className="h-4 w-4" />
@@ -103,9 +105,9 @@ export default function Cashflows() {
         </Card>
       </div>
 
-      <Card>
+      <Card data-testid="card-all-cashflows">
         <CardHeader>
-          <CardTitle>All Cashflows</CardTitle>
+          <CardTitle>{t("cashflows.allCashflows")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">

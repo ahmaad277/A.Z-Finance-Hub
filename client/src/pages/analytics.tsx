@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/lib/language-provider";
 import { MonthlyReturnsChart } from "@/components/monthly-returns-chart";
 import { PlatformAllocationChart } from "@/components/platform-allocation-chart";
 import { PerformanceVsTargetChart } from "@/components/performance-vs-target-chart";
 import type { AnalyticsData } from "@shared/schema";
 
 export default function Analytics() {
+  const { t } = useLanguage();
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
     queryKey: ["/api/analytics"],
   });
@@ -30,29 +32,29 @@ export default function Analytics() {
   return (
     <div className="space-y-6" data-testid="page-analytics">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("analytics.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Deep insights into your portfolio performance and projections
+          {t("analytics.subtitle")}
         </p>
       </div>
 
       <Tabs defaultValue="returns" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="returns" data-testid="tab-returns">
-            Returns
+            {t("analytics.returns")}
           </TabsTrigger>
           <TabsTrigger value="allocation" data-testid="tab-allocation">
-            Allocation
+            {t("analytics.allocation")}
           </TabsTrigger>
           <TabsTrigger value="goals" data-testid="tab-goals">
-            Goals
+            {t("analytics.goals")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="returns" className="space-y-6">
-          <Card>
+          <Card data-testid="card-monthly-returns">
             <CardHeader>
-              <CardTitle>Monthly Returns Trend</CardTitle>
+              <CardTitle>{t("analytics.monthlyReturnsTrend")}</CardTitle>
             </CardHeader>
             <CardContent>
               <MonthlyReturnsChart data={analytics?.monthlyReturns || []} />
@@ -61,9 +63,9 @@ export default function Analytics() {
         </TabsContent>
 
         <TabsContent value="allocation" className="space-y-6">
-          <Card>
+          <Card data-testid="card-portfolio-allocation">
             <CardHeader>
-              <CardTitle>Portfolio Allocation by Platform</CardTitle>
+              <CardTitle>{t("analytics.portfolioAllocation")}</CardTitle>
             </CardHeader>
             <CardContent>
               <PlatformAllocationChart data={analytics?.platformAllocation || []} />
@@ -72,9 +74,9 @@ export default function Analytics() {
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-6">
-          <Card>
+          <Card data-testid="card-performance-vs-target">
             <CardHeader>
-              <CardTitle>Performance vs 2040 Target</CardTitle>
+              <CardTitle>{t("analytics.performanceVsTarget")}</CardTitle>
             </CardHeader>
             <CardContent>
               <PerformanceVsTargetChart data={analytics?.performanceVsTarget || []} />

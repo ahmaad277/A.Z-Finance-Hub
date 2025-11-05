@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useLanguage } from "@/lib/language-provider";
 import { TrendingUp, TrendingDown, Plus, CheckCircle2 } from "lucide-react";
 import type { Investment, Cashflow } from "@shared/schema";
 
@@ -18,6 +19,7 @@ type TimelineEvent = {
 };
 
 export default function Timeline() {
+  const { t } = useLanguage();
   const { data: investments } = useQuery<Investment[]>({
     queryKey: ["/api/investments"],
   });
@@ -77,22 +79,22 @@ export default function Timeline() {
   return (
     <div className="space-y-6" data-testid="page-timeline">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Timeline</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("timeline.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Complete history of all investment activities and transactions
+          {t("timeline.subtitle")}
         </p>
       </div>
 
-      <Card>
+      <Card data-testid="card-timeline">
         <CardContent className="p-6">
           {sortedEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex flex-col items-center justify-center py-12 text-center" data-testid="empty-state-timeline">
               <div className="rounded-full bg-muted p-4 mb-4">
                 <TrendingUp className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("timeline.noActivity")}</h3>
               <p className="text-muted-foreground max-w-sm">
-                Your investment timeline will appear here as you add investments and receive distributions
+                {t("timeline.noActivityDesc")}
               </p>
             </div>
           ) : (
