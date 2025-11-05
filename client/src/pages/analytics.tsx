@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/language-provider";
 import { MonthlyReturnsChart } from "@/components/monthly-returns-chart";
 import { PlatformAllocationChart } from "@/components/platform-allocation-chart";
 import { PerformanceVsTargetChart } from "@/components/performance-vs-target-chart";
+import { Download } from "lucide-react";
+import { generateAnalyticsCSV, downloadCSV } from "@/lib/export-utils";
 import type { AnalyticsData } from "@shared/schema";
 
 export default function Analytics() {
@@ -29,13 +32,31 @@ export default function Analytics() {
     );
   }
 
+  const handleExportAnalytics = () => {
+    if (analytics) {
+      const csv = generateAnalyticsCSV(analytics);
+      const date = new Date().toISOString().split('T')[0];
+      downloadCSV(`analytics-report-${date}.csv`, csv);
+    }
+  };
+
   return (
     <div className="space-y-6" data-testid="page-analytics">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("analytics.title")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {t("analytics.subtitle")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("analytics.title")}</h1>
+          <p className="text-muted-foreground mt-1">
+            {t("analytics.subtitle")}
+          </p>
+        </div>
+        <Button 
+          onClick={handleExportAnalytics} 
+          variant="outline"
+          data-testid="button-export-analytics"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          {t("export.report")}
+        </Button>
       </div>
 
       <Tabs defaultValue="returns" className="space-y-6">

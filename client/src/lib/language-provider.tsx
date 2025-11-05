@@ -146,6 +146,11 @@ const translations = {
     "dialog.error": "Error",
     "dialog.createError": "Failed to create investment",
     "dialog.updateError": "Failed to update investment",
+    
+    // Export
+    "export.report": "Export",
+    "export.monthly": "Monthly Report",
+    "export.quarterly": "Quarterly Report",
   },
   ar: {
     // Common
@@ -276,6 +281,11 @@ const translations = {
     "dialog.error": "خطأ",
     "dialog.createError": "فشل إنشاء الاستثمار",
     "dialog.updateError": "فشل تحديث الاستثمار",
+    
+    // Export
+    "export.report": "تصدير",
+    "export.monthly": "تقرير شهري",
+    "export.quarterly": "تقرير ربع سنوي",
   },
 };
 

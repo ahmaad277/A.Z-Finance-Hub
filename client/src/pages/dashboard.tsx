@@ -1,18 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Wallet, BarChart3, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { TrendingUp, Wallet, BarChart3, Target, Download } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
-import type { PortfolioStats } from "@shared/schema";
+import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
+import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData } from "@shared/schema";
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { data: stats, isLoading } = useQuery<PortfolioStats>({
     queryKey: ["/api/portfolio/stats"],
   });
+
+  const { data: investments } = useQuery<InvestmentWithPlatform[]>({
+    queryKey: ["/api/investments"],
+  });
+
+  const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
+    queryKey: ["/api/cashflows"],
+  });
+
+  const { data: analytics } = useQuery<AnalyticsData>({
+    queryKey: ["/api/analytics"],
+  });
+
+  const handleExport = (reportType: 'monthly' | 'quarterly') => {
+    if (stats && investments && cashflows && analytics) {
+      const csv = generateComprehensiveReport(stats, investments, cashflows, analytics, reportType);
+      const date = new Date().toISOString().split('T')[0];
+      downloadCSV(`${reportType}-report-${date}.csv`, csv);
+    }
+  };
 
   const statCards = [
     {
@@ -66,11 +89,29 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6" data-testid="page-dashboard">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {t("dashboard.subtitle")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+          <p className="text-muted-foreground mt-1">
+            {t("dashboard.subtitle")}
+          </p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" data-testid="button-export-report">
+              <Download className="h-4 w-4 mr-2" />
+              {t("export.report")}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
+              {t("export.monthly")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
+              {t("export.quarterly")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
