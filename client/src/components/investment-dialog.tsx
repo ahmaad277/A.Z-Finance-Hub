@@ -34,6 +34,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
 
 const formSchema = insertInvestmentSchema.extend({
+  platformId: z.string().min(1, "Platform is required"),
   startDate: z.string(),
   endDate: z.string(),
   actualEndDate: z.string().optional(),

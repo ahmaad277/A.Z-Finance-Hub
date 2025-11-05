@@ -35,6 +35,10 @@ export const investments = pgTable("investments", {
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
   id: true, 
   actualIrr: true 
+}).extend({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  actualEndDate: z.coerce.date().optional().nullable()
 });
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 export type Investment = typeof investments.$inferSelect;
@@ -53,6 +57,8 @@ export const cashflows = pgTable("cashflows", {
 export const insertCashflowSchema = createInsertSchema(cashflows).omit({ 
   id: true,
   receivedDate: true 
+}).extend({
+  dueDate: z.coerce.date()
 });
 export type InsertCashflow = z.infer<typeof insertCashflowSchema>;
 export type Cashflow = typeof cashflows.$inferSelect;

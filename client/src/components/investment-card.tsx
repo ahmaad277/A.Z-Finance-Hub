@@ -42,9 +42,11 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
       <CardHeader className="space-y-0 pb-3">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1">
-            <Badge variant="outline" className="mb-2 text-xs">
-              {investment.platform.name}
-            </Badge>
+            {investment.platform && (
+              <Badge variant="outline" className="mb-2 text-xs">
+                {investment.platform.name}
+              </Badge>
+            )}
             <CardTitle className="text-lg line-clamp-2">{investment.name}</CardTitle>
           </div>
           <Badge className={getStatusColor(investment.status)} variant="outline" data-testid={`badge-status-${investment.status}`}>
