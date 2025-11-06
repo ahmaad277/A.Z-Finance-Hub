@@ -30,6 +30,7 @@ export const investments = pgTable("investments", {
   riskScore: integer("risk_score").default(50), // 0-100
   distributionFrequency: text("distribution_frequency").notNull(), // 'quarterly' | 'semi-annual' | 'annual'
   isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
+  fundedFromCash: integer("funded_from_cash").notNull().default(0), // 0 = external funding, 1 = funded from cash balance
 });
 
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
@@ -81,6 +82,29 @@ export const insertAlertSchema = createInsertSchema(alerts).omit({
 });
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
 export type Alert = typeof alerts.$inferSelect;
+
+// Cash Balance Transactions - Track all cash movements
+export const cashTransactions = pgTable("cash_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  type: text("type").notNull(), // 'deposit' | 'withdrawal' | 'investment' | 'distribution' | 'transfer'
+  source: text("source"), // 'transfer' | 'profit' | 'deposit' | 'investment_return'
+  notes: text("notes"),
+  date: timestamp("date").notNull().default(sql`CURRENT_TIMESTAMP`),
+  investmentId: varchar("investment_id"), // If related to an investment
+  balanceAfter: numeric("balance_after", { precision: 15, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertCashTransactionSchema = createInsertSchema(cashTransactions).omit({ 
+  id: true,
+  createdAt: true,
+  balanceAfter: true,
+}).extend({
+  date: z.coerce.date(),
+});
+export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
+export type CashTransaction = typeof cashTransactions.$inferSelect;
 
 // User preferences and settings
 export const userSettings = pgTable("user_settings", {

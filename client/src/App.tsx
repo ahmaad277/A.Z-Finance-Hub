@@ -89,6 +89,7 @@ function AppContent() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
+        <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-end border-b p-4">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
@@ -97,7 +98,6 @@ function AppContent() {
             <Router />
           </main>
         </div>
-        <AppSidebar />
       </div>
     </SidebarProvider>
   );

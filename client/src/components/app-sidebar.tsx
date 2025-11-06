@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -73,6 +74,11 @@ const menuItems = [
 export function AppSidebar() {
   const [location] = useLocation();
   const { t } = useLanguage();
+  const { setOpenMobile } = useSidebar();
+
+  const handleNavClick = () => {
+    setOpenMobile(false);
+  };
 
   return (
     <Sidebar side="right">
@@ -105,7 +111,7 @@ export function AppSidebar() {
                       data-testid={`link-${item.key}`}
                       className="hover-elevate active-elevate-2"
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={handleNavClick}>
                         <item.icon className="h-5 w-5" />
                         <span className="font-medium">{t(`nav.${item.key}`)}</span>
                       </Link>
