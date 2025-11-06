@@ -24,6 +24,7 @@ import Reinvestment from "@/pages/reinvestment";
 import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
+import UserManagement from "@/pages/user-management";
 import NotFound from "@/pages/not-found";
 import type { UserSettings } from "@shared/schema";
 
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/help" component={Help} />
       <Route path="/settings" component={Settings} />
       <Route path="/platform/:id" component={PlatformDetails} />
+      <Route path="/admin/users" component={UserManagement} />
       <Route component={NotFound} />
     </Switch>
   );

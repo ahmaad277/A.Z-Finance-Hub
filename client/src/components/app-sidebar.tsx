@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2 } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { useLanguage } from "@/lib/language-provider";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   {
@@ -69,10 +70,20 @@ const menuItems = [
   },
 ];
 
+const adminItems = [
+  {
+    key: "users",
+    url: "/admin/users",
+    icon: Users,
+    permission: "USER_MANAGE",
+  },
+];
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { t } = useLanguage();
   const { setOpenMobile } = useSidebar();
+  const { hasPermission } = useAuth();
 
   const handleNavClick = () => {
     setOpenMobile(false);
@@ -120,6 +131,37 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        {adminItems.some(item => hasPermission(item.permission)) && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Administration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => {
+                  if (!hasPermission(item.permission)) return null;
+                  const isActive = location === item.url;
+                  return (
+                    <SidebarMenuItem key={item.key}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        data-testid={`link-admin-${item.key}`}
+                        className="hover-elevate active-elevate-2"
+                      >
+                        <Link href={item.url} onClick={handleNavClick}>
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{t(`admin.${item.key}`)}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
