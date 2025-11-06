@@ -58,10 +58,17 @@ import {
   type ExportRequestWithUser,
   type ViewRequestWithUser,
 } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, and, or, gte, lte, sum, inArray } from "drizzle-orm";
+import connectPg from "connect-pg-simple";
+import session from "express-session";
+
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
+  // Session Store (for authentication)
+  sessionStore: any; // session.Store type
+
   // Platforms
   getPlatforms(): Promise<Platform[]>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
@@ -103,6 +110,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUserLastLogin(userId: string): Promise<void>;
   suspendUser(id: string): Promise<User | undefined>;
   activateUser(id: string): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
@@ -172,6 +180,15 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: any;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+
   // Platforms
   async getPlatforms(): Promise<Platform[]> {
     return await db.select().from(platforms);
@@ -687,6 +704,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
+  }
+
+  async updateUserLastLogin(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLogin: new Date() })
+      .where(eq(users.id, userId));
   }
 
   async suspendUser(id: string): Promise<User | undefined> {
