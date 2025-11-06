@@ -188,7 +188,12 @@ export default function Dashboard() {
       ? investments 
       : investments.filter(inv => inv.platformId === selectedPlatform);
 
-    const total = filteredInvestments.length;
+    // Only count active and completed investments for the breakdown
+    const relevantInvestments = filteredInvestments.filter(inv => 
+      inv.status === "active" || inv.status === "completed"
+    );
+    
+    const total = relevantInvestments.length;
     if (total === 0) return null;
 
     const now = new Date();
@@ -197,7 +202,7 @@ export default function Dashboard() {
     let delayedCount = 0;
     let distressedCount = 0;
 
-    filteredInvestments.forEach(inv => {
+    relevantInvestments.forEach(inv => {
       if (inv.status === "completed") {
         completedCount++;
       } else if (inv.status === "active") {
