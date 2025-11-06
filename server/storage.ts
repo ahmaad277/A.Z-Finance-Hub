@@ -352,36 +352,43 @@ export class DatabaseStorage implements IStorage {
     const allInvestments = await db.select().from(investments);
     const allCashflows = await db.select().from(cashflows);
 
+    // Helper to safely parse float values
+    const safeParseFloat = (value: string | number | null | undefined): number => {
+      if (value === null || value === undefined) return 0;
+      const num = typeof value === "string" ? parseFloat(value) : value;
+      return isNaN(num) ? 0 : num;
+    };
+
     const totalCapital = allInvestments
       .filter((inv) => inv.status === "active")
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
 
     const totalReturns = allCashflows
       .filter((cf) => cf.status === "received")
-      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+      .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
 
     const activeInvestments = allInvestments.filter((inv) => inv.status === "active").length;
 
     const averageIrr = allInvestments.length > 0
-      ? allInvestments.reduce((sum, inv) => sum + parseFloat(inv.expectedIrr), 0) / allInvestments.length
+      ? allInvestments.reduce((sum, inv) => sum + safeParseFloat(inv.expectedIrr), 0) / allInvestments.length
       : 0;
 
     const upcomingCashflow = allCashflows
       .filter((cf) => cf.status === "expected" || cf.status === "upcoming")
-      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+      .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
 
     const target2040 = 10000000; // 10M SAR target
-    const progressTo2040 = (totalCapital / target2040) * 100;
+    const progressTo2040 = totalCapital > 0 ? (totalCapital / target2040) * 100 : 0;
 
     // Cash balance calculations
     const totalCashBalance = allCashflows
       .filter((cf) => cf.status === "received")
-      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+      .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
 
     // Only count active/pending reinvestments - completed ones have returned to cash
     const reinvestedAmount = allInvestments
       .filter((inv) => inv.isReinvestment === 1 && (inv.status === "active" || inv.status === "pending"))
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
 
     const availableCash = totalCashBalance - reinvestedAmount;
 
@@ -425,6 +432,13 @@ export class DatabaseStorage implements IStorage {
     const allPlatforms = await db.select().from(platforms);
     const allCashflows = await db.select().from(cashflows);
 
+    // Helper to safely parse float values
+    const safeParseFloat = (value: string | number | null | undefined): number => {
+      if (value === null || value === undefined) return 0;
+      const num = typeof value === "string" ? parseFloat(value) : value;
+      return isNaN(num) ? 0 : num;
+    };
+
     // Calculate real monthly returns from cashflow data
     const now = new Date();
     const monthlyReturns = this.calculateMonthlyReturns(allCashflows, now);
@@ -435,11 +449,11 @@ export class DatabaseStorage implements IStorage {
         (inv) => inv.platformId === platform.id
       );
       const amount = platformInvestments.reduce(
-        (sum, inv) => sum + parseFloat(inv.amount),
+        (sum, inv) => sum + safeParseFloat(inv.amount),
         0
       );
       const totalAmount = allInvestments.reduce(
-        (sum, inv) => sum + parseFloat(inv.amount),
+        (sum, inv) => sum + safeParseFloat(inv.amount),
         0
       );
       const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
@@ -465,6 +479,13 @@ export class DatabaseStorage implements IStorage {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const monthlyData: { [key: string]: number } = {};
 
+    // Helper to safely parse float values
+    const safeParseFloat = (value: string | number | null | undefined): number => {
+      if (value === null || value === undefined) return 0;
+      const num = typeof value === "string" ? parseFloat(value) : value;
+      return isNaN(num) ? 0 : num;
+    };
+
     // Get last 6 months
     for (let i = 5; i >= 0; i--) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
@@ -483,7 +504,7 @@ export class DatabaseStorage implements IStorage {
         const monthLabel = monthNames[receivedDate.getMonth()];
         
         if (monthlyData[monthKey] !== undefined) {
-          monthlyData[monthLabel] += parseFloat(cf.amount);
+          monthlyData[monthLabel] += safeParseFloat(cf.amount);
         }
       });
 
@@ -504,14 +525,21 @@ export class DatabaseStorage implements IStorage {
   private calculatePerformanceVsTarget(investments: Investment[], cashflows: Cashflow[]): Array<{ year: number; actual: number; target: number }> {
     const currentYear = new Date().getFullYear();
     
+    // Helper to safely parse float values
+    const safeParseFloat = (value: string | number | null | undefined): number => {
+      if (value === null || value === undefined) return 0;
+      const num = typeof value === "string" ? parseFloat(value) : value;
+      return isNaN(num) ? 0 : num;
+    };
+    
     // Calculate actual portfolio value (invested capital + received returns)
     const investedCapital = investments
       .filter((inv) => inv.status === "active")
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
     
     const receivedReturns = cashflows
       .filter((cf) => cf.status === "received")
-      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+      .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
     
     const currentValue = investedCapital + receivedReturns;
 
