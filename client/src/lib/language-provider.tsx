@@ -79,6 +79,8 @@ const translations = {
     "dashboard.activeInvestments": "Active Investments",
     "dashboard.completedInvestments": "Completed Investments",
     "dashboard.platformsOverview": "Platforms Overview",
+    "dashboard.gridView": "Grid View",
+    "dashboard.classicView": "Classic View",
     
     // Platform
     "platform.notFound": "Platform not found",
@@ -543,6 +545,8 @@ const translations = {
     "dashboard.activeInvestments": "الاستثمارات النشطة",
     "dashboard.completedInvestments": "الاستثمارات المكتملة",
     "dashboard.platformsOverview": "نظرة عامة على المنصات",
+    "dashboard.gridView": "عرض الشبكة",
+    "dashboard.classicView": "العرض التقليدي",
     
     // Platform
     "platform.notFound": "المنصة غير موجودة",

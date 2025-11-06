@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
+import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart, LayoutGrid, List } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
@@ -15,6 +15,7 @@ import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { AddCashDialog } from "@/components/add-cash-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
+import { GridDashboard } from "@/components/grid-dashboard";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
@@ -45,6 +46,18 @@ export default function Dashboard() {
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
   });
+
+  // Toggle between Classic and Grid Dashboard (stored in localStorage)
+  const [useGridView, setUseGridView] = useState(() => {
+    const stored = localStorage.getItem("dashboard-view");
+    return stored === "grid";
+  });
+
+  const toggleView = () => {
+    const newView = !useGridView;
+    setUseGridView(newView);
+    localStorage.setItem("dashboard-view", newView ? "grid" : "classic");
+  };
 
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -383,6 +396,34 @@ export default function Dashboard() {
     );
   }
 
+  // If Grid View is enabled, render GridDashboard instead
+  if (useGridView && (!settings || settings.viewMode === "pro")) {
+    return (
+      <div className="space-y-6" data-testid="page-dashboard">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+            <p className="text-muted-foreground mt-1">
+              {t("dashboard.subtitle")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleView}
+              data-testid="button-toggle-grid-view"
+            >
+              <List className="h-4 w-4 mr-2" />
+              {t("dashboard.classicView")}
+            </Button>
+          </div>
+        </div>
+        <GridDashboard viewMode={settings?.viewMode === "pro" ? "professional" : "simple"} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6" data-testid="page-dashboard">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -393,6 +434,17 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {(!settings || settings.viewMode === "pro") && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleView}
+              data-testid="button-toggle-grid-view"
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              {t("dashboard.gridView")}
+            </Button>
+          )}
           <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
             <SelectTrigger className="w-[200px]" data-testid="select-platform-filter">
               <Filter className="h-4 w-4 mr-2" />
