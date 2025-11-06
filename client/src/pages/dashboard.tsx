@@ -1,10 +1,11 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
@@ -12,7 +13,7 @@ import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings } from "@shared/schema";
+import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -39,6 +40,13 @@ export default function Dashboard() {
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
   });
+
+  const { data: platforms } = useQuery<Platform[]>({
+    queryKey: ["/api/platforms"],
+  });
+
+  // Platform filter state
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
 
   // Track collapsed sections locally
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
@@ -95,6 +103,130 @@ export default function Dashboard() {
     queryKey: ["/api/analytics"],
   });
 
+  // Calculate filtered stats based on selected platform
+  const filteredStats = useMemo(() => {
+    if (!stats || !investments || !cashflows || selectedPlatform === "all") {
+      return stats;
+    }
+
+    const platformInvestments = investments.filter(inv => inv.platformId === selectedPlatform);
+    const platformInvestmentIds = new Set(platformInvestments.map(inv => inv.id));
+    const platformCashflows = cashflows.filter(cf => platformInvestmentIds.has(cf.investmentId));
+
+    const totalCapital = platformInvestments
+      .filter((inv) => inv.status === "active")
+      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+
+    const totalReturns = platformCashflows
+      .filter((cf) => cf.status === "received")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+
+    const activeInvestments = platformInvestments.filter((inv) => inv.status === "active").length;
+
+    const averageIrr = platformInvestments.length > 0
+      ? platformInvestments.reduce((sum, inv) => sum + parseFloat(inv.expectedIrr), 0) / platformInvestments.length
+      : 0;
+
+    const upcomingCashflow = platformCashflows
+      .filter((cf) => cf.status === "expected" || cf.status === "upcoming")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+
+    const target2040 = 10000000;
+    const progressTo2040 = (totalCapital / target2040) * 100;
+
+    const totalCashBalance = platformCashflows
+      .filter((cf) => cf.status === "received")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+
+    const reinvestedAmount = platformInvestments
+      .filter((inv) => inv.isReinvestment === 1 && (inv.status === "active" || inv.status === "pending"))
+      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+
+    const availableCash = totalCashBalance - reinvestedAmount;
+
+    const completedInvestments = platformInvestments.filter((inv) => inv.status === "completed");
+    const averageDuration = completedInvestments.length > 0
+      ? completedInvestments.reduce((sum, inv) => {
+          const start = new Date(inv.startDate);
+          const end = new Date(inv.actualEndDate || inv.endDate);
+          const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          return sum + duration;
+        }, 0) / completedInvestments.length
+      : 0;
+
+    const now = new Date();
+    const distressedCount = platformInvestments.filter((inv) => {
+      if (inv.status !== "active") return false;
+      const endDate = new Date(inv.endDate);
+      const monthsDelayed = (now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      return monthsDelayed >= 3;
+    }).length;
+
+    return {
+      totalCapital,
+      totalReturns,
+      averageIrr,
+      activeInvestments,
+      upcomingCashflow,
+      progressTo2040,
+      totalCashBalance,
+      availableCash,
+      reinvestedAmount,
+      averageDuration: Math.round(averageDuration),
+      distressedCount,
+    };
+  }, [stats, investments, cashflows, selectedPlatform]);
+
+  // Use filtered or global stats
+  const displayStats = filteredStats || stats;
+
+  // Calculate status breakdown for chart
+  const statusBreakdown = useMemo(() => {
+    if (!investments) return null;
+
+    const filteredInvestments = selectedPlatform === "all" 
+      ? investments 
+      : investments.filter(inv => inv.platformId === selectedPlatform);
+
+    const total = filteredInvestments.length;
+    if (total === 0) return null;
+
+    const now = new Date();
+    let activeCount = 0;
+    let completedCount = 0;
+    let delayedCount = 0;
+    let distressedCount = 0;
+
+    filteredInvestments.forEach(inv => {
+      if (inv.status === "completed") {
+        completedCount++;
+      } else if (inv.status === "active") {
+        const endDate = new Date(inv.endDate);
+        const daysDelayed = (now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (daysDelayed >= 90) { // 3+ months
+          distressedCount++;
+        } else if (daysDelayed > 0) {
+          delayedCount++;
+        } else {
+          activeCount++;
+        }
+      }
+    });
+
+    return {
+      active: ((activeCount / total) * 100).toFixed(1),
+      completed: ((completedCount / total) * 100).toFixed(1),
+      delayed: ((delayedCount / total) * 100).toFixed(1),
+      distressed: ((distressedCount / total) * 100).toFixed(1),
+      activeCount,
+      completedCount,
+      delayedCount,
+      distressedCount,
+      total
+    };
+  }, [investments, selectedPlatform]);
+
   const handleExport = (reportType: 'monthly' | 'quarterly') => {
     if (stats && investments && cashflows && analytics) {
       const csv = generateComprehensiveReport(stats, investments, cashflows, analytics, reportType);
@@ -106,28 +238,28 @@ export default function Dashboard() {
   const mainStatCards = [
     {
       key: "totalCapital",
-      value: stats ? formatCurrency(stats.totalCapital) : "-",
+      value: displayStats ? formatCurrency(displayStats.totalCapital) : "-",
       icon: Wallet,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
       key: "totalReturns",
-      value: stats ? formatCurrency(stats.totalReturns) : "-",
+      value: displayStats ? formatCurrency(displayStats.totalReturns) : "-",
       icon: TrendingUp,
       color: "text-chart-2",
       bgColor: "bg-chart-2/10",
     },
     {
       key: "averageIrr",
-      value: stats ? formatPercentage(stats.averageIrr) : "-",
+      value: displayStats ? formatPercentage(displayStats.averageIrr) : "-",
       icon: BarChart3,
       color: "text-chart-1",
       bgColor: "bg-chart-1/10",
     },
     {
       key: "progressTo2040",
-      value: stats ? formatPercentage(stats.progressTo2040) : "-",
+      value: displayStats ? formatPercentage(displayStats.progressTo2040) : "-",
       icon: Target,
       color: "text-chart-2",
       bgColor: "bg-chart-2/10",
@@ -137,21 +269,21 @@ export default function Dashboard() {
   const cashStatCards = [
     {
       key: "availableCash",
-      value: stats ? formatCurrency(stats.availableCash) : "-",
+      value: displayStats ? formatCurrency(displayStats.availableCash) : "-",
       icon: Banknote,
       color: "text-chart-2",
       bgColor: "bg-chart-2/10",
     },
     {
       key: "totalCashBalance",
-      value: stats ? formatCurrency(stats.totalCashBalance) : "-",
+      value: displayStats ? formatCurrency(displayStats.totalCashBalance) : "-",
       icon: Wallet,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
       key: "reinvestedAmount",
-      value: stats ? formatCurrency(stats.reinvestedAmount) : "-",
+      value: displayStats ? formatCurrency(displayStats.reinvestedAmount) : "-",
       icon: TrendingUp,
       color: "text-chart-1",
       bgColor: "bg-chart-1/10",
@@ -161,17 +293,17 @@ export default function Dashboard() {
   const additionalStatCards = [
     {
       key: "averageDuration",
-      value: stats ? `${stats.averageDuration} ${t("dashboard.days")}` : "-",
+      value: displayStats ? `${Math.round(displayStats.averageDuration / 30)} ${t("dashboard.months")}` : "-",
       icon: Clock,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
       key: "distressedCount",
-      value: stats ? `${stats.distressedCount} ${t("dashboard.investments")}` : "-",
+      value: displayStats ? `${displayStats.distressedCount} ${t("dashboard.investments")}` : "-",
       icon: AlertTriangle,
-      color: stats && stats.distressedCount > 0 ? "text-destructive" : "text-muted-foreground",
-      bgColor: stats && stats.distressedCount > 0 ? "bg-destructive/10" : "bg-muted/10",
+      color: displayStats && displayStats.distressedCount > 0 ? "text-destructive" : "text-muted-foreground",
+      bgColor: displayStats && displayStats.distressedCount > 0 ? "bg-destructive/10" : "bg-muted/10",
     },
   ];
 
@@ -205,29 +337,45 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6" data-testid="page-dashboard">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
           <p className="text-muted-foreground mt-1">
             {t("dashboard.subtitle")}
           </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" data-testid="button-export-report">
-              <Download className="h-4 w-4 mr-2" />
-              {t("export.report")}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
-              {t("export.monthly")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
-              {t("export.quarterly")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-[200px]" data-testid="select-platform-filter">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("dashboard.allPlatforms")}</SelectItem>
+              {platforms?.map((platform) => (
+                <SelectItem key={platform.id} value={platform.id}>
+                  {platform.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" data-testid="button-export-report">
+                <Download className="h-4 w-4 mr-2" />
+                {t("export.report")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
+                {t("export.monthly")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
+                {t("export.quarterly")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -352,6 +500,84 @@ export default function Dashboard() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Investment Status Breakdown - Pro Mode Only */}
+      <AnimatePresence mode="wait">
+        {(!settings || settings.viewMode === "pro") && statusBreakdown && (
+          <motion.div
+            key="status-breakdown"
+            {...fadeInUp}
+          >
+            <Card data-testid="card-status-breakdown">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>
+                  <div className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    {t("dashboard.statusBreakdown")}
+                  </div>
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSection('status-breakdown')}
+                  data-testid="button-toggle-status-breakdown"
+                  className="h-8 w-8 p-0"
+                >
+                  {isSectionCollapsed('status-breakdown') ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </CardHeader>
+              <AnimatePresence initial={false}>
+                {!isSectionCollapsed('status-breakdown') && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <CardContent>
+                      <div className="grid gap-4 md:grid-cols-4">
+                        <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-chart-1/10 border border-chart-1/20">
+                          <div className="text-3xl font-bold text-chart-1">{statusBreakdown.active}%</div>
+                          <div className="text-sm text-muted-foreground mt-1">{t("dashboard.activeStatus")}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {statusBreakdown.activeCount} / {statusBreakdown.total}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-chart-2/10 border border-chart-2/20">
+                          <div className="text-3xl font-bold text-chart-2">{statusBreakdown.completed}%</div>
+                          <div className="text-sm text-muted-foreground mt-1">{t("dashboard.completedStatus")}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {statusBreakdown.completedCount} / {statusBreakdown.total}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                          <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">{statusBreakdown.delayed}%</div>
+                          <div className="text-sm text-muted-foreground mt-1">{t("dashboard.delayedStatus")}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {statusBreakdown.delayedCount} / {statusBreakdown.total}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <div className="text-3xl font-bold text-destructive">{statusBreakdown.distressed}%</div>
+                          <div className="text-sm text-muted-foreground mt-1">{t("dashboard.distressedStatus")}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {statusBreakdown.distressedCount} / {statusBreakdown.total}
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </motion.div>

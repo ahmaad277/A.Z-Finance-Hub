@@ -12,7 +12,7 @@ interface InvestmentCardProps {
 }
 
 export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const daysRemaining = calculateDaysUntil(investment.endDate);
   const isActive = investment.status === "active";
   const isCompleted = investment.status === "completed";
@@ -23,6 +23,15 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
     : 0;
   const isDelayed = delayDays > 0;
   const isDistressed = delayDays >= 90; // 3+ months delay
+
+  // Format delay display
+  const getDelayDisplay = () => {
+    if (delayDays >= 30) {
+      const months = Math.floor(delayDays / 30);
+      return language === "ar" ? `${months}ش` : `${months}m`;
+    }
+    return language === "ar" ? `${delayDays}ي` : `${delayDays}d`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -95,7 +104,7 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
           {isDelayed && (
             <div className={`flex items-center gap-2 text-xs font-medium ${isDistressed ? "text-destructive" : "text-orange-500"}`} data-testid="delay-indicator">
               <AlertTriangle className="h-4 w-4" />
-              <span>{t("investments.delayed")} {delayDays} {t("investments.days")}</span>
+              <span>{t("investments.delayed")} {getDelayDisplay()}</span>
               {isDistressed && <Badge variant="destructive" className="ml-1 text-xs">{t("investments.distressed")}</Badge>}
             </div>
           )}

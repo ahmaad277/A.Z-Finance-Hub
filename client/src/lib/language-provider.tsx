@@ -52,9 +52,16 @@ const translations = {
     "dashboard.averageDuration": "Avg Duration",
     "dashboard.distressedCount": "Distressed",
     "dashboard.days": "days",
+    "dashboard.months": "months",
     "dashboard.investments": "investments",
     "dashboard.cashManagement": "Cash Management",
     "dashboard.additionalMetrics": "Additional Metrics",
+    "dashboard.allPlatforms": "All Platforms",
+    "dashboard.statusBreakdown": "Investment Status Distribution",
+    "dashboard.activeStatus": "Active",
+    "dashboard.completedStatus": "Completed",
+    "dashboard.delayedStatus": "Delayed",
+    "dashboard.distressedStatus": "Distressed (3+ months)",
     
     // Investments
     "investments.title": "Investments",
@@ -410,9 +417,16 @@ const translations = {
     "dashboard.averageDuration": "متوسط المدة",
     "dashboard.distressedCount": "متعثرة",
     "dashboard.days": "يوم",
+    "dashboard.months": "شهر",
     "dashboard.investments": "استثمارات",
     "dashboard.cashManagement": "إدارة النقد",
     "dashboard.additionalMetrics": "مقاييس إضافية",
+    "dashboard.allPlatforms": "جميع المنصات",
+    "dashboard.statusBreakdown": "توزيع حالات الاستثمارات",
+    "dashboard.activeStatus": "نشطة",
+    "dashboard.completedStatus": "مكتملة",
+    "dashboard.delayedStatus": "متأخرة",
+    "dashboard.distressedStatus": "متعثرة (3+ أشهر)",
     
     // Investments
     "investments.title": "الاستثمارات",
