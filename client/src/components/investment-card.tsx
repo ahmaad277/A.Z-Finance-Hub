@@ -3,16 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign } from "lucide-react";
+import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign, CheckCircle } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
 
 interface InvestmentCardProps {
   investment: InvestmentWithPlatform;
   totalReturns?: number;
   onEdit: () => void;
+  onCompletePayment?: () => void;
 }
 
-export function InvestmentCard({ investment, totalReturns = 0, onEdit }: InvestmentCardProps) {
+export function InvestmentCard({ investment, totalReturns = 0, onEdit, onCompletePayment }: InvestmentCardProps) {
   const { t, language } = useLanguage();
   const daysRemaining = calculateDaysUntil(investment.endDate);
   const isActive = investment.status === "active";
@@ -154,13 +155,25 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit }: Investm
         )}
       </CardContent>
 
-      <CardFooter className="border-t pt-4">
+      <CardFooter className="border-t pt-4 gap-2">
+        {isActive && onCompletePayment && (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onCompletePayment}
+            data-testid={`button-complete-payment-${investment.id}`}
+            className="flex-1 hover-elevate"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            {t("investments.confirmPayment") || "Confirm Payment"}
+          </Button>
+        )}
         <Button
-          variant="ghost"
+          variant={isActive ? "outline" : "ghost"}
           size="sm"
           onClick={onEdit}
           data-testid={`button-edit-investment-${investment.id}`}
-          className="w-full hover-elevate"
+          className={isActive && onCompletePayment ? "flex-1 hover-elevate" : "w-full hover-elevate"}
         >
           <Edit className="h-4 w-4 mr-2" />
           {t("investments.editInvestment")}

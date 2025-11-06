@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLanguage } from "@/lib/language-provider";
-import type { SelectInvestment } from "@shared/schema";
+import type { InvestmentWithPlatform } from "@shared/schema";
 import { CheckCircle } from "lucide-react";
 
 const completePaymentSchema = z.object({
@@ -33,7 +33,7 @@ const completePaymentSchema = z.object({
 type CompletePaymentFormData = z.infer<typeof completePaymentSchema>;
 
 interface CompletePaymentDialogProps {
-  investment: SelectInvestment | null;
+  investment: InvestmentWithPlatform | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -53,6 +53,16 @@ export function CompletePaymentDialog({
     },
   });
 
+  useEffect(() => {
+    if (investment && open) {
+      form.reset({
+        actualEndDate: investment.actualEndDate 
+          ? new Date(investment.actualEndDate).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+      });
+    }
+  }, [investment, open, form]);
+
   const completeMutation = useMutation({
     mutationFn: async (data: CompletePaymentFormData) => {
       if (!investment) throw new Error("No investment selected");
@@ -68,7 +78,7 @@ export function CompletePaymentDialog({
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       toast({
         title: t("dialog.success") || "Success",
-        description: "Investment marked as completed",
+        description: t("dialog.investmentCompleted") || "Investment marked as completed",
       });
       onOpenChange(false);
       form.reset();
@@ -123,7 +133,10 @@ export function CompletePaymentDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  form.reset();
+                  onOpenChange(false);
+                }}
                 disabled={completeMutation.isPending}
                 data-testid="button-cancel"
               >

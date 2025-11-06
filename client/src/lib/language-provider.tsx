@@ -115,6 +115,7 @@ const translations = {
     "investments.active": "Active",
     "investments.completed": "Completed",
     "investments.pending": "Pending",
+    "investments.confirmPayment": "Confirm Payment",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -287,6 +288,7 @@ const translations = {
     "dialog.confirmPayment": "Confirm Payment",
     "dialog.confirmPaymentDesc": "Mark this investment as fully paid and completed",
     "dialog.actualPaymentDate": "Actual Payment Date",
+    "dialog.investmentCompleted": "Investment marked as completed successfully",
     
     // Export
     "export.report": "Export",
@@ -537,6 +539,7 @@ const translations = {
     "investments.active": "نشط",
     "investments.completed": "مكتمل",
     "investments.pending": "قيد الانتظار",
+    "investments.confirmPayment": "تأكيد السداد",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",
@@ -710,6 +713,7 @@ const translations = {
     "dialog.confirmPayment": "تأكيد السداد",
     "dialog.confirmPaymentDesc": "وضع علامة على هذا الاستثمار كمسدد بالكامل ومكتمل",
     "dialog.actualPaymentDate": "تاريخ السداد الفعلي",
+    "dialog.investmentCompleted": "تم وضع علامة على الاستثمار كمكتمل بنجاح",
     
     // Export
     "export.report": "تصدير",

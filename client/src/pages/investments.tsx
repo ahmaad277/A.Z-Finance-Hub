@@ -6,13 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
 import { InvestmentCard } from "@/components/investment-card";
 import { InvestmentDialog } from "@/components/investment-dialog";
+import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
 import { getInvestmentTotalReturns } from "@/lib/utils";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 
 export default function Investments() {
   const { t } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
+  const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
 
   const { data: investments, isLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -30,6 +33,11 @@ export default function Investments() {
   const handleAddNew = () => {
     setEditingInvestment(null);
     setDialogOpen(true);
+  };
+
+  const handleCompletePayment = (investment: InvestmentWithPlatform) => {
+    setCompletingInvestment(investment);
+    setCompletePaymentDialogOpen(true);
   };
 
   if (isLoading) {
@@ -106,6 +114,7 @@ export default function Investments() {
                 investment={investment}
                 totalReturns={totalReturns}
                 onEdit={() => handleEdit(investment)}
+                onCompletePayment={() => handleCompletePayment(investment)}
               />
             );
           })}
@@ -116,6 +125,12 @@ export default function Investments() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         investment={editingInvestment}
+      />
+      
+      <CompletePaymentDialog
+        open={completePaymentDialogOpen}
+        onOpenChange={setCompletePaymentDialogOpen}
+        investment={completingInvestment}
       />
     </div>
   );
