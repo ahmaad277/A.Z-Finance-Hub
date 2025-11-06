@@ -65,6 +65,7 @@ export interface IStorage {
   // Platforms
   getPlatforms(): Promise<Platform[]>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
+  deletePlatform(id: string): Promise<boolean>;
 
   // Investments
   getInvestments(): Promise<InvestmentWithPlatform[]>;
@@ -181,6 +182,26 @@ export class DatabaseStorage implements IStorage {
       .values(insertPlatform)
       .returning();
     return platform;
+  }
+
+  async deletePlatform(id: string): Promise<boolean> {
+    // Check if platform has any investments
+    const platformInvestments = await db
+      .select()
+      .from(investments)
+      .where(eq(investments.platformId, id));
+    
+    if (platformInvestments.length > 0) {
+      throw new Error(`Cannot delete platform: ${platformInvestments.length} investment(s) are linked to this platform`);
+    }
+
+    // Delete the platform
+    const result = await db
+      .delete(platforms)
+      .where(eq(platforms.id, id))
+      .returning();
+    
+    return result.length > 0;
   }
 
   // Investments
