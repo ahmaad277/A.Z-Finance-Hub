@@ -62,6 +62,21 @@ const translations = {
     "dashboard.completedStatus": "Completed",
     "dashboard.delayedStatus": "Delayed",
     "dashboard.distressedStatus": "Distressed (3+ months)",
+    "dashboard.capital": "Capital",
+    "dashboard.returns": "Returns",
+    "dashboard.irr": "IRR",
+    "dashboard.duration": "Duration",
+    "dashboard.activeInvestments": "Active Investments",
+    "dashboard.completedInvestments": "Completed Investments",
+    "dashboard.platformsOverview": "Platforms Overview",
+    
+    // Platform
+    "platform.notFound": "Platform not found",
+    "platform.investments": "Investments",
+    "platform.noInvestments": "No investments in this platform yet",
+    
+    // Common
+    "common.back": "Back",
     
     // Investments
     "investments.title": "Investments",
@@ -269,6 +284,10 @@ const translations = {
     "settings.platformNamePlaceholder": "Platform name",
     "settings.other": "Other",
     "settings.addPlatform": "Add Platform",
+    "settings.editPlatform": "Edit Platform",
+    "settings.deletePlatform": "Delete Platform",
+    "settings.editPlatformComingSoon": "Edit platform feature coming soon",
+    "settings.deletePlatformComingSoon": "Delete platform feature coming soon",
     "settings.saved": "Settings Saved",
     "settings.savedDesc": "Your preferences have been updated successfully",
     "settings.saveError": "Failed to save settings",
@@ -427,6 +446,21 @@ const translations = {
     "dashboard.completedStatus": "مكتملة",
     "dashboard.delayedStatus": "متأخرة",
     "dashboard.distressedStatus": "متعثرة (3+ أشهر)",
+    "dashboard.capital": "رأس المال",
+    "dashboard.returns": "العوائد",
+    "dashboard.irr": "العائد الداخلي",
+    "dashboard.duration": "المدة",
+    "dashboard.activeInvestments": "الاستثمارات النشطة",
+    "dashboard.completedInvestments": "الاستثمارات المكتملة",
+    "dashboard.platformsOverview": "نظرة عامة على المنصات",
+    
+    // Platform
+    "platform.notFound": "المنصة غير موجودة",
+    "platform.investments": "الاستثمارات",
+    "platform.noInvestments": "لا توجد استثمارات في هذه المنصة بعد",
+    
+    // Common
+    "common.back": "رجوع",
     
     // Investments
     "investments.title": "الاستثمارات",
@@ -635,6 +669,10 @@ const translations = {
     "settings.platformNamePlaceholder": "اسم المنصة",
     "settings.other": "أخرى",
     "settings.addPlatform": "إضافة منصة",
+    "settings.editPlatform": "تعديل المنصة",
+    "settings.deletePlatform": "حذف المنصة",
+    "settings.editPlatformComingSoon": "ميزة تعديل المنصة قادمة قريباً",
+    "settings.deletePlatformComingSoon": "ميزة حذف المنصة قادمة قريباً",
     "settings.saved": "تم حفظ الإعدادات",
     "settings.savedDesc": "تم تحديث تفضيلاتك بنجاح",
     "settings.saveError": "فشل حفظ الإعدادات",

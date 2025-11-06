@@ -19,6 +19,7 @@ import Alerts from "@/pages/alerts";
 import Reinvestment from "@/pages/reinvestment";
 import Help from "@/pages/help";
 import Settings from "@/pages/settings";
+import PlatformDetails from "@/pages/platform-details";
 import NotFound from "@/pages/not-found";
 import type { UserSettings } from "@shared/schema";
 
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/reinvestment" component={Reinvestment} />
       <Route path="/help" component={Help} />
       <Route path="/settings" component={Settings} />
+      <Route path="/platform/:id" component={PlatformDetails} />
       <Route component={NotFound} />
     </Switch>
   );

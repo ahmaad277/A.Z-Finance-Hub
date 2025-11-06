@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint } from "lucide-react";
+import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
@@ -385,11 +385,54 @@ export default function Settings() {
                 {platforms?.map((platform) => (
                   <div
                     key={platform.id}
-                    className="flex items-center justify-between p-2 rounded-md bg-muted"
+                    className="flex items-center justify-between p-3 rounded-md bg-muted/50 border hover-elevate"
                     data-testid={`platform-${platform.id}`}
                   >
-                    <span className="font-medium">{platform.name}</span>
-                    <span className="text-sm text-muted-foreground capitalize">{platform.type}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+                        {platform.logoUrl ? (
+                          <img src={platform.logoUrl} alt={platform.name} className="h-full w-full object-cover rounded-md" />
+                        ) : (
+                          <span className="text-sm font-bold text-primary">{platform.name[0]}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{platform.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{platform.type}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        data-testid={`button-edit-platform-${platform.id}`}
+                        onClick={() => {
+                          // Edit platform functionality will be added
+                          toast({
+                            title: t("settings.editPlatform"),
+                            description: t("settings.editPlatformComingSoon"),
+                          });
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        data-testid={`button-delete-platform-${platform.id}`}
+                        onClick={() => {
+                          // Delete platform functionality will be added
+                          toast({
+                            title: t("settings.deletePlatform"),
+                            description: t("settings.deletePlatformComingSoon"),
+                          });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

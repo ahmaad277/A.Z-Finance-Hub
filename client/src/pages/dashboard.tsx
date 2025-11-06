@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
+import { PlatformCard } from "@/components/platform-card";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
@@ -33,6 +35,7 @@ const staggerContainer = {
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
   const { data: stats, isLoading } = useQuery<PortfolioStats>({
     queryKey: ["/api/portfolio/stats"],
   });
@@ -232,6 +235,40 @@ export default function Dashboard() {
     };
   }, [investments, selectedPlatform]);
 
+  // Calculate platform stats for Platform Cards
+  const platformStats = useMemo(() => {
+    if (!platforms || !investments || !cashflows) return [];
+
+    return platforms.map(platform => {
+      const platformInvestments = investments.filter(inv => inv.platformId === platform.id);
+      const platformInvestmentIds = new Set(platformInvestments.map(inv => inv.id));
+      const platformCashflows = cashflows.filter(cf => platformInvestmentIds.has(cf.investmentId));
+
+      const totalReturns = platformCashflows
+        .filter(cf => cf.status === "received")
+        .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
+
+      const activeInvestments = platformInvestments.filter(inv => inv.status === "active");
+      const totalIrr = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.expectedIrr), 0);
+      const averageIrr = activeInvestments.length > 0 ? totalIrr / activeInvestments.length : 0;
+
+      const totalDuration = activeInvestments.reduce((sum, inv) => {
+        const start = new Date(inv.startDate);
+        const end = new Date(inv.endDate);
+        return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+      }, 0);
+      const averageDuration = activeInvestments.length > 0 ? totalDuration / activeInvestments.length : 0;
+
+      return {
+        platform,
+        investments: platformInvestments,
+        totalReturns,
+        averageIrr,
+        averageDuration,
+      };
+    });
+  }, [platforms, investments, cashflows]);
+
   const handleExport = (reportType: 'monthly' | 'quarterly') => {
     if (stats && investments && cashflows && analytics) {
       const csv = generateComprehensiveReport(stats, investments, cashflows, analytics, reportType);
@@ -383,19 +420,19 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {mainStatCards.map((card) => (
           <Card key={card.key} className="hover-elevate transition-all duration-200" data-testid={`card-stat-${card.key}`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-4 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
                 {t(`dashboard.${card.key}`)}
               </CardTitle>
-              <div className={`${card.bgColor} ${card.color} rounded-lg p-2`}>
-                <card.icon className="h-4 w-4" />
+              <div className={`${card.bgColor} ${card.color} rounded-md p-1.5`}>
+                <card.icon className="h-3.5 w-3.5" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid={`stat-${card.key}`}>
+            <CardContent className="px-4 pb-4 pt-1">
+              <div className="text-xl font-bold" data-testid={`stat-${card.key}`}>
                 {card.value}
               </div>
             </CardContent>
@@ -592,6 +629,28 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Platforms Overview */}
+      {platformStats.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">{t("dashboard.platformsOverview")}</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {platformStats.map(({ platform, investments, totalReturns, averageIrr, averageDuration }) => (
+              <PlatformCard
+                key={platform.id}
+                platform={platform}
+                investments={investments}
+                totalReturns={totalReturns}
+                averageIrr={averageIrr}
+                averageDuration={averageDuration}
+                onClick={() => setLocation(`/platform/${platform.id}`)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Analytics Charts and Lists - Pro Mode Only */}
       <AnimatePresence mode="wait">
