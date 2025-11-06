@@ -78,6 +78,7 @@ export function ReinvestmentDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       toast({
         title: t("dialog.success") || "Success",
         description: "Investment created successfully",

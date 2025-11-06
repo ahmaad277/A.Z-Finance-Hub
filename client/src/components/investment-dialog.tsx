@@ -107,6 +107,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       toast({
         title: t("dialog.save"),
         description: t("dialog.add"),
@@ -130,6 +131,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       toast({
         title: t("dialog.save"),
         description: t("dialog.update"),
