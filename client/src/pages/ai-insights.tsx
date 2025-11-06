@@ -147,46 +147,6 @@ export default function SmartAdvisorPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6" data-testid="page-ai-insights">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-primary" />
-              {t("aiInsights.title")}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              {t("aiInsights.subtitle")}
-            </p>
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-64" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!insights) {
-    return (
-      <div className="space-y-6" data-testid="page-ai-insights">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Sparkles className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              {t("aiInsights.noData")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6" data-testid="page-ai-insights">
       {/* Header with gradient */}
@@ -205,11 +165,11 @@ export default function SmartAdvisorPage() {
           </div>
           <Button
             onClick={handleRefresh}
-            disabled={isRefetching}
+            disabled={isRefetching || isLoading}
             variant="outline"
             data-testid="button-refresh-insights"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching || isLoading ? 'animate-spin' : ''}`} />
             {t("aiInsights.refresh")}
           </Button>
         </div>
@@ -238,93 +198,121 @@ export default function SmartAdvisorPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <AnimatePresence mode="wait">
-            <motion.div key="overview" {...fadeIn} className="space-y-6">
-              {/* Vision 2040 Progress */}
-              <Card data-testid="card-vision-2040" className="border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    {t("aiInsights.vision2040")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("aiInsights.vision2040Description")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">
-                          {t("aiInsights.currentProgress")}
-                        </span>
-                        <span className="text-2xl font-bold">
-                          {insights.vision2040Progress.currentProgress.toFixed(2)}%
-                        </span>
-                      </div>
-                      <Progress value={insights.vision2040Progress.currentProgress} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">
-                          {t("aiInsights.predictedProgress")}
-                        </span>
-                        <span className="text-2xl font-bold text-chart-2">
-                          {insights.vision2040Progress.predictedProgress.toFixed(2)}%
-                        </span>
-                      </div>
-                      <Progress value={insights.vision2040Progress.predictedProgress} className="h-2" />
-                    </div>
-                  </div>
-                  
-                  {insights.vision2040Progress.suggestions.length > 0 && (
-                    <div className="space-y-2 p-4 rounded-lg bg-muted/50">
-                      <h4 className="font-semibold text-sm flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        {t("aiInsights.suggestions")}
-                      </h4>
-                      <ul className="space-y-2">
-                        {insights.vision2040Progress.suggestions.map((suggestion, idx) => (
-                          <motion.li 
-                            key={idx} 
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="flex items-start gap-2 text-sm"
-                          >
-                            <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5 flex-shrink-0" />
-                            <span>{suggestion}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Market Insights */}
-              {insights.marketInsights && (
-                <Card data-testid="card-market-insights" className="border-chart-1/20">
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-64" />
+              <Skeleton className="h-48" />
+            </div>
+          ) : !insights ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Sparkles className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">{t("aiInsights.noData")}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div key="overview" {...fadeIn} className="space-y-6">
+                {/* Vision 2040 Progress */}
+                <Card data-testid="card-vision-2040" className="border-primary/20">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5 text-chart-1" />
-                      {t("aiInsights.marketInsights")}
+                      <Target className="h-5 w-5 text-primary" />
+                      {t("aiInsights.vision2040")}
                     </CardTitle>
+                    <CardDescription>
+                      {t("aiInsights.vision2040Description")}
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm leading-relaxed">{insights.marketInsights}</p>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">
+                            {t("aiInsights.currentProgress")}
+                          </span>
+                          <span className="text-2xl font-bold">
+                            {insights.vision2040Progress.currentProgress.toFixed(2)}%
+                          </span>
+                        </div>
+                        <Progress value={insights.vision2040Progress.currentProgress} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-muted-foreground text-sm">
+                            {t("aiInsights.predictedProgress")}
+                          </span>
+                          <span className="text-2xl font-bold text-chart-2">
+                            {insights.vision2040Progress.predictedProgress.toFixed(2)}%
+                          </span>
+                        </div>
+                        <Progress value={insights.vision2040Progress.predictedProgress} className="h-2" />
+                      </div>
+                    </div>
+                    
+                    {insights.vision2040Progress.suggestions.length > 0 && (
+                      <div className="space-y-2 p-4 rounded-lg bg-muted/50">
+                        <h4 className="font-semibold text-sm flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          {t("aiInsights.suggestions")}
+                        </h4>
+                        <ul className="space-y-2">
+                          {insights.vision2040Progress.suggestions.map((suggestion, idx) => (
+                            <motion.li 
+                              key={idx} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.1 }}
+                              className="flex items-start gap-2 text-sm"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5 flex-shrink-0" />
+                              <span>{suggestion}</span>
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-              )}
-            </motion.div>
-          </AnimatePresence>
+
+                {/* Market Insights */}
+                {insights.marketInsights && (
+                  <Card data-testid="card-market-insights" className="border-chart-1/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-chart-1" />
+                        {t("aiInsights.marketInsights")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm leading-relaxed">{insights.marketInsights}</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </TabsContent>
 
         {/* Recommendations Tab */}
         <TabsContent value="recommendations" className="space-y-4">
-          <AnimatePresence mode="wait">
-            <motion.div key="recommendations" {...fadeIn} className="space-y-4">
-              {insights.recommendations.length > 0 ? (
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-48" />
+              ))}
+            </div>
+          ) : !insights ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Sparkles className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">{t("aiInsights.noData")}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div key="recommendations" {...fadeIn} className="space-y-4">
+                {insights.recommendations.length > 0 ? (
                 insights.recommendations.map((rec, idx) => (
                   <motion.div
                     key={idx}
@@ -389,39 +377,50 @@ export default function SmartAdvisorPage() {
               )}
             </motion.div>
           </AnimatePresence>
+          )}
         </TabsContent>
 
         {/* Risk Analysis Tab */}
         <TabsContent value="risk" className="space-y-6">
-          <AnimatePresence mode="wait">
-            <motion.div key="risk" {...fadeIn}>
-              <Card data-testid="card-risk-analysis" className="border-destructive/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-destructive" />
-                    {t("aiInsights.riskAnalysis")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("aiInsights.riskAnalysisDescription")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Overall Risk */}
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-muted/50 to-muted/30">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t("aiInsights.overallRisk")}</p>
-                      <p className={`text-2xl font-bold ${getRiskColor(insights.riskAnalysis.overallRisk)}`}>
-                        {t(`aiInsights.risk.${insights.riskAnalysis.overallRisk}`)}
-                      </p>
+          {isLoading ? (
+            <Skeleton className="h-96" />
+          ) : !insights ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">{t("aiInsights.noData")}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div key="risk" {...fadeIn}>
+                <Card data-testid="card-risk-analysis" className="border-destructive/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-destructive" />
+                      {t("aiInsights.riskAnalysis")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("aiInsights.riskAnalysisDescription")}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Overall Risk */}
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-muted/50 to-muted/30">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t("aiInsights.overallRisk")}</p>
+                        <p className={`text-2xl font-bold ${getRiskColor(insights.riskAnalysis.overallRisk)}`}>
+                          {t(`aiInsights.risk.${insights.riskAnalysis.overallRisk}`)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">{t("aiInsights.riskScore")}</p>
+                        <p className="text-2xl font-bold">{insights.riskAnalysis.score}/100</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">{t("aiInsights.riskScore")}</p>
-                      <p className="text-2xl font-bold">{insights.riskAnalysis.score}/100</p>
-                    </div>
-                  </div>
 
-                  {/* Risk Factors */}
-                  {insights.riskAnalysis.factors.length > 0 && (
+                    {/* Risk Factors */}
+                    {insights.riskAnalysis.factors.length > 0 && (
                     <div className="space-y-3">
                       <h4 className="font-semibold text-sm">{t("aiInsights.riskFactors")}</h4>
                       {insights.riskAnalysis.factors.map((factor, idx) => (
@@ -460,24 +459,35 @@ export default function SmartAdvisorPage() {
               </Card>
             </motion.div>
           </AnimatePresence>
+          )}
         </TabsContent>
 
         {/* Forecast Tab */}
         <TabsContent value="forecast" className="space-y-6">
-          <AnimatePresence mode="wait">
-            <motion.div key="forecast" {...fadeIn}>
-              <Card data-testid="card-cashflow-forecast" className="border-chart-2/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-chart-2" />
-                    {t("aiInsights.cashflowForecast")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("aiInsights.cashflowForecastDescription")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {insights.cashflowForecast.length > 0 ? (
+          {isLoading ? (
+            <Skeleton className="h-96" />
+          ) : !insights ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">{t("aiInsights.noData")}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div key="forecast" {...fadeIn}>
+                <Card data-testid="card-cashflow-forecast" className="border-chart-2/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-chart-2" />
+                      {t("aiInsights.cashflowForecast")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("aiInsights.cashflowForecastDescription")}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {insights.cashflowForecast.length > 0 ? (
                     insights.cashflowForecast.map((forecast, idx) => (
                       <motion.div
                         key={idx}
@@ -509,6 +519,7 @@ export default function SmartAdvisorPage() {
               </Card>
             </motion.div>
           </AnimatePresence>
+          )}
         </TabsContent>
       </Tabs>
     </div>
