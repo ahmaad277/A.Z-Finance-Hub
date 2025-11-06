@@ -49,9 +49,11 @@ export default function Dashboard() {
       try {
         const parsed = JSON.parse(settings.collapsedSections);
         setCollapsedSections(Array.isArray(parsed) ? parsed : []);
-      } catch (error) {
+      } catch {
         setCollapsedSections([]);
       }
+    } else {
+      setCollapsedSections([]);
     }
   }, [settings?.collapsedSections]);
 
@@ -63,8 +65,9 @@ export default function Dashboard() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+    onSuccess: (data) => {
+      // Update the cache directly instead of invalidating to avoid race conditions
+      queryClient.setQueryData(["/api/settings"], data);
     },
   });
 
