@@ -96,6 +96,7 @@ export const userSettings = pgTable("user_settings", {
   pinHash: text("pin_hash"), // Hashed PIN for authentication
   biometricEnabled: integer("biometric_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
   biometricCredentialId: text("biometric_credential_id"), // WebAuthn credential ID
+  collapsedSections: text("collapsed_sections"), // JSON array of collapsed section IDs
 });
 
 export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });

@@ -1,15 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle } from "lucide-react";
+import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings } from "@shared/schema";
+
+// Animation variants for smooth transitions
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3, ease: "easeInOut" }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -20,6 +39,46 @@ export default function Dashboard() {
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
   });
+
+  // Track collapsed sections locally
+  const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
+
+  // Sync with settings when they load
+  useEffect(() => {
+    if (settings?.collapsedSections) {
+      try {
+        const parsed = JSON.parse(settings.collapsedSections);
+        setCollapsedSections(Array.isArray(parsed) ? parsed : []);
+      } catch (error) {
+        setCollapsedSections([]);
+      }
+    }
+  }, [settings?.collapsedSections]);
+
+  // Mutation to save collapsed sections
+  const updateCollapsedSections = useMutation({
+    mutationFn: async (sections: string[]) => {
+      const response = await apiRequest("PUT", "/api/settings", {
+        collapsedSections: JSON.stringify(sections),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+    },
+  });
+
+  // Toggle section collapse state
+  const toggleSection = (sectionId: string) => {
+    const newCollapsed = collapsedSections.includes(sectionId)
+      ? collapsedSections.filter(id => id !== sectionId)
+      : [...collapsedSections, sectionId];
+    
+    setCollapsedSections(newCollapsed);
+    updateCollapsedSections.mutate(newCollapsed);
+  };
+
+  const isSectionCollapsed = (sectionId: string) => collapsedSections.includes(sectionId);
 
   const { data: investments } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -189,86 +248,231 @@ export default function Dashboard() {
       </div>
 
       {/* Cash Management Section - Pro Mode Only */}
-      {(!settings || settings.viewMode === "pro") && (
-        <Card data-testid="card-cash-management">
-          <CardHeader>
-            <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-3">
-              {cashStatCards.map((card) => (
-                <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
-                  <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
-                    <card.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
-                    <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <AnimatePresence mode="wait">
+        {(!settings || settings.viewMode === "pro") && (
+          <motion.div
+            key="cash-management"
+            {...fadeInUp}
+          >
+            <Card data-testid="card-cash-management">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSection('cash-management')}
+                  data-testid="button-toggle-cash-management"
+                  className="h-8 w-8 p-0"
+                >
+                  {isSectionCollapsed('cash-management') ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </CardHeader>
+              <AnimatePresence initial={false}>
+                {!isSectionCollapsed('cash-management') && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <CardContent>
+                      <div className="grid gap-6 md:grid-cols-3">
+                        {cashStatCards.map((card) => (
+                          <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
+                            <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                              <card.icon className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                              <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Additional Metrics Section - Pro Mode Only */}
-      {(!settings || settings.viewMode === "pro") && (
-        <Card data-testid="card-additional-metrics">
-          <CardHeader>
-            <CardTitle>{t("dashboard.additionalMetrics")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-2">
-              {additionalStatCards.map((card) => (
-                <div key={card.key} className="flex items-center gap-4" data-testid={`additional-stat-${card.key}`}>
-                  <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
-                    <card.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
-                    <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <AnimatePresence mode="wait">
+        {(!settings || settings.viewMode === "pro") && (
+          <motion.div
+            key="additional-metrics"
+            {...fadeInUp}
+          >
+            <Card data-testid="card-additional-metrics">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>{t("dashboard.additionalMetrics")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSection('additional-metrics')}
+                  data-testid="button-toggle-additional-metrics"
+                  className="h-8 w-8 p-0"
+                >
+                  {isSectionCollapsed('additional-metrics') ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </CardHeader>
+              <AnimatePresence initial={false}>
+                {!isSectionCollapsed('additional-metrics') && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <CardContent>
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {additionalStatCards.map((card) => (
+                          <div key={card.key} className="flex items-center gap-4" data-testid={`additional-stat-${card.key}`}>
+                            <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
+                              <card.icon className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
+                              <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Analytics Charts and Lists - Pro Mode Only */}
-      {(!settings || settings.viewMode === "pro") && (
-        <>
-          <div className="grid gap-6 lg:grid-cols-7">
-            <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
-              <CardHeader>
-                <CardTitle>{t("dashboard.portfolioPerformance")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PortfolioChart />
-              </CardContent>
-            </Card>
+      <AnimatePresence mode="wait">
+        {(!settings || settings.viewMode === "pro") && (
+          <motion.div
+            key="analytics-section"
+            {...fadeInUp}
+            className="space-y-6"
+          >
+            <div className="grid gap-6 lg:grid-cols-7">
+              <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <CardTitle>{t("dashboard.portfolioPerformance")}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSection('portfolio-performance')}
+                    data-testid="button-toggle-portfolio-performance"
+                    className="h-8 w-8 p-0"
+                  >
+                    {isSectionCollapsed('portfolio-performance') ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CardHeader>
+                <AnimatePresence initial={false}>
+                  {!isSectionCollapsed('portfolio-performance') && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <CardContent>
+                        <PortfolioChart />
+                      </CardContent>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card>
 
-            <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
-              <CardHeader>
-                <CardTitle>{t("dashboard.upcomingCashflows")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <UpcomingCashflows />
-              </CardContent>
-            </Card>
-          </div>
+              <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <CardTitle>{t("dashboard.upcomingCashflows")}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSection('upcoming-cashflows')}
+                    data-testid="button-toggle-upcoming-cashflows"
+                    className="h-8 w-8 p-0"
+                  >
+                    {isSectionCollapsed('upcoming-cashflows') ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CardHeader>
+                <AnimatePresence initial={false}>
+                  {!isSectionCollapsed('upcoming-cashflows') && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <CardContent>
+                        <UpcomingCashflows />
+                      </CardContent>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card>
+            </div>
 
-          <Card data-testid="card-recent-investments">
-            <CardHeader>
-              <CardTitle>{t("dashboard.recentInvestments")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RecentInvestments />
-            </CardContent>
-          </Card>
-        </>
-      )}
+            <Card data-testid="card-recent-investments">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>{t("dashboard.recentInvestments")}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSection('recent-investments')}
+                  data-testid="button-toggle-recent-investments"
+                  className="h-8 w-8 p-0"
+                >
+                  {isSectionCollapsed('recent-investments') ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </CardHeader>
+              <AnimatePresence initial={false}>
+                {!isSectionCollapsed('recent-investments') && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <CardContent>
+                      <RecentInvestments />
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
