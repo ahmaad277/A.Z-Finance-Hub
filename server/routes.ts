@@ -231,6 +231,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/platforms/:id", optionalAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const authReq = req as AuthenticatedRequest;
+      
+      // Check if user has permission to manage platforms
+      if (authReq.user && authReq.user.permissions) {
+        const hasPermission = authReq.user.permissions.includes('system:manage_platforms');
+        if (!hasPermission) {
+          return res.status(403).json({ error: "Insufficient permissions to delete platforms" });
+        }
+      }
+
+      const success = await storage.deletePlatform(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Platform not found" });
+      }
+
+      // Log audit entry
+      if (authReq.user) {
+        const { logAudit } = await import('./helpers/audit');
+        await logAudit({
+          actorId: authReq.user.effectiveUserId || authReq.user.id,
+          actionType: 'delete',
+          targetType: 'platform',
+          targetId: id,
+          ipAddress: req.ip || req.socket.remoteAddress,
+        });
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Platform deletion error:", error);
+      if (error.message?.includes('Cannot delete platform')) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to delete platform" });
+    }
+  });
+
   // Investments
   app.get("/api/investments", optionalAuth, withMasking('investment')(async (_req, res) => {
     try {
