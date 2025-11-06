@@ -3,19 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/language-provider";
-import { authenticateWithBiometric, verifyPIN, checkBiometricSupport } from "@/lib/biometric-auth";
+import { authenticateWithBiometric, checkBiometricSupport } from "@/lib/biometric-auth";
 import { Fingerprint, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface LockScreenProps {
-  pinHash: string;
   biometricEnabled: boolean;
   biometricCredentialId?: string | null;
   onUnlock: () => void;
 }
 
 export function LockScreen({
-  pinHash,
   biometricEnabled,
   biometricCredentialId,
   onUnlock,
@@ -70,8 +69,8 @@ export function LockScreen({
 
     setIsVerifying(true);
     try {
-      const valid = await verifyPIN(pin, pinHash);
-      if (valid) {
+      const response = await apiRequest("POST", "/api/auth/login", { pin });
+      if (response.success) {
         onUnlock();
       } else {
         toast({
@@ -80,10 +79,10 @@ export function LockScreen({
         });
         setPin("");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: t("lock.incorrectPIN"),
+        title: error.message || t("lock.incorrectPIN"),
       });
       setPin("");
     } finally {

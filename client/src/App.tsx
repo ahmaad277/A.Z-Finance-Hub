@@ -38,18 +38,26 @@ function Router() {
   );
 }
 
+interface AuthStatus {
+  isAuthenticated: boolean;
+  securityEnabled: boolean;
+  biometricEnabled: boolean;
+  hasPIN: boolean;
+  biometricCredentialId?: string;
+}
+
 function AppContent() {
   const [isLocked, setIsLocked] = useState(true);
-  const { data: settings, isLoading } = useQuery<UserSettings>({
-    queryKey: ["/api/settings"],
+  const { data: authStatus, isLoading } = useQuery<AuthStatus>({
+    queryKey: ["/api/auth/status"],
   });
 
   useEffect(() => {
-    if (!isLoading && settings) {
-      const needsAuth = settings.securityEnabled === 1 && settings.pinHash;
+    if (!isLoading && authStatus) {
+      const needsAuth = authStatus.securityEnabled && authStatus.hasPIN && !authStatus.isAuthenticated;
       setIsLocked(needsAuth);
     }
-  }, [settings, isLoading]);
+  }, [authStatus, isLoading]);
 
   const style = {
     "--sidebar-width": "16rem",
@@ -64,12 +72,11 @@ function AppContent() {
     );
   }
 
-  if (isLocked && settings?.securityEnabled === 1 && settings?.pinHash) {
+  if (isLocked && authStatus?.securityEnabled && authStatus?.hasPIN) {
     return (
       <LockScreen
-        pinHash={settings.pinHash}
-        biometricEnabled={settings.biometricEnabled === 1}
-        biometricCredentialId={settings.biometricCredentialId}
+        biometricEnabled={authStatus.biometricEnabled}
+        biometricCredentialId={authStatus.biometricCredentialId}
         onUnlock={() => setIsLocked(false)}
       />
     );

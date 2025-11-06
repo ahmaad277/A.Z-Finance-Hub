@@ -19,7 +19,7 @@ import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { UserSettings, Platform } from "@shared/schema";
-import { checkBiometricSupport, registerBiometric, hashPIN } from "@/lib/biometric-auth";
+import { checkBiometricSupport, registerBiometric } from "@/lib/biometric-auth";
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
@@ -154,10 +154,10 @@ export default function Settings() {
       return;
     }
 
-    const pinHashValue = await hashPIN(newPin);
+    // Send plain PIN to backend - it will be hashed server-side
     updateSettingsMutation.mutate(
       { 
-        pinHash: pinHashValue,
+        pinHash: newPin, // Server expects this field and will hash it
         securityEnabled: 1,
       },
       {
@@ -502,7 +502,7 @@ export default function Settings() {
               >
                 {updateSettingsMutation.isPending ? t("dialog.saving") : t("settings.setPIN")}
               </Button>
-              {settings?.pinHash && (
+              {settings?.securityEnabled === 1 && (
                 <p className="text-sm text-muted-foreground">
                   ✓ PIN configured
                 </p>
@@ -531,12 +531,12 @@ export default function Settings() {
                       onCheckedChange={(checked) => 
                         updateSettingsMutation.mutate({ biometricEnabled: checked ? 1 : 0 })
                       }
-                      disabled={!settings?.biometricCredentialId}
+                      disabled={settings?.biometricEnabled !== 1}
                       data-testid="switch-biometric-enabled"
                     />
                   </div>
                   
-                  {!settings?.biometricCredentialId && (
+                  {settings?.securityEnabled === 1 && !settings?.biometricEnabled && (
                     <Button
                       onClick={handleRegisterBiometric}
                       disabled={isRegisteringBiometric}
@@ -548,7 +548,7 @@ export default function Settings() {
                     </Button>
                   )}
                   
-                  {settings?.biometricCredentialId && (
+                  {settings?.biometricEnabled === 1 && (
                     <p className="text-sm text-muted-foreground">
                       ✓ Biometric registered
                     </p>
