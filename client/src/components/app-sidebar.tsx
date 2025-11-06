@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Brain, Bell, Clock, RefreshCw, BookOpen, Settings2 } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -42,7 +42,7 @@ const menuItems = [
   {
     key: "aiInsights",
     url: "/ai-insights",
-    icon: Brain,
+    icon: Sparkles,
   },
   {
     key: "reinvestment",
