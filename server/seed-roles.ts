@@ -194,18 +194,18 @@ async function seedRolesAndPermissions() {
   await db.insert(rolePermissions).values(rolePermissionsList);
   console.log(`✅ Assigned ${rolePermissionsList.length} permissions to roles`);
 
-  // Create default owner user
-  const passwordHash = await hashPassword('admin123');
+  // Create default owner user - A.Z
+  const passwordHash = await hashPassword('az2040');
   const [defaultUser] = await db.insert(users).values({
-    name: 'A.Z Finance Admin',
-    email: 'admin@azfinance.sa',
+    name: 'A.Z',
+    email: 'az@azfinance.sa',
     passwordHash,
     roleId: '1', // Owner role
     isActive: 1,
     createdBy: null,
   }).returning();
 
-  console.log(`✅ Created default owner user: ${defaultUser.email}`);
+  console.log(`✅ Created default owner user: ${defaultUser.email} (A.Z)`);
 
   // Create default settings for the owner
   await db.insert(userSettings).values({
@@ -223,8 +223,9 @@ async function seedRolesAndPermissions() {
 
   console.log("✅ Roles, permissions, and default user seeded successfully");
   console.log("\n📝 Default Login Credentials:");
-  console.log("   Email: admin@azfinance.sa");
-  console.log("   Password: admin123");
+  console.log("   Name: A.Z (Owner)");
+  console.log("   Email: az@azfinance.sa");
+  console.log("   Password: az2040");
   console.log("\n⚠️  Please change the default password after first login!\n");
 }
 

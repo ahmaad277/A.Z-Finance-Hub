@@ -20,9 +20,9 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Fetch all active users for selection
+  // Fetch all active users for selection (public endpoint)
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ['/api/v2/users'],
+    queryKey: ['/api/v2/auth/users-list'],
   });
 
   // Redirect if already authenticated

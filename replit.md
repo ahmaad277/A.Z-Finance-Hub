@@ -13,7 +13,15 @@ A.Z Finance Hub is an intelligent personal investment management platform focuse
 ## System Architecture
 The application is built with a modern web stack:
 - **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Recharts for charting, Wouter for routing, TanStack Query for state management, and react-grid-layout for customizable widgets.
-- **Backend**: Express.js and Node.js.
+- **Backend**: Express.js and Node.js with session-based authentication.
+- **Authentication**: Full authentication system with:
+    - Session-based login with encrypted sessions (PostgreSQL session store)
+    - User selection dropdown on login page (all active users)
+    - "Remember me" functionality (30-day sessions)
+    - Password hashing using scrypt with salt
+    - Default owner user: **A.Z** (email: az@azfinance.sa, password: az2040)
+    - Protected routes using ProtectedRoute component
+    - useAuth hook for accessing current user and login/logout actions
 - **Styling**: Tailwind CSS with custom A.Z Finance Hub design tokens, supporting a comprehensive design system with custom color variables, typography hierarchy, and interactive states.
 - **UI/UX Decisions**:
     - **Dashboard**: Features two view modes:

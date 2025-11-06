@@ -69,6 +69,14 @@ router.post('/login', async (req: Request, res: Response) => {
 
     // Set session
     req.session.userId = user.id;
+    
+    // Handle "remember me" - extend session duration
+    const rememberMe = req.body.rememberMe;
+    if (rememberMe && req.session.cookie) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+    } else if (req.session.cookie) {
+      req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    }
 
     // Log login
     await logAudit({
@@ -178,6 +186,28 @@ router.get('/status', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Auth status error:', error);
     res.json({ isAuthenticated: false });
+  }
+});
+
+// Get list of active users for login selection (PUBLIC ENDPOINT)
+router.get('/users-list', async (req: Request, res: Response) => {
+  try {
+    const users = await storage.getUsers();
+    
+    // Return only basic info for active users (no sensitive data)
+    const usersList = users
+      .filter(u => u.isActive)
+      .map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        isActive: u.isActive, // Include for client-side filtering
+      }));
+    
+    res.json(usersList);
+  } catch (error) {
+    console.error('Get users list error:', error);
+    res.status(500).json({ error: 'Failed to get users list' });
   }
 });
 
