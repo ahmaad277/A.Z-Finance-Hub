@@ -5,6 +5,16 @@ import {
   alerts,
   userSettings,
   cashTransactions,
+  users,
+  roles,
+  permissions,
+  rolePermissions,
+  userPlatforms,
+  temporaryRoles,
+  auditLog,
+  exportRequests,
+  viewRequests,
+  impersonationSessions,
   type Platform,
   type InsertPlatform,
   type Investment,
@@ -17,13 +27,39 @@ import {
   type InsertUserSettings,
   type CashTransaction,
   type InsertCashTransaction,
+  type User,
+  type InsertUser,
+  type Role,
+  type InsertRole,
+  type Permission,
+  type InsertPermission,
+  type RolePermission,
+  type InsertRolePermission,
+  type UserPlatform,
+  type InsertUserPlatform,
+  type TemporaryRole,
+  type InsertTemporaryRole,
+  type AuditLog,
+  type InsertAuditLog,
+  type ExportRequest,
+  type InsertExportRequest,
+  type ViewRequest,
+  type InsertViewRequest,
+  type ImpersonationSession,
+  type InsertImpersonationSession,
   type PortfolioStats,
   type AnalyticsData,
   type InvestmentWithPlatform,
   type CashflowWithInvestment,
+  type UserWithRole,
+  type RoleWithPermissions,
+  type UserWithFullDetails,
+  type AuditLogWithActor,
+  type ExportRequestWithUser,
+  type ViewRequestWithUser,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, gte, lte, sum } from "drizzle-orm";
+import { eq, desc, and, or, gte, lte, sum, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Platforms
@@ -56,8 +92,66 @@ export interface IStorage {
   getAnalyticsData(): Promise<AnalyticsData>;
   
   // Settings
-  getSettings(): Promise<UserSettings>;
-  updateSettings(settings: Partial<InsertUserSettings>): Promise<UserSettings>;
+  getSettings(userId?: string): Promise<UserSettings>;
+  updateSettings(settings: Partial<InsertUserSettings>, userId?: string): Promise<UserSettings>;
+
+  // Users
+  getUsers(): Promise<UserWithRole[]>;
+  getUser(id: string): Promise<UserWithFullDetails | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  suspendUser(id: string): Promise<User | undefined>;
+  activateUser(id: string): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
+
+  // Roles
+  getRoles(): Promise<Role[]>;
+  getRole(id: string): Promise<RoleWithPermissions | undefined>;
+  getRoleByName(name: string): Promise<Role | undefined>;
+  createRole(role: InsertRole): Promise<Role>;
+  updateRole(id: string, role: Partial<InsertRole>): Promise<Role | undefined>;
+  deleteRole(id: string): Promise<boolean>;
+
+  // Permissions
+  getPermissions(): Promise<Permission[]>;
+  getUserPermissions(userId: string): Promise<Permission[]>;
+  getRolePermissions(roleId: string): Promise<Permission[]>;
+  assignPermissionToRole(roleId: string, permissionId: string): Promise<RolePermission>;
+  removePermissionFromRole(roleId: string, permissionId: string): Promise<boolean>;
+  userHasPermission(userId: string, permissionKey: string): Promise<boolean>;
+
+  // User Platforms
+  getUserPlatforms(userId: string): Promise<UserPlatform[]>;
+  assignPlatformToUser(userPlatform: InsertUserPlatform): Promise<UserPlatform>;
+  removePlatformFromUser(userId: string, platformId: string): Promise<boolean>;
+
+  // Temporary Roles
+  getActiveTemporaryRole(userId: string): Promise<TemporaryRole | undefined>;
+  createTemporaryRole(tempRole: InsertTemporaryRole): Promise<TemporaryRole>;
+  expireTemporaryRole(id: string): Promise<boolean>;
+  checkAndExpireTemporaryRoles(): Promise<number>; // Returns count of expired roles
+
+  // Audit Log
+  logAudit(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(filters?: { actorId?: string; actionType?: string; targetType?: string; limit?: number }): Promise<AuditLogWithActor[]>;
+
+  // Export Requests
+  getExportRequests(status?: string): Promise<ExportRequestWithUser[]>;
+  createExportRequest(request: InsertExportRequest): Promise<ExportRequest>;
+  approveExportRequest(id: string, approverId: string): Promise<ExportRequest | undefined>;
+  rejectExportRequest(id: string, approverId: string, reason: string): Promise<ExportRequest | undefined>;
+
+  // View Requests
+  getViewRequests(status?: string): Promise<ViewRequestWithUser[]>;
+  createViewRequest(request: InsertViewRequest): Promise<ViewRequest>;
+  approveViewRequest(id: string, approverId: string, expiresAt?: Date): Promise<ViewRequest | undefined>;
+  rejectViewRequest(id: string, approverId: string): Promise<ViewRequest | undefined>;
+
+  // Impersonation
+  startImpersonation(session: InsertImpersonationSession): Promise<ImpersonationSession>;
+  endImpersonation(sessionId: string): Promise<ImpersonationSession | undefined>;
+  getActiveImpersonation(ownerId: string): Promise<ImpersonationSession | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -401,8 +495,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Settings
-  async getSettings(): Promise<UserSettings> {
-    // Get the first settings record, or create default if none exists
+  async getSettings(userId?: string): Promise<UserSettings> {
+    if (userId) {
+      const [settings] = await db
+        .select()
+        .from(userSettings)
+        .where(eq(userSettings.userId, userId));
+      return settings;
+    }
+    
+    // Get the first settings record, or create default if none exists (backward compatibility)
     const allSettings = await db.select().from(userSettings);
     
     if (allSettings.length === 0) {
@@ -424,11 +526,9 @@ export class DatabaseStorage implements IStorage {
     return allSettings[0];
   }
 
-  async updateSettings(settings: Partial<InsertUserSettings>): Promise<UserSettings> {
-    // Get current settings first
-    const currentSettings = await this.getSettings();
+  async updateSettings(settings: Partial<InsertUserSettings>, userId?: string): Promise<UserSettings> {
+    const currentSettings = await this.getSettings(userId);
     
-    // Update the settings
     const [updatedSettings] = await db
       .update(userSettings)
       .set(settings)
@@ -436,6 +536,451 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings;
+  }
+
+  // Users
+  async getUsers(): Promise<UserWithRole[]> {
+    const results = await db.query.users.findMany({
+      with: {
+        role: true,
+      },
+    });
+    return results;
+  }
+
+  async getUser(id: string): Promise<UserWithFullDetails | undefined> {
+    const result = await db.query.users.findFirst({
+      where: eq(users.id, id),
+      with: {
+        role: {
+          with: {
+            rolePermissions: {
+              with: {
+                permission: true,
+              },
+            },
+          },
+        },
+        settings: true,
+        userPlatforms: true,
+        temporaryRoles: {
+          where: and(
+            eq(temporaryRoles.isActive, 1),
+            gte(temporaryRoles.expiresAt, new Date())
+          ),
+          limit: 1,
+        },
+      },
+    });
+
+    if (!result) return undefined;
+
+    // Transform rolePermissions to permissions array
+    const permissions = result.role.rolePermissions.map(rp => rp.permission);
+    const roleWithPermissions = { ...result.role, permissions };
+    
+    return {
+      ...result,
+      role: roleWithPermissions,
+      platforms: result.userPlatforms,
+      temporaryRole: result.temporaryRoles[0],
+    };
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: string, update: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(update)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async suspendUser(id: string): Promise<User | undefined> {
+    return this.updateUser(id, { isActive: 0 });
+  }
+
+  async activateUser(id: string): Promise<User | undefined> {
+    return this.updateUser(id, { isActive: 1 });
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await db
+      .delete(users)
+      .where(eq(users.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Roles
+  async getRoles(): Promise<Role[]> {
+    return await db.select().from(roles);
+  }
+
+  async getRole(id: string): Promise<RoleWithPermissions | undefined> {
+    const result = await db.query.roles.findFirst({
+      where: eq(roles.id, id),
+      with: {
+        rolePermissions: {
+          with: {
+            permission: true,
+          },
+        },
+      },
+    });
+
+    if (!result) return undefined;
+
+    const permissions = result.rolePermissions.map(rp => rp.permission);
+    return { ...result, permissions };
+  }
+
+  async getRoleByName(name: string): Promise<Role | undefined> {
+    const [role] = await db
+      .select()
+      .from(roles)
+      .where(eq(roles.name, name));
+    return role || undefined;
+  }
+
+  async createRole(insertRole: InsertRole): Promise<Role> {
+    const [role] = await db
+      .insert(roles)
+      .values(insertRole)
+      .returning();
+    return role;
+  }
+
+  async updateRole(id: string, update: Partial<InsertRole>): Promise<Role | undefined> {
+    const [role] = await db
+      .update(roles)
+      .set(update)
+      .where(eq(roles.id, id))
+      .returning();
+    return role || undefined;
+  }
+
+  async deleteRole(id: string): Promise<boolean> {
+    const result = await db
+      .delete(roles)
+      .where(eq(roles.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Permissions
+  async getPermissions(): Promise<Permission[]> {
+    return await db.select().from(permissions);
+  }
+
+  async getUserPermissions(userId: string): Promise<Permission[]> {
+    const user = await this.getUser(userId);
+    if (!user) return [];
+
+    // Check for active temporary role first
+    const tempRole = await this.getActiveTemporaryRole(userId);
+    const effectiveRoleId = tempRole?.roleId || user.role.id;
+
+    return this.getRolePermissions(effectiveRoleId);
+  }
+
+  async getRolePermissions(roleId: string): Promise<Permission[]> {
+    const result = await db.query.rolePermissions.findMany({
+      where: eq(rolePermissions.roleId, roleId),
+      with: {
+        permission: true,
+      },
+    });
+
+    return result.map(rp => rp.permission);
+  }
+
+  async assignPermissionToRole(roleId: string, permissionId: string): Promise<RolePermission> {
+    const [rp] = await db
+      .insert(rolePermissions)
+      .values({ roleId, permissionId })
+      .returning();
+    return rp;
+  }
+
+  async removePermissionFromRole(roleId: string, permissionId: string): Promise<boolean> {
+    const result = await db
+      .delete(rolePermissions)
+      .where(
+        and(
+          eq(rolePermissions.roleId, roleId),
+          eq(rolePermissions.permissionId, permissionId)
+        )
+      );
+    return result.rowCount! > 0;
+  }
+
+  async userHasPermission(userId: string, permissionKey: string): Promise<boolean> {
+    const userPerms = await this.getUserPermissions(userId);
+    return userPerms.some(p => p.key === permissionKey);
+  }
+
+  // User Platforms
+  async getUserPlatforms(userId: string): Promise<UserPlatform[]> {
+    return await db
+      .select()
+      .from(userPlatforms)
+      .where(eq(userPlatforms.userId, userId));
+  }
+
+  async assignPlatformToUser(userPlatform: InsertUserPlatform): Promise<UserPlatform> {
+    const [up] = await db
+      .insert(userPlatforms)
+      .values(userPlatform)
+      .returning();
+    return up;
+  }
+
+  async removePlatformFromUser(userId: string, platformId: string): Promise<boolean> {
+    const result = await db
+      .delete(userPlatforms)
+      .where(
+        and(
+          eq(userPlatforms.userId, userId),
+          eq(userPlatforms.platformId, platformId)
+        )
+      );
+    return result.rowCount! > 0;
+  }
+
+  // Temporary Roles
+  async getActiveTemporaryRole(userId: string): Promise<TemporaryRole | undefined> {
+    const [tempRole] = await db
+      .select()
+      .from(temporaryRoles)
+      .where(
+        and(
+          eq(temporaryRoles.userId, userId),
+          eq(temporaryRoles.isActive, 1),
+          gte(temporaryRoles.expiresAt, new Date())
+        )
+      )
+      .orderBy(desc(temporaryRoles.createdAt))
+      .limit(1);
+    return tempRole || undefined;
+  }
+
+  async createTemporaryRole(tempRole: InsertTemporaryRole): Promise<TemporaryRole> {
+    const [tr] = await db
+      .insert(temporaryRoles)
+      .values(tempRole)
+      .returning();
+    return tr;
+  }
+
+  async expireTemporaryRole(id: string): Promise<boolean> {
+    const result = await db
+      .update(temporaryRoles)
+      .set({ isActive: 0 })
+      .where(eq(temporaryRoles.id, id));
+    return result.rowCount! > 0;
+  }
+
+  async checkAndExpireTemporaryRoles(): Promise<number> {
+    const result = await db
+      .update(temporaryRoles)
+      .set({ isActive: 0 })
+      .where(
+        and(
+          eq(temporaryRoles.isActive, 1),
+          lte(temporaryRoles.expiresAt, new Date())
+        )
+      );
+    return result.rowCount || 0;
+  }
+
+  // Audit Log
+  async logAudit(log: InsertAuditLog): Promise<AuditLog> {
+    const [auditEntry] = await db
+      .insert(auditLog)
+      .values(log)
+      .returning();
+    return auditEntry;
+  }
+
+  async getAuditLogs(filters?: { 
+    actorId?: string; 
+    actionType?: string; 
+    targetType?: string; 
+    limit?: number 
+  }): Promise<AuditLogWithActor[]> {
+    const conditions = [];
+    
+    if (filters?.actorId) {
+      conditions.push(eq(auditLog.actorId, filters.actorId));
+    }
+    if (filters?.actionType) {
+      conditions.push(eq(auditLog.actionType, filters.actionType));
+    }
+    if (filters?.targetType) {
+      conditions.push(eq(auditLog.targetType, filters.targetType));
+    }
+
+    const results = await db.query.auditLog.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      with: {
+        actor: true,
+      },
+      orderBy: desc(auditLog.timestamp),
+      limit: filters?.limit || 100,
+    });
+
+    // Convert null actors to undefined for type compatibility
+    return results.map(r => ({
+      ...r,
+      actor: r.actor || undefined,
+    }));
+  }
+
+  // Export Requests
+  async getExportRequests(status?: string): Promise<ExportRequestWithUser[]> {
+    const results = await db.query.exportRequests.findMany({
+      where: status ? eq(exportRequests.status, status) : undefined,
+      with: {
+        requester: true,
+      },
+      orderBy: desc(exportRequests.createdAt),
+    });
+
+    return results as ExportRequestWithUser[];
+  }
+
+  async createExportRequest(request: InsertExportRequest): Promise<ExportRequest> {
+    const [exportReq] = await db
+      .insert(exportRequests)
+      .values(request)
+      .returning();
+    return exportReq;
+  }
+
+  async approveExportRequest(id: string, approverId: string): Promise<ExportRequest | undefined> {
+    const [exportReq] = await db
+      .update(exportRequests)
+      .set({
+        status: 'approved',
+        approvedBy: approverId,
+        approvedAt: new Date(),
+      })
+      .where(eq(exportRequests.id, id))
+      .returning();
+    return exportReq || undefined;
+  }
+
+  async rejectExportRequest(id: string, approverId: string, reason: string): Promise<ExportRequest | undefined> {
+    const [exportReq] = await db
+      .update(exportRequests)
+      .set({
+        status: 'rejected',
+        approvedBy: approverId,
+        rejectionReason: reason,
+        approvedAt: new Date(),
+      })
+      .where(eq(exportRequests.id, id))
+      .returning();
+    return exportReq || undefined;
+  }
+
+  // View Requests
+  async getViewRequests(status?: string): Promise<ViewRequestWithUser[]> {
+    const results = await db.query.viewRequests.findMany({
+      where: status ? eq(viewRequests.status, status) : undefined,
+      with: {
+        requester: true,
+      },
+      orderBy: desc(viewRequests.createdAt),
+    });
+
+    return results as ViewRequestWithUser[];
+  }
+
+  async createViewRequest(request: InsertViewRequest): Promise<ViewRequest> {
+    const [viewReq] = await db
+      .insert(viewRequests)
+      .values(request)
+      .returning();
+    return viewReq;
+  }
+
+  async approveViewRequest(id: string, approverId: string, expiresAt?: Date): Promise<ViewRequest | undefined> {
+    const [viewReq] = await db
+      .update(viewRequests)
+      .set({
+        status: 'approved',
+        approvedBy: approverId,
+        approvedAt: new Date(),
+        expiresAt: expiresAt || null,
+      })
+      .where(eq(viewRequests.id, id))
+      .returning();
+    return viewReq || undefined;
+  }
+
+  async rejectViewRequest(id: string, approverId: string): Promise<ViewRequest | undefined> {
+    const [viewReq] = await db
+      .update(viewRequests)
+      .set({
+        status: 'rejected',
+        approvedBy: approverId,
+        approvedAt: new Date(),
+      })
+      .where(eq(viewRequests.id, id))
+      .returning();
+    return viewReq || undefined;
+  }
+
+  // Impersonation
+  async startImpersonation(session: InsertImpersonationSession): Promise<ImpersonationSession> {
+    const [impSession] = await db
+      .insert(impersonationSessions)
+      .values(session)
+      .returning();
+    return impSession;
+  }
+
+  async endImpersonation(sessionId: string): Promise<ImpersonationSession | undefined> {
+    const [impSession] = await db
+      .update(impersonationSessions)
+      .set({
+        isActive: 0,
+        endedAt: new Date(),
+      })
+      .where(eq(impersonationSessions.id, sessionId))
+      .returning();
+    return impSession || undefined;
+  }
+
+  async getActiveImpersonation(ownerId: string): Promise<ImpersonationSession | undefined> {
+    const [impSession] = await db
+      .select()
+      .from(impersonationSessions)
+      .where(
+        and(
+          eq(impersonationSessions.ownerId, ownerId),
+          eq(impersonationSessions.isActive, 1)
+        )
+      )
+      .orderBy(desc(impersonationSessions.startedAt))
+      .limit(1);
+    return impSession || undefined;
   }
 }
 
