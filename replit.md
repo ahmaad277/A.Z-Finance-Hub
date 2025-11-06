@@ -33,13 +33,18 @@ A.Z Finance Hub is an intelligent personal investment management platform design
 - Upcoming cashflows widget
 - Recent investments table
 
-### 2. Investments Management
+### 2. Investments Management (Enhanced - November 2025)
 - View all investments across platforms
 - Add new investments with detailed form
 - Edit existing investments
 - Platform-based categorization (Sukuk, Manfa'a, Lendo)
 - Risk score visualization
 - IRR tracking
+- **ROI Calculations**: Real-time ROI calculation based on received cashflows
+  - Formula: ROI = (Total Returns - Investment Amount) / Investment Amount × 100
+  - Displays actual ROI and total returns for each investment
+  - Color-coded: Green for positive ROI, red for negative
+  - Only visible when cashflows are received
 
 ### 3. Cashflow Tracking
 - Comprehensive cashflow table
@@ -92,13 +97,29 @@ A.Z Finance Hub is an intelligent personal investment management platform design
   - Hover effects and responsive design
   - Displays: name, logo, investment count, capital, returns, IRR, duration
 
-### 9. Design System
+### 9. Cash Management System (NEW - November 2025)
+- **Cash Balance Tracking**: Complete cash management system integrated with portfolio
+  - Database schema: `cashTransactions` table with type, amount, date, source, notes fields
+  - API endpoints: GET/POST transactions, GET balance
+  - Cash Balance Widget: Displays current balance in Dashboard (Pro mode)
+  - AddCashDialog: User-friendly dialog for adding cash transactions
+  - Transaction types: Deposit, Withdrawal, Transfer, Investment, Distribution
+  - Real-time balance calculations from transaction history
+  - Full bilingual support (EN/AR) with RTL-aware UI
+  - Integration with investment funding tracking (`fundedFromCash` field)
+
+### 10. Design System
 - **Color Scheme**: 
   - Dark mode primary: #0F172A (background), #2563EB (primary action), #22C55E (success)
   - Light mode: #F8FAFC (background), #3B82F6 (primary)
 - **Fonts**: Tajawal (Arabic), Poppins (English)
 - **Dark/Light Mode**: Full theme toggle support
 - **Bilingual Support**: Arabic/English language toggle with full translations
+- **RTL Typography Enhancements**: 
+  - Arabic secondary text (text-sm, text-xs) automatically sized to 0.9375rem for better readability
+  - Muted text font-weight increased to 450 in RTL mode
+  - Improved contrast and visibility for Arabic UI elements
+  - Sidebar auto-close on navigation with RTL support
 
 ## Design Tokens
 The application implements a comprehensive design system with:
@@ -113,9 +134,10 @@ The application implements a comprehensive design system with:
 1. **Platforms**: Investment platforms (Sukuk, Manfa'a, Lendo)
 2. **Investments**: Individual investment opportunities with platform association
 3. **Cashflows**: Profit distributions and principal returns
-4. **Alerts**: System notifications and user alerts
-5. **PortfolioStats**: Calculated portfolio metrics
-6. **AnalyticsData**: Aggregated analytics for visualization
+4. **CashTransactions**: Cash management transactions (deposits, withdrawals, transfers)
+5. **Alerts**: System notifications and user alerts
+6. **PortfolioStats**: Calculated portfolio metrics
+7. **AnalyticsData**: Aggregated analytics for visualization
 
 ## API Endpoints
 - `GET /api/platforms` - List all platforms
@@ -125,6 +147,9 @@ The application implements a comprehensive design system with:
 - `GET /api/cashflows` - List all cashflows with investment details
 - `POST /api/cashflows` - Create cashflow
 - `PATCH /api/cashflows/:id` - Update cashflow
+- `GET /api/cash/transactions` - List all cash transactions
+- `POST /api/cash/transactions` - Create cash transaction
+- `GET /api/cash/balance` - Get current cash balance
 - `GET /api/alerts` - List all alerts
 - `PATCH /api/alerts/:id/read` - Mark alert as read
 - `GET /api/portfolio/stats` - Get portfolio statistics
@@ -152,6 +177,9 @@ All interactive elements and data displays include `data-testid` attributes for 
 - `data-testid="button-{action}"` for buttons
 - `data-testid="card-{type}-{id}"` for cards
 - `data-testid="stat-{metric}"` for statistics
+- `data-testid="stat-roi-{id}"` for ROI values per investment
+- `data-testid="widget-cash-balance"` for Cash Balance Widget
+- `data-testid="stat-cash-balance"` for current cash balance display
 
 ## Vision 2040 Roadmap
 ### Phase 1 (MVP - Completed)
@@ -182,6 +210,10 @@ All interactive elements and data displays include `data-testid` attributes for 
 ✅ Platform details page with filtered statistics
 ✅ Platform management (edit/delete) in Settings
 ✅ Language toggle bug fix (Vite Fast Refresh)
+✅ Cash Balance System with full transaction tracking
+✅ ROI calculations for investments based on received cashflows
+✅ Enhanced Arabic typography (larger font sizes, better weight)
+✅ Sidebar RTL improvements with auto-close on navigation
 - PostgreSQL database for persistence (Next)
 - Platform API integrations (Sukuk, Manfa'a, Lendo)
 - Advanced risk scoring algorithms
