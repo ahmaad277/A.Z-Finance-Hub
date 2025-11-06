@@ -18,6 +18,9 @@ import usersRoutes from "./routes/users";
 import rolesRoutes from "./routes/roles";
 import auditRoutes from "./routes/audit";
 import impersonationRoutes from "./routes/impersonation";
+import exportRequestsRoutes from "./routes/export-requests";
+import viewRequestsRoutes from "./routes/view-requests";
+import temporaryRolesRoutes from "./routes/temporary-roles";
 
 // Rate limiting for login attempts
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
@@ -86,6 +89,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/v2/roles", rolesRoutes);
   app.use("/api/v2/audit", auditRoutes);
   app.use("/api/v2/impersonation", impersonationRoutes);
+  app.use("/api/v2/export-requests", exportRequestsRoutes);
+  app.use("/api/v2/view-requests", viewRequestsRoutes);
+  app.use("/api/v2/temporary-roles", temporaryRolesRoutes);
 
   // Legacy authentication endpoints (kept for backward compatibility)
   app.post("/api/auth/login", async (req, res) => {

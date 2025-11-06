@@ -128,7 +128,12 @@ export interface IStorage {
 
   // Temporary Roles
   getActiveTemporaryRole(userId: string): Promise<TemporaryRole | undefined>;
+  getActiveTemporaryRoles(): Promise<TemporaryRole[]>;
+  getTemporaryRole(id: string): Promise<TemporaryRole | undefined>;
+  getTemporaryRolesByUser(userId: string): Promise<TemporaryRole[]>;
   createTemporaryRole(tempRole: InsertTemporaryRole): Promise<TemporaryRole>;
+  revokeTemporaryRole(id: string): Promise<boolean>;
+  extendTemporaryRole(id: string, newExpiresAt: Date): Promise<boolean>;
   expireTemporaryRole(id: string): Promise<boolean>;
   checkAndExpireTemporaryRoles(): Promise<number>; // Returns count of expired roles
 
@@ -138,13 +143,21 @@ export interface IStorage {
 
   // Export Requests
   getExportRequests(status?: string): Promise<ExportRequestWithUser[]>;
+  getExportRequest(id: string): Promise<ExportRequest | undefined>;
+  getExportRequestsByUser(userId: string): Promise<ExportRequest[]>;
+  getPendingExportRequests(): Promise<ExportRequestWithUser[]>;
   createExportRequest(request: InsertExportRequest): Promise<ExportRequest>;
+  updateExportRequest(id: string, updates: Partial<ExportRequest>): Promise<ExportRequest | undefined>;
   approveExportRequest(id: string, approverId: string): Promise<ExportRequest | undefined>;
   rejectExportRequest(id: string, approverId: string, reason: string): Promise<ExportRequest | undefined>;
 
   // View Requests
   getViewRequests(status?: string): Promise<ViewRequestWithUser[]>;
+  getViewRequest(id: string): Promise<ViewRequest | undefined>;
+  getViewRequestsByUser(userId: string): Promise<ViewRequest[]>;
+  getPendingViewRequests(): Promise<ViewRequestWithUser[]>;
   createViewRequest(request: InsertViewRequest): Promise<ViewRequest>;
+  updateViewRequest(id: string, updates: Partial<ViewRequest>): Promise<ViewRequest | undefined>;
   approveViewRequest(id: string, approverId: string, expiresAt?: Date): Promise<ViewRequest | undefined>;
   rejectViewRequest(id: string, approverId: string): Promise<ViewRequest | undefined>;
 
@@ -808,6 +821,51 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount || 0;
   }
 
+  async getActiveTemporaryRoles(): Promise<TemporaryRole[]> {
+    return await db
+      .select()
+      .from(temporaryRoles)
+      .where(
+        and(
+          eq(temporaryRoles.isActive, 1),
+          gte(temporaryRoles.expiresAt, new Date())
+        )
+      )
+      .orderBy(desc(temporaryRoles.createdAt));
+  }
+
+  async getTemporaryRole(id: string): Promise<TemporaryRole | undefined> {
+    const [tempRole] = await db
+      .select()
+      .from(temporaryRoles)
+      .where(eq(temporaryRoles.id, id));
+    return tempRole || undefined;
+  }
+
+  async getTemporaryRolesByUser(userId: string): Promise<TemporaryRole[]> {
+    return await db
+      .select()
+      .from(temporaryRoles)
+      .where(eq(temporaryRoles.userId, userId))
+      .orderBy(desc(temporaryRoles.createdAt));
+  }
+
+  async revokeTemporaryRole(id: string): Promise<boolean> {
+    const result = await db
+      .update(temporaryRoles)
+      .set({ isActive: 0 })
+      .where(eq(temporaryRoles.id, id));
+    return result.rowCount! > 0;
+  }
+
+  async extendTemporaryRole(id: string, newExpiresAt: Date): Promise<boolean> {
+    const result = await db
+      .update(temporaryRoles)
+      .set({ expiresAt: newExpiresAt })
+      .where(eq(temporaryRoles.id, id));
+    return result.rowCount! > 0;
+  }
+
   // Audit Log
   async logAudit(log: InsertAuditLog): Promise<AuditLog> {
     const [auditEntry] = await db
@@ -899,6 +957,42 @@ export class DatabaseStorage implements IStorage {
     return exportReq || undefined;
   }
 
+  async getExportRequest(id: string): Promise<ExportRequest | undefined> {
+    const [exportReq] = await db
+      .select()
+      .from(exportRequests)
+      .where(eq(exportRequests.id, id));
+    return exportReq || undefined;
+  }
+
+  async updateExportRequest(id: string, updates: Partial<ExportRequest>): Promise<ExportRequest | undefined> {
+    const [exportReq] = await db
+      .update(exportRequests)
+      .set(updates)
+      .where(eq(exportRequests.id, id))
+      .returning();
+    return exportReq || undefined;
+  }
+
+  async getExportRequestsByUser(userId: string): Promise<ExportRequest[]> {
+    return await db
+      .select()
+      .from(exportRequests)
+      .where(eq(exportRequests.requesterId, userId))
+      .orderBy(desc(exportRequests.createdAt));
+  }
+
+  async getPendingExportRequests(): Promise<ExportRequestWithUser[]> {
+    const results = await db.query.exportRequests.findMany({
+      where: eq(exportRequests.status, 'pending'),
+      with: {
+        requester: true,
+      },
+      orderBy: desc(exportRequests.createdAt),
+    });
+    return results as ExportRequestWithUser[];
+  }
+
   // View Requests
   async getViewRequests(status?: string): Promise<ViewRequestWithUser[]> {
     const results = await db.query.viewRequests.findMany({
@@ -945,6 +1039,42 @@ export class DatabaseStorage implements IStorage {
       .where(eq(viewRequests.id, id))
       .returning();
     return viewReq || undefined;
+  }
+
+  async getViewRequest(id: string): Promise<ViewRequest | undefined> {
+    const [viewReq] = await db
+      .select()
+      .from(viewRequests)
+      .where(eq(viewRequests.id, id));
+    return viewReq || undefined;
+  }
+
+  async updateViewRequest(id: string, updates: Partial<ViewRequest>): Promise<ViewRequest | undefined> {
+    const [viewReq] = await db
+      .update(viewRequests)
+      .set(updates)
+      .where(eq(viewRequests.id, id))
+      .returning();
+    return viewReq || undefined;
+  }
+
+  async getViewRequestsByUser(userId: string): Promise<ViewRequest[]> {
+    return await db
+      .select()
+      .from(viewRequests)
+      .where(eq(viewRequests.requesterId, userId))
+      .orderBy(desc(viewRequests.createdAt));
+  }
+
+  async getPendingViewRequests(): Promise<ViewRequestWithUser[]> {
+    const results = await db.query.viewRequests.findMany({
+      where: eq(viewRequests.status, 'pending'),
+      with: {
+        requester: true,
+      },
+      orderBy: desc(viewRequests.createdAt),
+    });
+    return results as ViewRequestWithUser[];
   }
 
   // Impersonation

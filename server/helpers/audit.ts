@@ -18,7 +18,16 @@ export type AuditAction =
   | 'revoke_permission'
   | 'assign_role'
   | 'suspend'
-  | 'activate';
+  | 'activate'
+  | 'export_requested'
+  | 'export_approved'
+  | 'export_rejected'
+  | 'view_requested'
+  | 'view_approved'
+  | 'view_rejected'
+  | 'temporary_role_granted'
+  | 'temporary_role_revoked'
+  | 'temporary_role_extended';
 
 export type AuditTarget = 
   | 'user'

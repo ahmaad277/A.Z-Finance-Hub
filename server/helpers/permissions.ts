@@ -35,10 +35,20 @@ export const PERMISSION_KEYS = {
   EXPORT_DATA: 'analytics:export',
 
   // User Management
+  VIEW_USERS: 'users:view',
   VIEW_USER_DETAILS: 'users:view_details',
   IMPERSONATE_USERS: 'users:impersonate',
   APPROVE_REQUESTS: 'users:approve_requests',
   ASSIGN_TEMP_ROLES: 'users:assign_temp_roles',
+
+  // Export & View Requests
+  REQUEST_EXPORT: 'requests:export',
+  APPROVE_EXPORTS: 'requests:approve_exports',
+  REQUEST_VIEW: 'requests:view',
+  APPROVE_VIEW_REQUESTS: 'requests:approve_view',
+  
+  // Temporary Roles
+  MANAGE_TEMPORARY_ROLES: 'roles:manage_temporary',
 } as const;
 
 export type PermissionKey = typeof PERMISSION_KEYS[keyof typeof PERMISSION_KEYS];
