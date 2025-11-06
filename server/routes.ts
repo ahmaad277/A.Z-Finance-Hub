@@ -329,6 +329,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Insights endpoints
+  app.get("/api/ai/insights", optionalAuth, async (_req, res) => {
+    try {
+      const { getComprehensiveAIInsights } = await import("./ai-service");
+      
+      const [investments, cashflows, stats, analytics] = await Promise.all([
+        storage.listInvestments(),
+        storage.listCashflows(),
+        storage.getPortfolioStats(),
+        storage.getAnalyticsData(),
+      ]);
+
+      const insights = await getComprehensiveAIInsights(
+        investments,
+        cashflows,
+        stats,
+        analytics
+      );
+      
+      res.json(insights);
+    } catch (error: any) {
+      console.error("AI insights error:", error);
+      res.status(500).json({ error: "Failed to generate AI insights" });
+    }
+  });
+
+  app.get("/api/ai/recommendations", optionalAuth, async (_req, res) => {
+    try {
+      const { getAIRecommendations } = await import("./ai-service");
+      
+      const [investments, stats, analytics] = await Promise.all([
+        storage.listInvestments(),
+        storage.getPortfolioStats(),
+        storage.getAnalyticsData(),
+      ]);
+
+      const recommendations = await getAIRecommendations(investments, stats, analytics);
+      res.json(recommendations);
+    } catch (error: any) {
+      console.error("AI recommendations error:", error);
+      res.status(500).json({ error: "Failed to generate AI recommendations" });
+    }
+  });
+
+  app.get("/api/ai/risk-analysis", optionalAuth, async (_req, res) => {
+    try {
+      const { getAIRiskAnalysis } = await import("./ai-service");
+      
+      const [investments, stats] = await Promise.all([
+        storage.listInvestments(),
+        storage.getPortfolioStats(),
+      ]);
+
+      const riskAnalysis = await getAIRiskAnalysis(investments, stats);
+      res.json(riskAnalysis);
+    } catch (error: any) {
+      console.error("AI risk analysis error:", error);
+      res.status(500).json({ error: "Failed to generate AI risk analysis" });
+    }
+  });
+
+  app.get("/api/ai/cashflow-forecast", optionalAuth, async (_req, res) => {
+    try {
+      const { getAICashflowForecast } = await import("./ai-service");
+      
+      const [cashflows, investments] = await Promise.all([
+        storage.listCashflows(),
+        storage.listInvestments(),
+      ]);
+
+      const forecast = await getAICashflowForecast(cashflows, investments);
+      res.json(forecast);
+    } catch (error: any) {
+      console.error("AI cashflow forecast error:", error);
+      res.status(500).json({ error: "Failed to generate cashflow forecast" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
