@@ -22,6 +22,10 @@ import exportRequestsRoutes from "./routes/export-requests";
 import viewRequestsRoutes from "./routes/view-requests";
 import temporaryRolesRoutes from "./routes/temporary-roles";
 
+// Import field masking helpers
+import { getMaskingConfig, applyMasking, type MaskingConfig } from "./helpers/field-masking";
+import type { AuthenticatedRequest } from "./middleware/auth";
+
 // Rate limiting for login attempts
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
 
@@ -59,14 +63,36 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 async function optionalAuth(req: Request, res: Response, next: NextFunction) {
   try {
     const settings = await storage.getSettings();
+    const authReq = req as AuthenticatedRequest;
     
-    // If security is not enabled, allow access
+    // Helper to attach owner user for legacy compatibility
+    const attachOwnerUser = async () => {
+      if (!authReq.user) {
+        const users = await storage.getUsers();
+        const owner = users.find(u => u.roleId === '1'); // Owner role
+        if (owner) {
+          const role = await storage.getRole('1');
+          authReq.user = {
+            id: owner.id,
+            effectiveUserId: owner.id,
+            permissions: role?.permissions || [],
+            roleId: owner.roleId,
+          };
+        }
+      }
+    };
+    
+    // If security is not enabled, allow access with owner permissions
     if (!settings || settings.securityEnabled !== 1 || !settings.pinHash) {
+      // Always attach owner user in open-access mode to prevent masking
+      await attachOwnerUser();
       return next();
     }
     
     // Security is enabled, require authentication
     if (req.session.isAuthenticated) {
+      // Attach owner user for legacy authenticated sessions
+      await attachOwnerUser();
       return next();
     }
     
@@ -74,6 +100,33 @@ async function optionalAuth(req: Request, res: Response, next: NextFunction) {
   } catch (error) {
     res.status(500).json({ error: "Failed to check auth status" });
   }
+}
+
+// Helper to apply field masking based on user permissions
+function withMasking(type: 'investment' | 'cashflow' | 'cash_transaction' | 'portfolio_stats' | 'analytics') {
+  return (handler: (req: Request, res: Response) => Promise<any>) => {
+    return async (req: Request, res: Response) => {
+      const authReq = req as AuthenticatedRequest;
+      
+      // Get masking config - if no user, apply default masking (no permissions)
+      const config: MaskingConfig = authReq.user 
+        ? getMaskingConfig(authReq)
+        : {
+            maskAbsoluteAmounts: true,  // Mask amounts for unauthenticated users
+            maskSensitiveData: true,    // Hide sensitive data
+            maskPersonalInfo: true,     // Hide personal info
+          };
+      
+      // Intercept res.json to apply masking
+      const originalJson = res.json.bind(res);
+      res.json = function(data: any) {
+        const masked = applyMasking(data, type, config);
+        return originalJson(masked);
+      };
+      
+      return handler(req, res);
+    };
+  };
 }
 
 // API schema that accepts date strings and coerces to Date objects with validation
@@ -179,16 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Investments
-  app.get("/api/investments", optionalAuth, async (_req, res) => {
+  app.get("/api/investments", optionalAuth, withMasking('investment')(async (_req, res) => {
     try {
       const investments = await storage.getInvestments();
       res.json(investments);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch investments" });
     }
-  });
+  }));
 
-  app.post("/api/investments", optionalAuth, async (req, res) => {
+  app.post("/api/investments", optionalAuth, withMasking('investment')(async (req, res) => {
     try {
       // Use API schema that coerces date strings to Date objects with validation
       const data = apiInvestmentSchema.parse(req.body);
@@ -198,9 +251,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Investment creation error:", error);
       res.status(400).json({ error: error.message || "Invalid investment data" });
     }
-  });
+  }));
 
-  app.patch("/api/investments/:id", optionalAuth, async (req, res) => {
+  app.patch("/api/investments/:id", optionalAuth, withMasking('investment')(async (req, res) => {
     try {
       const { id } = req.params;
       // Use API schema that coerces date strings to Date objects with validation
@@ -216,19 +269,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Investment update error:", error);
       res.status(400).json({ error: error.message || "Invalid investment data" });
     }
-  });
+  }));
 
   // Cashflows
-  app.get("/api/cashflows", optionalAuth, async (_req, res) => {
+  app.get("/api/cashflows", optionalAuth, withMasking('cashflow')(async (_req, res) => {
     try {
       const cashflows = await storage.getCashflows();
       res.json(cashflows);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cashflows" });
     }
-  });
+  }));
 
-  app.post("/api/cashflows", optionalAuth, async (req, res) => {
+  app.post("/api/cashflows", optionalAuth, withMasking('cashflow')(async (req, res) => {
     try {
       const data = insertCashflowSchema.parse(req.body);
       const cashflow = await storage.createCashflow(data);
@@ -236,9 +289,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid cashflow data" });
     }
-  });
+  }));
 
-  app.patch("/api/cashflows/:id", optionalAuth, async (req, res) => {
+  app.patch("/api/cashflows/:id", optionalAuth, withMasking('cashflow')(async (req, res) => {
     try {
       const { id } = req.params;
       const data = insertCashflowSchema.partial().parse(req.body);
@@ -252,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid cashflow data" });
     }
-  });
+  }));
 
   // Alerts
   app.get("/api/alerts", optionalAuth, async (_req, res) => {
@@ -356,16 +409,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cash Transactions
-  app.get("/api/cash/transactions", optionalAuth, async (_req, res) => {
+  app.get("/api/cash/transactions", optionalAuth, withMasking('cash_transaction')(async (_req, res) => {
     try {
       const transactions = await storage.getCashTransactions();
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cash transactions" });
     }
-  });
+  }));
 
-  app.post("/api/cash/transactions", optionalAuth, async (req, res) => {
+  app.post("/api/cash/transactions", optionalAuth, withMasking('cash_transaction')(async (req, res) => {
     try {
       const data = insertCashTransactionSchema.parse(req.body);
       const transaction = await storage.createCashTransaction(data);
@@ -373,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid transaction data" });
     }
-  });
+  }));
 
   app.get("/api/cash/balance", optionalAuth, async (_req, res) => {
     try {
@@ -385,24 +438,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio Stats
-  app.get("/api/portfolio/stats", optionalAuth, async (_req, res) => {
+  app.get("/api/portfolio/stats", optionalAuth, withMasking('portfolio_stats')(async (_req, res) => {
     try {
       const stats = await storage.getPortfolioStats();
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch portfolio stats" });
     }
-  });
+  }));
 
   // Analytics
-  app.get("/api/analytics", optionalAuth, async (_req, res) => {
+  app.get("/api/analytics", optionalAuth, withMasking('analytics')(async (_req, res) => {
     try {
       const analytics = await storage.getAnalyticsData();
       res.json(analytics);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch analytics data" });
     }
-  });
+  }));
 
   // Settings
   app.get("/api/settings", optionalAuth, async (req, res) => {
