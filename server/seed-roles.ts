@@ -119,3 +119,11 @@ export async function seedRolesAndPermissions() {
 
   console.log("✨ Seeding completed!");
 }
+
+seedRolesAndPermissions().then(() => {
+  console.log("✅ Seed process finished!");
+  process.exit(0);
+}).catch((error) => {
+  console.error("❌ Seed failed:", error);
+  process.exit(1);
+});
