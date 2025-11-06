@@ -290,6 +290,21 @@ const translations = {
     "dialog.actualPaymentDate": "Actual Payment Date",
     "dialog.investmentCompleted": "Investment marked as completed successfully",
     
+    // Alerts
+    "settings.alertSettings": "Alert Settings",
+    "settings.alertSettingsDesc": "Manage automatic notifications and payment reminders",
+    "settings.enableAlerts": "Enable Automatic Alerts",
+    "settings.enableAlertsDesc": "Receive notifications for upcoming payments and deadlines",
+    "settings.alertDaysBefore": "Days Before Due Date",
+    "settings.alertDaysBeforeDesc": "Get notified this many days before a payment is due",
+    "settings.latePaymentAlerts": "Late Payment Alerts",
+    "settings.latePaymentAlertsDesc": "Get notifications for overdue payments",
+    "settings.generateAlerts": "Generate Alerts Now",
+    "settings.generatingAlerts": "Generating...",
+    "settings.alertsGenerated": "Alerts Generated",
+    "settings.alertsGeneratedDesc": "new alerts created",
+    "settings.alertsGenerateError": "Failed to generate alerts",
+    
     // Calculator
     "calculator.title": "Investment Goal Calculator",
     "calculator.description": "Calculate your future investment value based on deposits and returns",
@@ -730,6 +745,21 @@ const translations = {
     "dialog.confirmPaymentDesc": "وضع علامة على هذا الاستثمار كمسدد بالكامل ومكتمل",
     "dialog.actualPaymentDate": "تاريخ السداد الفعلي",
     "dialog.investmentCompleted": "تم وضع علامة على الاستثمار كمكتمل بنجاح",
+    
+    // Alerts
+    "settings.alertSettings": "إعدادات التنبيهات",
+    "settings.alertSettingsDesc": "إدارة الإشعارات التلقائية وتذكيرات الدفع",
+    "settings.enableAlerts": "تفعيل التنبيهات التلقائية",
+    "settings.enableAlertsDesc": "استلام إشعارات للدفعات القادمة والمواعيد النهائية",
+    "settings.alertDaysBefore": "الأيام قبل موعد الاستحقاق",
+    "settings.alertDaysBeforeDesc": "استلام إشعار قبل موعد الدفع بهذا العدد من الأيام",
+    "settings.latePaymentAlerts": "تنبيهات التأخر في السداد",
+    "settings.latePaymentAlertsDesc": "استلام إشعارات للدفعات المتأخرة",
+    "settings.generateAlerts": "إنشاء التنبيهات الآن",
+    "settings.generatingAlerts": "جاري الإنشاء...",
+    "settings.alertsGenerated": "تم إنشاء التنبيهات",
+    "settings.alertsGeneratedDesc": "تنبيهات جديدة تم إنشاؤها",
+    "settings.alertsGenerateError": "فشل إنشاء التنبيهات",
     
     // Calculator
     "calculator.title": "حاسبة الهدف الاستثماري",

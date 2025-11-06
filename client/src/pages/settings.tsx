@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2 } from "lucide-react";
+import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2, Bell } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
@@ -93,6 +93,26 @@ export default function Settings() {
       toast({
         title: t("dialog.error"),
         description: t("settings.platformAddError"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateAlertsMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/alerts/generate", {});
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
+      toast({
+        title: t("settings.alertsGenerated"),
+        description: `${data.generatedCount} ${t("settings.alertsGeneratedDesc")}`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: t("dialog.error"),
+        description: t("settings.alertsGenerateError"),
         variant: "destructive",
       });
     },
@@ -365,6 +385,85 @@ export default function Settings() {
                 data-testid="switch-auto-reinvest"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Alert Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              <CardTitle>{t("settings.alertSettings")}</CardTitle>
+            </div>
+            <CardDescription>{t("settings.alertSettingsDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Enable Alerts */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("settings.enableAlerts")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.enableAlertsDesc")}</p>
+              </div>
+              <Switch
+                checked={settings?.alertsEnabled === 1}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ alertsEnabled: checked ? 1 : 0 })
+                }
+                data-testid="switch-alerts-enabled"
+              />
+            </div>
+
+            <Separator />
+
+            {/* Days Before Alert */}
+            <div className="space-y-2">
+              <Label>{t("settings.alertDaysBefore")}</Label>
+              <Input
+                type="number"
+                min="1"
+                max="30"
+                value={settings?.alertDaysBefore || 7}
+                onChange={(e) => 
+                  updateSettingsMutation.mutate({ alertDaysBefore: parseInt(e.target.value) || 7 })
+                }
+                disabled={settings?.alertsEnabled === 0}
+                data-testid="input-alert-days-before"
+              />
+              <p className="text-sm text-muted-foreground">{t("settings.alertDaysBeforeDesc")}</p>
+            </div>
+
+            <Separator />
+
+            {/* Late Payment Alerts */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("settings.latePaymentAlerts")}</Label>
+                <p className="text-sm text-muted-foreground">{t("settings.latePaymentAlertsDesc")}</p>
+              </div>
+              <Switch
+                checked={settings?.latePaymentAlertsEnabled === 1}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ latePaymentAlertsEnabled: checked ? 1 : 0 })
+                }
+                disabled={settings?.alertsEnabled === 0}
+                data-testid="switch-late-payment-alerts"
+              />
+            </div>
+
+            <Separator />
+
+            {/* Generate Alerts Button */}
+            <Button
+              onClick={() => generateAlertsMutation.mutate()}
+              disabled={settings?.alertsEnabled === 0 || generateAlertsMutation.isPending}
+              className="w-full"
+              data-testid="button-generate-alerts"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              {generateAlertsMutation.isPending 
+                ? t("settings.generatingAlerts") 
+                : t("settings.generateAlerts")}
+            </Button>
           </CardContent>
         </Card>
 

@@ -269,6 +269,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/alerts/generate", optionalAuth, async (_req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      
+      if (!settings || !settings.alertsEnabled) {
+        return res.json({ message: "Alerts disabled", generatedCount: 0 });
+      }
+
+      const allCashflows = await storage.getCashflows();
+      const allInvestments = await storage.getInvestments();
+      const cashflows = allCashflows.map(cf => {
+        const investment = allInvestments.find(inv => inv.id === cf.investmentId);
+        return { ...cf, investment };
+      }).filter(cf => cf.investment);
+      const alerts = await storage.getAlerts();
+      const now = new Date();
+      const generatedAlerts: any[] = [];
+
+      for (const cashflow of cashflows) {
+        if (cashflow.status === 'received' || !cashflow.dueDate || !cashflow.investment) continue;
+
+        const dueDate = new Date(cashflow.dueDate);
+        const daysDiff = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const alertKey = `cashflow-${cashflow.id}`;
+        const existingAlert = alerts.find(a => 
+          a.message.includes(alertKey) || 
+          (a.investmentId === cashflow.investmentId && a.message.includes(cashflow.type))
+        );
+        
+        if (existingAlert) continue;
+
+        if (daysDiff < 0 && settings.latePaymentAlertsEnabled) {
+          const alert = await storage.createAlert({
+            type: 'distribution',
+            title: 'Late Payment Alert',
+            message: `${alertKey}: ${cashflow.type} payment for ${cashflow.investment.name} is overdue by ${Math.abs(daysDiff)} days`,
+            investmentId: cashflow.investmentId,
+            severity: 'error',
+            read: 0,
+          });
+          generatedAlerts.push(alert);
+        }
+        else if (daysDiff >= 0 && daysDiff <= settings.alertDaysBefore) {
+          const alert = await storage.createAlert({
+            type: 'distribution',
+            title: 'Upcoming Payment',
+            message: `${alertKey}: ${cashflow.type} payment for ${cashflow.investment.name} is due in ${daysDiff} days`,
+            investmentId: cashflow.investmentId,
+            severity: daysDiff <= 3 ? 'warning' : 'info',
+            read: 0,
+          });
+          generatedAlerts.push(alert);
+        }
+      }
+
+      res.json({ 
+        message: "Alerts generated successfully", 
+        generatedCount: generatedAlerts.length,
+        alerts: generatedAlerts 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to generate alerts" });
+    }
+  });
+
   // Cash Transactions
   app.get("/api/cash/transactions", optionalAuth, async (_req, res) => {
     try {

@@ -121,6 +121,9 @@ export const userSettings = pgTable("user_settings", {
   biometricEnabled: integer("biometric_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
   biometricCredentialId: text("biometric_credential_id"), // WebAuthn credential ID
   collapsedSections: text("collapsed_sections"), // JSON array of collapsed section IDs
+  alertsEnabled: integer("alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
+  alertDaysBefore: integer("alert_days_before").notNull().default(7), // Days before cashflow due date to alert
+  latePaymentAlertsEnabled: integer("late_payment_alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
 });
 
 export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });
