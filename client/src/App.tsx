@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -9,7 +8,6 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppSidebar } from "@/components/app-sidebar";
-import { LockScreen } from "@/components/lock-screen";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -29,7 +27,6 @@ import UserManagement from "@/pages/user-management";
 import RoleManagement from "@/pages/role-management";
 import AuditLog from "@/pages/audit-log";
 import NotFound from "@/pages/not-found";
-import type { UserSettings } from "@shared/schema";
 
 function Router() {
   return (
@@ -54,49 +51,11 @@ function Router() {
   );
 }
 
-interface AuthStatus {
-  isAuthenticated: boolean;
-  securityEnabled: boolean;
-  biometricEnabled: boolean;
-  hasPIN: boolean;
-  biometricCredentialId?: string;
-}
-
 function AppContent() {
-  const [isLocked, setIsLocked] = useState(true);
-  const { data: authStatus, isLoading } = useQuery<AuthStatus>({
-    queryKey: ["/api/auth/status"],
-  });
-
-  useEffect(() => {
-    if (!isLoading && authStatus) {
-      const needsAuth = authStatus.securityEnabled && authStatus.hasPIN && !authStatus.isAuthenticated;
-      setIsLocked(needsAuth);
-    }
-  }, [authStatus, isLoading]);
-
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  if (isLocked && authStatus?.securityEnabled && authStatus?.hasPIN) {
-    return (
-      <LockScreen
-        biometricEnabled={authStatus.biometricEnabled}
-        biometricCredentialId={authStatus.biometricCredentialId}
-        onUnlock={() => setIsLocked(false)}
-      />
-    );
-  }
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>

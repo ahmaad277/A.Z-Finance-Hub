@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { useLanguage } from "@/lib/language-provider";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
   {

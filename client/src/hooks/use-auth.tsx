@@ -22,6 +22,7 @@ type AuthContextType = {
   error: Error | null;
   loginMutation: UseMutationResult<any, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
+  hasPermission: (permission: string) => boolean;
 };
 
 type LoginData = {
@@ -100,6 +101,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const hasPermission = (permission: string): boolean => {
+    if (!user || !user.role || !user.role.permissions) return false;
+    return user.role.permissions.some((p: any) => p.permissionName === permission);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -108,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         loginMutation,
         logoutMutation,
+        hasPermission,
       }}
     >
       {children}
