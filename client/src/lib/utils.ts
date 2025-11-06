@@ -5,8 +5,27 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number | string, currency = "SAR"): string {
+export function formatCurrency(amount: number | string | null | undefined, currency = "SAR"): string {
+  if (amount === null || amount === undefined) {
+    return new Intl.NumberFormat("en-SA", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(0);
+  }
+  
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  
+  if (isNaN(num)) {
+    return new Intl.NumberFormat("en-SA", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(0);
+  }
+  
   return new Intl.NumberFormat("en-SA", {
     style: "currency",
     currency,
@@ -15,8 +34,17 @@ export function formatCurrency(amount: number | string, currency = "SAR"): strin
   }).format(num);
 }
 
-export function formatPercentage(value: number | string): string {
+export function formatPercentage(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return "0.00%";
+  }
+  
   const num = typeof value === "string" ? parseFloat(value) : value;
+  
+  if (isNaN(num)) {
+    return "0.00%";
+  }
+  
   return `${num.toFixed(2)}%`;
 }
 
@@ -52,7 +80,7 @@ export function calculateROI(investmentAmount: number | string, totalReturns: nu
   const amount = typeof investmentAmount === "string" ? parseFloat(investmentAmount) : investmentAmount;
   const returns = typeof totalReturns === "string" ? parseFloat(totalReturns) : totalReturns;
   
-  if (amount === 0) return 0;
+  if (isNaN(amount) || isNaN(returns) || amount === 0) return 0;
   return ((returns - amount) / amount) * 100;
 }
 
@@ -62,5 +90,8 @@ export function getInvestmentTotalReturns(
 ): number {
   return cashflows
     .filter(cf => cf.investmentId === investmentId && cf.status === "received")
-    .reduce((sum, cf) => sum + (typeof cf.amount === "string" ? parseFloat(cf.amount) : cf.amount), 0);
+    .reduce((sum, cf) => {
+      const amount = typeof cf.amount === "string" ? parseFloat(cf.amount) : cf.amount;
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0);
 }
