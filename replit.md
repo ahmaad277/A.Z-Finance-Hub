@@ -1,255 +1,7 @@
-# A.Z Finance Hub – Vision 2040
+# A.Z Finance Hub
 
-## Project Overview
-A.Z Finance Hub is an intelligent personal investment management platform designed for Sukuk-based portfolios and crowdfunding debt platforms (Sukuk, Manfa'a, Lendo). Built with a Vision 2040 roadmap, this application provides comprehensive portfolio tracking, cashflow management, and AI-powered analytics.
-
-## Tech Stack
-- **Frontend**: React + TypeScript + Tailwind CSS + Shadcn UI
-- **Backend**: Express.js + Node.js
-- **Data Storage**: In-memory storage (MemStorage) for MVP
-- **Charts**: Recharts for data visualization
-- **State Management**: TanStack Query (React Query)
-- **Routing**: Wouter
-- **Styling**: Tailwind CSS with custom A.Z Finance Hub design tokens
-
-## Key Features Implemented
-
-### 1. Dashboard (Enhanced - November 2025)
-- **Compact Stat Cards**: Professional, information-dense design with reduced padding and optimized fonts
-  - Reduced padding: pb-1, pt-4, px-4 (from pb-2)
-  - Title font: text-xs (from text-sm)
-  - Value font: text-xl (from text-2xl)
-  - Grid gap: gap-3 (from gap-6)
-- **Platform Overview Section**: Grid of clickable platform cards showing:
-  - Platform logo and name
-  - Active investments count
-  - Total capital invested
-  - Total returns received
-  - Average IRR percentage
-  - Average duration in months
-  - Responsive grid: 2 columns (mobile), 3 columns (tablet), 4 columns (desktop)
-- Portfolio overview with 4 key metrics (Total Capital, Total Returns, Average IRR, Progress to 2040)
-- Portfolio performance chart
-- Upcoming cashflows widget
-- Recent investments table
-
-### 2. Investments Management (Enhanced - November 2025)
-- View all investments across platforms
-- Add new investments with detailed form
-- Edit existing investments
-- Platform-based categorization (Sukuk, Manfa'a, Lendo)
-- Risk score visualization
-- IRR tracking
-- **ROI Calculations**: Real-time ROI calculation based on received cashflows
-  - Formula: ROI = (Total Returns - Investment Amount) / Investment Amount × 100
-  - Displays actual ROI and total returns for each investment
-  - Color-coded: Green for positive ROI, red for negative
-  - Only visible when cashflows are received
-
-### 3. Cashflow Tracking
-- Comprehensive cashflow table
-- Status indicators (Received, Expected, Upcoming)
-- Distribution type tracking (Profit, Principal)
-- Total received and expected metrics
-- Quarterly/semi-annual distribution support
-
-### 4. Analytics
-- Monthly returns trend chart
-- Platform allocation pie chart
-- Performance vs 2040 target comparison
-- Tabbed interface for different analytics views
-
-### 5. Timeline
-- Complete investment history
-- Event timeline (investments started, matured, distributions received)
-- Visual timeline with icons and status indicators
-
-### 6. Alerts System
-- Smart notifications for distributions, maturities, and risks
-- Unread count badge
-- Mark as read functionality
-- Severity-based color coding
-
-### 7. Smart Advisor - المستشار الذكي (Enhanced - November 2025)
-- **Tabbed Interface**: Modern, organized layout with 4 specialized tabs
-  - Overview: Vision 2040 progress + Market insights
-  - Recommendations: Personalized investment suggestions with confidence scores
-  - Risk Analysis: Comprehensive portfolio risk assessment with mitigation strategies
-  - Forecast: AI cashflow predictions with confidence levels
-- **Enhanced Visual Design**: 
-  - Gradient hero header with Sparkles icon
-  - Animated tab transitions using Framer Motion
-  - Improved card layouts with better information hierarchy
-  - Color-coded badges for risk levels and recommendation types
-  - Conditional rendering for all tabs (loading/no-data/data states)
-- **Improved UX**:
-  - Tabs always visible and accessible regardless of data availability
-  - Loading states with skeletons for better perceived performance
-  - No-data states with helpful messages and icons
-  - Smooth animations between tab switches
-  - Proper error handling with retry mechanisms
-- **AI-Powered Features**:
-  - Investment recommendations with action items and potential returns
-  - Risk factors analysis with positive/negative impact indicators
-  - Cashflow forecasting with reasoning and confidence scores
-  - Vision 2040 progress tracking with AI suggestions
-  - Market insights and trends analysis
-- Powered by OpenAI GPT-5 (latest model from August 2025)
-- Full bilingual support (English/Arabic) with RTL awareness
-- Rate limiting and error handling with retries
-- Interactive progress bars and hover effects
-
-### 8. Platform Management (NEW - November 2025)
-- **Platform Details Page**: Dedicated page for each platform (`/platform/:id`)
-  - Comprehensive platform statistics (Total Capital, Returns, IRR, Duration)
-  - Filtered investment list showing only platform-specific investments
-  - Back navigation to dashboard
-  - Full bilingual support (English/Arabic)
-- **Platform Management in Settings**:
-  - Enhanced platform display with logos
-  - Edit platform button (pencil icon) with confirmation
-  - Delete platform button (trash icon) with confirmation
-  - Visual hierarchy and improved UX
-- **Platform Cards Component**: 
-  - Reusable component for displaying platform summaries
-  - Click to navigate to detailed platform view
-  - Hover effects and responsive design
-  - Displays: name, logo, investment count, capital, returns, IRR, duration
-
-### 9. Cash Management System (NEW - November 2025)
-- **Cash Balance Tracking**: Complete cash management system integrated with portfolio
-  - Database schema: `cashTransactions` table with type, amount, date, source, notes fields
-  - API endpoints: GET/POST transactions, GET balance
-  - Cash Balance Widget: Displays current balance in Dashboard (Pro mode)
-  - AddCashDialog: User-friendly dialog for adding cash transactions
-  - Transaction types: Deposit, Withdrawal, Transfer, Investment, Distribution
-  - Real-time balance calculations from transaction history
-  - Full bilingual support (EN/AR) with RTL-aware UI
-  - Integration with investment funding tracking (`fundedFromCash` field)
-
-### 10. Design System
-- **Color Scheme**: 
-  - Dark mode primary: #0F172A (background), #2563EB (primary action), #22C55E (success)
-  - Light mode: #F8FAFC (background), #3B82F6 (primary)
-- **Fonts**: Tajawal (Arabic), Poppins (English)
-- **Dark/Light Mode**: Full theme toggle support
-- **Bilingual Support**: Arabic/English language toggle with full translations
-- **RTL Typography Enhancements**: 
-  - Arabic secondary text (text-sm, text-xs) automatically sized to 0.9375rem for better readability
-  - Muted text font-weight increased to 450 in RTL mode
-  - Improved contrast and visibility for Arabic UI elements
-  - Sidebar auto-close on navigation with RTL support
-
-## Design Tokens
-The application implements a comprehensive design system with:
-- Custom color variables for light/dark modes
-- Consistent spacing (p-4, p-6, p-8, gap-6)
-- Typography hierarchy (3xl, 2xl, xl, lg, base, sm, xs)
-- Interactive states (hover-elevate, active-elevate-2)
-- Responsive grid layouts
-
-## Data Model
-### Entities:
-1. **Platforms**: Investment platforms (Sukuk, Manfa'a, Lendo)
-2. **Investments**: Individual investment opportunities with platform association
-3. **Cashflows**: Profit distributions and principal returns
-4. **CashTransactions**: Cash management transactions (deposits, withdrawals, transfers)
-5. **Alerts**: System notifications and user alerts
-6. **PortfolioStats**: Calculated portfolio metrics
-7. **AnalyticsData**: Aggregated analytics for visualization
-
-## API Endpoints
-- `GET /api/platforms` - List all platforms
-- `GET /api/investments` - List all investments with platform details
-- `POST /api/investments` - Create new investment
-- `PATCH /api/investments/:id` - Update investment
-- `GET /api/cashflows` - List all cashflows with investment details
-- `POST /api/cashflows` - Create cashflow
-- `PATCH /api/cashflows/:id` - Update cashflow
-- `GET /api/cash/transactions` - List all cash transactions
-- `POST /api/cash/transactions` - Create cash transaction
-- `GET /api/cash/balance` - Get current cash balance
-- `GET /api/alerts` - List all alerts
-- `PATCH /api/alerts/:id/read` - Mark alert as read
-- `GET /api/portfolio/stats` - Get portfolio statistics
-- `GET /api/analytics` - Get analytics data
-- `GET /api/ai/recommendations` - Get AI-powered investment recommendations
-- `GET /api/ai/risk-analysis` - Get comprehensive AI risk analysis
-- `GET /api/ai/cashflow-forecast` - Get AI cashflow predictions
-- `GET /api/ai/insights` - Get comprehensive AI insights (all features)
-
-## Sample Data
-The application seeds with:
-- 3 platforms (Sukuk, Manfa'a, Lendo)
-- 2 active investments (Sukuk 2025-A, Manfa'a Growth Fund)
-- 3 cashflows (1 received, 2 upcoming)
-- 1 sample alert
-
-## Development
-- **Start**: `npm run dev` (already configured in workflow)
-- **Port**: 5000 (Vite dev server + Express backend)
-- **Hot Reload**: Automatic via Vite HMR
-
-## Testing
-All interactive elements and data displays include `data-testid` attributes for E2E testing:
-- `data-testid="page-{pagename}"` for pages
-- `data-testid="button-{action}"` for buttons
-- `data-testid="card-{type}-{id}"` for cards
-- `data-testid="stat-{metric}"` for statistics
-- `data-testid="stat-roi-{id}"` for ROI values per investment
-- `data-testid="widget-cash-balance"` for Cash Balance Widget
-- `data-testid="stat-cash-balance"` for current cash balance display
-
-## Vision 2040 Roadmap
-### Phase 1 (MVP - Completed)
-✅ Core portfolio management
-✅ Investment tracking
-✅ Cashflow monitoring
-✅ Basic analytics
-✅ Bilingual support (EN/AR)
-✅ Dark/Light mode
-
-### Phase 2 (Completed)
-✅ Secure authentication system with PIN + biometric support
-✅ Pro/Lite view modes with smooth animations
-✅ Collapsible dashboard sections with persistence
-✅ React Query cache persistence for instant loading
-✅ Session management with express-session
-✅ Rate limiting for security
-
-### Phase 3 (In Progress)
-✅ AI-powered predictions using OpenAI GPT-5
-✅ Investment recommendations with confidence scores
-✅ Comprehensive risk analysis
-✅ Cashflow forecasting
-✅ Vision 2040 progress predictions
-✅ Market insights
-✅ **Smart Advisor redesign**: Tabbed interface with gradient hero, animations, and improved UX
-✅ Compact, information-dense dashboard design
-✅ Platform overview cards with drill-down navigation
-✅ Platform details page with filtered statistics
-✅ Platform management (edit/delete) in Settings
-✅ Language toggle bug fix (Vite Fast Refresh)
-✅ Cash Balance System with full transaction tracking
-✅ ROI calculations for investments based on received cashflows
-✅ Enhanced Arabic typography (larger font sizes, better weight)
-✅ Sidebar RTL improvements with auto-close on navigation
-- PostgreSQL database for persistence (Next)
-- Platform API integrations (Sukuk, Manfa'a, Lendo)
-- Advanced risk scoring algorithms
-- Automated profit reinvestment
-
-### Phase 3 (2030)
-- International platform support
-- Advanced AI analytics
-- Custom investment strategies
-- Mobile apps (iOS/Android native)
-
-### Phase 4 (2040)
-- Fully autonomous investment management
-- AI-driven portfolio optimization
-- Global multi-currency support
-- Financial independence tools
+## Overview
+A.Z Finance Hub is an intelligent personal investment management platform focused on Sukuk-based portfolios and crowdfunding debt platforms (Sukuk, Manfa'a, Lendo). Its purpose is to provide comprehensive portfolio tracking, cashflow management, and AI-powered analytics, aligning with a Vision 2040 roadmap for financial independence. The platform aims to offer a robust and intuitive solution for managing Sharia-compliant investments, with capabilities for investment tracking, cashflow monitoring, advanced analytics, and AI-driven insights to guide users toward their long-term financial goals.
 
 ## User Preferences
 - Default theme: Dark mode
@@ -257,9 +9,27 @@ All interactive elements and data displays include `data-testid` attributes for 
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
 
-## Notes for Future Development
-- The in-memory storage will be replaced with PostgreSQL
-- AI predictions will integrate with OpenAI API
-- Platform APIs will be connected for automatic data sync
-- Authentication system will be added for multi-user support
-- Export functionality (PDF/Excel) will be enhanced
+## System Architecture
+The application is built with a modern web stack:
+- **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Recharts for charting, Wouter for routing, and TanStack Query for state management.
+- **Backend**: Express.js and Node.js.
+- **Styling**: Tailwind CSS with custom A.Z Finance Hub design tokens, supporting a comprehensive design system with custom color variables, typography hierarchy, and interactive states.
+- **UI/UX Decisions**:
+    - **Dashboard**: Features compact stat cards, a platform overview section with clickable cards, portfolio performance charts, upcoming cashflows, and a recent investments table. It supports a "Pro mode" for advanced features like the Cash Balance Widget and Goal Calculator.
+    - **Investment Management**: Allows viewing, adding, and editing investments, with platform-based categorization, risk scoring, and real-time ROI calculations.
+    - **Cashflow Tracking**: Provides a detailed table with status indicators and distribution type tracking.
+    - **Analytics**: Includes monthly returns trends, platform allocation pie charts, and performance vs. 2040 target comparisons through a tabbed interface.
+    - **Alerts System**: Smart alerts with user-configurable settings (enable/disable automatic alerts, configurable alert days before, late payment alerts, manual generation), severity-based classification, and in-app management.
+    - **Smart Advisor (المستشار الذكي)**: A tabbed interface (Overview, Recommendations, Risk Analysis, Forecast) powered by AI, featuring an enhanced visual design with gradient headers, animated transitions, improved card layouts, and bilingual support (English/Arabic with RTL awareness). It provides personalized recommendations, risk assessments, and cashflow predictions.
+    - **Platform Management**: Includes dedicated platform details pages with statistics and filtered investment lists, and enhanced management options within settings.
+    - **Cash Management System**: Tracks cash balances and transactions (deposits, withdrawals, transfers, investments, distributions) with real-time balance calculations.
+    - **Goal Calculator**: A dynamic investment goal calculator for Vision 2040 planning, offering real-time projections and an interactive growth chart.
+    - **Smart Payment Processing**: An enhanced dialog for completing investments, featuring automatic date confirmation, single-click processing, and ROI calculation.
+    - **Design System**: Implements dark/light mode, full bilingual support (English/Arabic) with RTL typography enhancements (e.g., Arabic secondary text sizing, muted text font-weight adjustment, sidebar auto-close on navigation).
+- **Core Entities**: Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings, PortfolioStats, and AnalyticsData.
+
+## External Dependencies
+- **AI/ML**: OpenAI GPT-5 (for Smart Advisor features like recommendations, risk analysis, and cashflow forecasting).
+- **Charting**: Recharts.
+- **Database**: In-memory storage (MemStorage) is currently used for MVP, with a planned migration to PostgreSQL for persistence.
+- **Third-Party Integrations**: Future integration with external platform APIs (Sukuk, Manfa'a, Lendo) is planned for automatic data synchronization.
