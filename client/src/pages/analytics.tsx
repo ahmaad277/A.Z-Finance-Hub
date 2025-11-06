@@ -42,7 +42,7 @@ export default function Analytics() {
 
   return (
     <div className="space-y-6" data-testid="page-analytics">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("analytics.title")}</h1>
           <p className="text-muted-foreground mt-1">
@@ -53,6 +53,7 @@ export default function Analytics() {
           onClick={handleExportAnalytics} 
           variant="outline"
           data-testid="button-export-analytics"
+          className="w-full sm:w-auto justify-center"
         >
           <Download className="h-4 w-4 mr-2" />
           {t("export.report")}
@@ -60,7 +61,7 @@ export default function Analytics() {
       </div>
 
       <Tabs defaultValue="returns" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className="grid w-full max-w-md grid-cols-3 mx-auto sm:mx-0">
           <TabsTrigger value="returns" data-testid="tab-returns">
             {t("analytics.returns")}
           </TabsTrigger>

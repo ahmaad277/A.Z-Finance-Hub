@@ -8,6 +8,7 @@ A.Z Finance Hub is an intelligent personal investment management platform focuse
 - Default language: English (supports Arabic)
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
+- **Mobile Optimized**: Full responsive design for all screen sizes (mobile, tablet, desktop)
 
 ## System Architecture
 The application is built with a modern web stack:
@@ -19,7 +20,7 @@ The application is built with a modern web stack:
         - **Classic View**: Compact stat cards, platform overview section with clickable cards, portfolio performance charts, upcoming cashflows, and recent investments table.
         - **Grid View** (Pro Mode Only): Customizable widget dashboard with drag-and-drop, resize, hide/show functionality. Includes 3 widgets: Stats Overview, Platform Cards, and Portfolio Chart. Layout preferences are saved to the database.
     - The dashboard supports a "Pro mode" toggle for advanced features like Cash Balance Widget, Goal Calculator, and Grid Dashboard.
-    - **Investment Management**: Features a horizontal row-based layout for efficient space utilization, displaying investments as thin rows with status-based color coding (active: green tint, completed: muted, pending: blue tint). Each row shows: duration in months, expected payment date, nominal value, net profit, ROI percentage, average payment amount, payment count, and a visual progress indicator with small boxes (6px × 6px) representing received vs. remaining payments. Includes platform-based categorization, risk scoring, and real-time ROI calculations. Full RTL support for Arabic.
+    - **Investment Management**: Features a horizontal row-based layout for efficient space utilization on desktop, with responsive mobile layout that stacks information vertically. Desktop view displays investments as thin rows with status-based color coding (active: green tint, completed: muted, pending: blue tint). Each row shows: duration in months, expected payment date, nominal value, net profit, ROI percentage, average payment amount, payment count, and a visual progress indicator with small boxes (6px × 6px) representing received vs. remaining payments. Mobile view uses a grid layout (2 columns) to show key stats: amount, total returns, ROI, end date, and payment progress. Includes platform-based categorization, risk scoring, and real-time ROI calculations. Full RTL support for Arabic and responsive design for all screen sizes.
     - **Cashflow Tracking**: Provides a detailed table with status indicators and distribution type tracking.
     - **Analytics**: Includes monthly returns trends, platform allocation pie charts, and performance vs. 2040 target comparisons through a tabbed interface.
     - **Alerts System**: Smart alerts with user-configurable settings (enable/disable automatic alerts, configurable alert days before, late payment alerts, manual generation), severity-based classification, and in-app management.

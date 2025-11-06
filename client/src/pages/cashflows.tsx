@@ -65,13 +65,13 @@ export default function Cashflows() {
   return (
     <div className="space-y-6" data-testid="page-cashflows">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("cashflows.title")}</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("cashflows.title")}</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           {t("cashflows.subtitle")}
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
         <Card className="hover-elevate transition-all duration-200" data-testid="card-stat-totalReceived">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">

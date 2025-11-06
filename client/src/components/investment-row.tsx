@@ -73,7 +73,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   return (
     <div
       className={`
-        flex items-center gap-3 p-3 rounded-lg border-l-4 transition-all duration-200
+        flex flex-col lg:flex-row lg:items-center gap-3 p-3 rounded-lg border-l-4 transition-all duration-200
         ${getStatusColors(investment.status)}
       `}
       data-testid={`row-investment-${investment.id}`}
@@ -81,7 +81,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
     >
       {/* Investment Name & Platform */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           {investment.platform && (
             <Badge variant="outline" className="text-xs shrink-0">
               {investment.platform.name}
@@ -99,43 +99,100 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           {investment.name}
         </h3>
       </div>
+
+      {/* Mobile: Key Stats in Grid */}
+      <div className="grid grid-cols-2 gap-3 lg:hidden">
+        <div className="flex flex-col">
+          <div className="text-xs text-muted-foreground">{t("investments.amount")}</div>
+          <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
+        </div>
+        <div className="flex flex-col">
+          <div className="text-xs text-muted-foreground">{t("dashboard.totalReturns")}</div>
+          <div className={`text-sm font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
+            {formatCurrency(totalReturns)}
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="text-xs text-muted-foreground">{t("investments.roi")}</div>
+          <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+            {formatPercentage(roi)}
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="text-xs text-muted-foreground">{t("investments.expectedEndDate")}</div>
+          <div className="text-sm font-medium">{formatDate(investment.endDate)}</div>
+        </div>
+      </div>
+
+      {/* Mobile: Payment Progress */}
+      <div className="flex items-center justify-between gap-3 lg:hidden">
+        <div className="flex flex-col flex-1">
+          <div className="text-xs text-muted-foreground mb-1">
+            {language === "ar" ? "تقدم الدفعات" : "Progress"}
+          </div>
+          <div className="flex items-center gap-[2px] flex-wrap max-w-[200px]">
+            {Array.from({ length: totalPayments }).map((_, index) => (
+              <div
+                key={index}
+                className={`
+                  w-[6px] h-[6px] rounded-[1px] transition-all
+                  ${index < receivedPayments
+                    ? 'bg-chart-2'
+                    : 'bg-muted-foreground/30'
+                  }
+                `}
+                title={
+                  index < receivedPayments
+                    ? language === "ar" ? "مستلمة" : "Received"
+                    : language === "ar" ? "متبقية" : "Remaining"
+                }
+              />
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            <span className="text-chart-2 font-medium">{receivedPayments}</span>
+            {" / "}
+            <span className="text-muted-foreground">{totalPayments}</span>
+          </div>
+        </div>
+      </div>
       
-      {/* Duration */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[60px]">
+      {/* Desktop: Duration */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[60px]">
         <div className="text-xs text-muted-foreground">{t("investments.duration")}</div>
         <div className="text-sm font-bold">{durationMonths}{language === "ar" ? "ش" : "m"}</div>
       </div>
       
-      {/* Expected End Date */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+      {/* Desktop: Expected End Date */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[100px]">
         <div className="text-xs text-muted-foreground">{t("investments.expectedEndDate")}</div>
         <div className="text-sm font-medium">{formatDate(investment.endDate)}</div>
       </div>
       
-      {/* Amount (Nominal Value) */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+      {/* Desktop: Amount (Nominal Value) */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[100px]">
         <div className="text-xs text-muted-foreground">{t("investments.amount")}</div>
         <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
       </div>
       
-      {/* Net Profit (Total Returns) */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+      {/* Desktop: Net Profit (Total Returns) */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[100px]">
         <div className="text-xs text-muted-foreground">{t("dashboard.totalReturns")}</div>
         <div className={`text-sm font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
           {formatCurrency(totalReturns)}
         </div>
       </div>
       
-      {/* ROI */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[70px]">
+      {/* Desktop: ROI */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[70px]">
         <div className="text-xs text-muted-foreground">{t("investments.roi")}</div>
         <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
           {formatPercentage(roi)}
         </div>
       </div>
       
-      {/* Payment Info */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+      {/* Desktop: Payment Info */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[100px]">
         <div className="text-xs text-muted-foreground">{t("investments.avgPayment")}</div>
         <div className="text-sm font-medium">{formatCurrency(avgPayment)}</div>
         <div className="text-xs text-muted-foreground mt-0.5">
@@ -143,8 +200,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         </div>
       </div>
       
-      {/* Payment Progress Boxes */}
-      <div className="flex flex-col items-center justify-center px-3 min-w-[120px]">
+      {/* Desktop: Payment Progress Boxes */}
+      <div className="hidden lg:flex flex-col items-center justify-center px-3 min-w-[120px]">
         <div className="text-xs text-muted-foreground mb-1">
           {language === "ar" ? "تقدم الدفعات" : "Progress"}
         </div>
@@ -184,8 +241,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
             data-testid={`button-complete-payment-${investment.id}`}
             className="h-8"
           >
-            <CheckCircle className="h-3.5 w-3.5 mr-1" />
-            <span className="hidden xl:inline">{t("investments.confirmPayment")}</span>
+            <CheckCircle className="h-3.5 w-3.5 lg:mr-1" />
+            <span className="hidden lg:inline">{t("investments.confirmPayment")}</span>
           </Button>
         )}
         <Button
@@ -195,8 +252,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           data-testid={`button-edit-investment-${investment.id}`}
           className="h-8"
         >
-          <Edit className="h-3.5 w-3.5 mr-1" />
-          <span className="hidden xl:inline">{t("common.edit")}</span>
+          <Edit className="h-3.5 w-3.5 lg:mr-1" />
+          <span className="hidden lg:inline">{t("common.edit")}</span>
         </Button>
         {onDelete && (
           <Button
@@ -206,8 +263,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
             data-testid={`button-delete-investment-${investment.id}`}
             className="h-8"
           >
-            <Trash2 className="h-3.5 w-3.5 mr-1" />
-            <span className="hidden xl:inline">{t("investments.deleteInvestment")}</span>
+            <Trash2 className="h-3.5 w-3.5 lg:mr-1" />
+            <span className="hidden lg:inline">{t("investments.deleteInvestment")}</span>
           </Button>
         )}
       </div>

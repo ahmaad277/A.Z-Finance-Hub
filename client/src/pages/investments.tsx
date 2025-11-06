@@ -113,17 +113,17 @@ export default function Investments() {
 
   return (
     <div className="space-y-6" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("investments.title")}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("investments.title")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {t("investments.subtitle")}
           </p>
         </div>
         <Button
           onClick={handleAddNew}
           data-testid="button-add-investment"
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto justify-center"
         >
           <Plus className="h-4 w-4" />
           {t("investments.addInvestment")}
