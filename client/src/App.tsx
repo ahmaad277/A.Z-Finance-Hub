@@ -26,6 +26,7 @@ import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
 import UserManagement from "@/pages/user-management";
 import RoleManagement from "@/pages/role-management";
+import AuditLog from "@/pages/audit-log";
 import NotFound from "@/pages/not-found";
 import type { UserSettings } from "@shared/schema";
 
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/platform/:id" component={PlatformDetails} />
       <Route path="/admin/users" component={UserManagement} />
       <Route path="/admin/roles" component={RoleManagement} />
+      <Route path="/admin/audit" component={AuditLog} />
       <Route component={NotFound} />
     </Switch>
   );

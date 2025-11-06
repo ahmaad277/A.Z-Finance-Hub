@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield, FileText } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -75,13 +75,19 @@ const adminItems = [
     key: "users",
     url: "/admin/users",
     icon: Users,
-    permission: "USER_MANAGE",
+    permission: "system:manage_users",
   },
   {
     key: "roles",
     url: "/admin/roles",
     icon: Shield,
-    permission: "ROLE_MANAGE",
+    permission: "system:manage_roles",
+  },
+  {
+    key: "audit",
+    url: "/admin/audit",
+    icon: FileText,
+    permission: "system:view_audit_log",
   },
 ];
 
