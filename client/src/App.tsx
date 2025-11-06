@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/app-sidebar";
 import { LockScreen } from "@/components/lock-screen";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -114,10 +115,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
         <LanguageProvider defaultLanguage="en">
-          <TooltipProvider>
-            <AppContent />
-            <Toaster />
-          </TooltipProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <AppContent />
+              <Toaster />
+            </TooltipProvider>
+          </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
