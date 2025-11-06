@@ -52,7 +52,17 @@ A.Z Finance Hub is an intelligent personal investment management platform design
 - Mark as read functionality
 - Severity-based color coding
 
-### 7. Design System
+### 7. AI Insights (NEW - Phase 3)
+- **AI-Powered Recommendations**: Personalized investment suggestions with confidence scores
+- **Risk Analysis**: Comprehensive portfolio risk assessment with mitigation strategies
+- **Cashflow Forecasting**: AI predictions of future cashflows and distributions
+- **Vision 2040 Progress**: AI-powered forecasts for reaching financial independence
+- **Market Insights**: General market analysis and trends
+- Powered by OpenAI GPT-5 (latest model from August 2025)
+- Bilingual AI responses (English/Arabic)
+- Rate limiting and error handling with retries
+
+### 8. Design System
 - **Color Scheme**: 
   - Dark mode primary: #0F172A (background), #2563EB (primary action), #22C55E (success)
   - Light mode: #F8FAFC (background), #3B82F6 (primary)
@@ -89,6 +99,10 @@ The application implements a comprehensive design system with:
 - `PATCH /api/alerts/:id/read` - Mark alert as read
 - `GET /api/portfolio/stats` - Get portfolio statistics
 - `GET /api/analytics` - Get analytics data
+- `GET /api/ai/recommendations` - Get AI-powered investment recommendations
+- `GET /api/ai/risk-analysis` - Get comprehensive AI risk analysis
+- `GET /api/ai/cashflow-forecast` - Get AI cashflow predictions
+- `GET /api/ai/insights` - Get comprehensive AI insights (all features)
 
 ## Sample Data
 The application seeds with:
@@ -126,9 +140,14 @@ All interactive elements and data displays include `data-testid` attributes for 
 ✅ Session management with express-session
 ✅ Rate limiting for security
 
-### Phase 3 (Next)
-- PostgreSQL database for persistence
-- AI-powered predictions using OpenAI
+### Phase 3 (In Progress)
+✅ AI-powered predictions using OpenAI GPT-5
+✅ Investment recommendations with confidence scores
+✅ Comprehensive risk analysis
+✅ Cashflow forecasting
+✅ Vision 2040 progress predictions
+✅ Market insights
+- PostgreSQL database for persistence (Next)
 - Platform API integrations (Sukuk, Manfa'a, Lendo)
 - Advanced risk scoring algorithms
 - Automated profit reinvestment
