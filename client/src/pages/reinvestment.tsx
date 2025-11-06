@@ -154,9 +154,11 @@ export default function Reinvestment() {
                       <h3 className="font-semibold" data-testid={`text-opportunity-name-${investment.id}`}>
                         {investment.name}
                       </h3>
-                      <Badge variant="outline" data-testid={`badge-platform-${investment.id}`}>
-                        {investment.platform.name}
-                      </Badge>
+                      {investment.platform && (
+                        <Badge variant="outline" data-testid={`badge-platform-${investment.id}`}>
+                          {investment.platform.name}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span data-testid={`text-opportunity-irr-${investment.id}`}>
