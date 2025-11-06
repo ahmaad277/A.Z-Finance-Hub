@@ -13,6 +13,7 @@ import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
+import { AddCashDialog } from "@/components/add-cash-dialog";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
@@ -104,6 +105,10 @@ export default function Dashboard() {
 
   const { data: analytics } = useQuery<AnalyticsData>({
     queryKey: ["/api/analytics"],
+  });
+
+  const { data: cashBalance } = useQuery<{balance: number}>({
+    queryKey: ["/api/cash/balance"],
   });
 
   // Calculate filtered stats based on selected platform
@@ -450,19 +455,22 @@ export default function Dashboard() {
             <Card data-testid="card-cash-management">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleSection('cash-management')}
-                  data-testid="button-toggle-cash-management"
-                  className="h-8 w-8 p-0"
-                >
-                  {isSectionCollapsed('cash-management') ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronUp className="h-4 w-4" />
-                  )}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <AddCashDialog />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSection('cash-management')}
+                    data-testid="button-toggle-cash-management"
+                    className="h-8 w-8 p-0"
+                  >
+                    {isSectionCollapsed('cash-management') ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <AnimatePresence initial={false}>
                 {!isSectionCollapsed('cash-management') && (
@@ -473,7 +481,19 @@ export default function Dashboard() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     style={{ overflow: "hidden" }}
                   >
-                    <CardContent>
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg" data-testid="widget-cash-balance">
+                        <div className="bg-primary/10 text-primary rounded-lg p-3">
+                          <Wallet className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">{t("cash.currentBalance")}</p>
+                          <p className="text-2xl font-bold" data-testid="stat-cash-balance">
+                            {cashBalance ? formatCurrency(cashBalance.balance) : formatCurrency(0)}
+                          </p>
+                        </div>
+                      </div>
+                      
                       <div className="grid gap-6 md:grid-cols-3">
                         {cashStatCards.map((card) => (
                           <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>

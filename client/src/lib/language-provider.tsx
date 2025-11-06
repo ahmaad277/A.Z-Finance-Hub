@@ -222,6 +222,35 @@ const translations = {
     "reinvestment.recentDistributionsDescription": "Cash received from your investments",
     "reinvestment.noDistributions": "No distributions received yet",
     
+    // Cash Management
+    "cash.addCash": "Add Cash",
+    "cash.addCashTransaction": "Add Cash Transaction",
+    "cash.currentBalance": "Current Balance",
+    "cash.amount": "Amount",
+    "cash.transactionType": "Transaction Type",
+    "cash.deposit": "Deposit",
+    "cash.withdrawal": "Withdrawal",
+    "cash.transfer": "Transfer",
+    "cash.investment": "Investment",
+    "cash.distribution": "Distribution",
+    "cash.source": "Source",
+    "cash.sourceTransfer": "Bank Transfer",
+    "cash.sourceProfit": "Profit Distribution",
+    "cash.sourceDeposit": "Direct Deposit",
+    "cash.sourceInvestmentReturn": "Investment Return",
+    "cash.date": "Date",
+    "cash.notes": "Notes",
+    "cash.notesPlaceholder": "Optional notes about this transaction",
+    "cash.transactionAdded": "Transaction Added",
+    "cash.transactionAddedDesc": "Cash transaction has been recorded successfully",
+    "cash.failedToAdd": "Failed to add transaction",
+    
+    // Common
+    "common.cancel": "Cancel",
+    "common.save": "Save",
+    "common.saving": "Saving...",
+    "common.error": "Error",
+    
     // Dialog
     "dialog.addInvestment": "Add New Investment",
     "dialog.editInvestment": "Edit Investment",
@@ -606,6 +635,35 @@ const translations = {
     "reinvestment.recentDistributions": "التوزيعات الأخيرة",
     "reinvestment.recentDistributionsDescription": "النقد المستلم من استثماراتك",
     "reinvestment.noDistributions": "لم يتم استلام توزيعات بعد",
+    
+    // Cash Management
+    "cash.addCash": "إضافة كاش",
+    "cash.addCashTransaction": "إضافة معاملة نقدية",
+    "cash.currentBalance": "الرصيد الحالي",
+    "cash.amount": "المبلغ",
+    "cash.transactionType": "نوع المعاملة",
+    "cash.deposit": "إيداع",
+    "cash.withdrawal": "سحب",
+    "cash.transfer": "تحويل",
+    "cash.investment": "استثمار",
+    "cash.distribution": "توزيع",
+    "cash.source": "المصدر",
+    "cash.sourceTransfer": "تحويل بنكي",
+    "cash.sourceProfit": "توزيع أرباح",
+    "cash.sourceDeposit": "إيداع مباشر",
+    "cash.sourceInvestmentReturn": "عائد استثمار",
+    "cash.date": "التاريخ",
+    "cash.notes": "ملاحظات",
+    "cash.notesPlaceholder": "ملاحظات اختيارية عن هذه المعاملة",
+    "cash.transactionAdded": "تمت إضافة المعاملة",
+    "cash.transactionAddedDesc": "تم تسجيل المعاملة النقدية بنجاح",
+    "cash.failedToAdd": "فشل إضافة المعاملة",
+    
+    // Common
+    "common.cancel": "إلغاء",
+    "common.save": "حفظ",
+    "common.saving": "جاري الحفظ...",
+    "common.error": "خطأ",
     
     // Dialog
     "dialog.addInvestment": "إضافة استثمار جديد",

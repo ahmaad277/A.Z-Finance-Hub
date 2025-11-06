@@ -9,6 +9,7 @@ import {
   insertCashflowSchema,
   insertAlertSchema,
   insertUserSettingsSchema,
+  insertCashTransactionSchema,
 } from "@shared/schema";
 
 // Rate limiting for login attempts
@@ -265,6 +266,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(alert);
     } catch (error) {
       res.status(500).json({ error: "Failed to mark alert as read" });
+    }
+  });
+
+  // Cash Transactions
+  app.get("/api/cash/transactions", optionalAuth, async (_req, res) => {
+    try {
+      const transactions = await storage.getCashTransactions();
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cash transactions" });
+    }
+  });
+
+  app.post("/api/cash/transactions", optionalAuth, async (req, res) => {
+    try {
+      const data = insertCashTransactionSchema.parse(req.body);
+      const transaction = await storage.createCashTransaction(data);
+      res.status(201).json(transaction);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Invalid transaction data" });
+    }
+  });
+
+  app.get("/api/cash/balance", optionalAuth, async (_req, res) => {
+    try {
+      const balance = await storage.getCashBalance();
+      res.json({ balance });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cash balance" });
     }
   });
 

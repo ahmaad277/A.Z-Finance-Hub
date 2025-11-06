@@ -356,4 +356,14 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Arabic RTL typography improvements */
+  [dir="rtl"] .text-sm,
+  [dir="rtl"] .text-xs {
+    font-size: 0.9375rem; /* Slightly larger for Arabic secondary text */
+  }
+  
+  [dir="rtl"] .text-muted-foreground {
+    font-weight: 450; /* Slightly bolder for better readability */
+  }
 }

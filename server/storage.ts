@@ -4,6 +4,7 @@ import {
   cashflows,
   alerts,
   userSettings,
+  cashTransactions,
   type Platform,
   type InsertPlatform,
   type Investment,
@@ -14,13 +15,15 @@ import {
   type InsertAlert,
   type UserSettings,
   type InsertUserSettings,
+  type CashTransaction,
+  type InsertCashTransaction,
   type PortfolioStats,
   type AnalyticsData,
   type InvestmentWithPlatform,
   type CashflowWithInvestment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, gte, lte } from "drizzle-orm";
+import { eq, desc, and, or, gte, lte, sum } from "drizzle-orm";
 
 export interface IStorage {
   // Platforms
@@ -42,6 +45,11 @@ export interface IStorage {
   getAlerts(): Promise<Alert[]>;
   createAlert(alert: InsertAlert): Promise<Alert>;
   markAlertAsRead(id: string): Promise<Alert | undefined>;
+
+  // Cash Transactions
+  getCashTransactions(): Promise<CashTransaction[]>;
+  createCashTransaction(transaction: InsertCashTransaction): Promise<CashTransaction>;
+  getCashBalance(): Promise<number>;
 
   // Analytics
   getPortfolioStats(): Promise<PortfolioStats>;
@@ -164,6 +172,49 @@ export class DatabaseStorage implements IStorage {
       .where(eq(alerts.id, id))
       .returning();
     return alert || undefined;
+  }
+
+  // Cash Transactions
+  async getCashTransactions(): Promise<CashTransaction[]> {
+    return await db
+      .select()
+      .from(cashTransactions)
+      .orderBy(desc(cashTransactions.date));
+  }
+
+  async createCashTransaction(transaction: InsertCashTransaction): Promise<CashTransaction> {
+    const currentBalance = await this.getCashBalance();
+    
+    let amountChange = parseFloat(transaction.amount.toString());
+    if (transaction.type === 'withdrawal' || transaction.type === 'investment') {
+      amountChange = -amountChange;
+    }
+    
+    const newBalance = currentBalance + amountChange;
+    
+    const [cashTransaction] = await db
+      .insert(cashTransactions)
+      .values({
+        ...transaction,
+        balanceAfter: newBalance.toString(),
+      })
+      .returning();
+    
+    return cashTransaction;
+  }
+
+  async getCashBalance(): Promise<number> {
+    const [latestTransaction] = await db
+      .select()
+      .from(cashTransactions)
+      .orderBy(desc(cashTransactions.createdAt))
+      .limit(1);
+    
+    if (!latestTransaction) {
+      return 0;
+    }
+    
+    return parseFloat(latestTransaction.balanceAfter);
   }
 
   // Analytics
