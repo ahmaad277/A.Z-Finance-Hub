@@ -72,6 +72,7 @@ export interface IStorage {
   getInvestment(id: string): Promise<Investment | undefined>;
   createInvestment(investment: InsertInvestment): Promise<Investment>;
   updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined>;
+  deleteInvestment(id: string): Promise<boolean>;
 
   // Cashflows
   getCashflows(): Promise<CashflowWithInvestment[]>;
@@ -240,6 +241,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(investments.id, id))
       .returning();
     return investment || undefined;
+  }
+
+  async deleteInvestment(id: string): Promise<boolean> {
+    // Delete related cashflows first
+    await db.delete(cashflows).where(eq(cashflows.investmentId, id));
+    
+    // Delete related alerts
+    await db.delete(alerts).where(eq(alerts.investmentId, id));
+    
+    // Delete the investment
+    const result = await db.delete(investments).where(eq(investments.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 
   // Cashflows

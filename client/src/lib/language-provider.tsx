@@ -172,6 +172,9 @@ const translations = {
     "investments.confirmPayment": "Confirm Payment",
     "investments.duration": "Duration",
     "investments.avgPayment": "Avg Payment",
+    "investments.deleteInvestment": "Delete Investment",
+    "investments.deleteConfirm": "Are you sure you want to delete this investment?",
+    "investments.deleteWarning": "This will permanently delete the investment and all related cashflows and alerts. This action cannot be undone.",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -829,6 +832,9 @@ const translations = {
     "investments.confirmPayment": "تأكيد السداد",
     "investments.duration": "المدة",
     "investments.avgPayment": "متوسط الدفعة",
+    "investments.deleteInvestment": "حذف الاستثمار",
+    "investments.deleteConfirm": "هل أنت متأكد من حذف هذا الاستثمار؟",
+    "investments.deleteWarning": "سيتم حذف الاستثمار ونهائياً وجميع التدفقات النقدية والتنبيهات المرتبطة به. لا يمكن التراجع عن هذا الإجراء.",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",

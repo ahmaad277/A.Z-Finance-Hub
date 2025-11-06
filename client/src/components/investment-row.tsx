@@ -1,6 +1,6 @@
 import { formatCurrency, formatPercentage, formatDate, calculateROI } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Edit, CheckCircle } from "lucide-react";
+import { Edit, CheckCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
@@ -10,9 +10,10 @@ interface InvestmentRowProps {
   cashflows: CashflowWithInvestment[];
   onEdit: () => void;
   onCompletePayment?: () => void;
+  onDelete?: () => void;
 }
 
-export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment }: InvestmentRowProps) {
+export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete }: InvestmentRowProps) {
   const { t, language } = useLanguage();
   const isRtl = language === "ar";
   
@@ -197,6 +198,18 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           <Edit className="h-3.5 w-3.5 mr-1" />
           <span className="hidden xl:inline">{t("common.edit")}</span>
         </Button>
+        {onDelete && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            data-testid={`button-delete-investment-${investment.id}`}
+            className="h-8"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1" />
+            <span className="hidden xl:inline">{t("investments.deleteInvestment")}</span>
+          </Button>
+        )}
       </div>
     </div>
   );

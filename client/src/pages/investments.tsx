@@ -1,21 +1,36 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/lib/language-provider";
 import { InvestmentRow } from "@/components/investment-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 
 export default function Investments() {
   const { t, language } = useLanguage();
   const isRtl = language === "ar";
+  const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
+  const [deletingInvestment, setDeletingInvestment] = useState<InvestmentWithPlatform | null>(null);
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -23,6 +38,31 @@ export default function Investments() {
 
   const { data: cashflows, isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/investments/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      toast({
+        title: language === "ar" ? "تم الحذف" : "Deleted",
+        description: language === "ar" ? "تم حذف الاستثمار بنجاح" : "Investment deleted successfully",
+      });
+      setDeleteDialogOpen(false);
+      setDeletingInvestment(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل حذف الاستثمار" : "Failed to delete investment"),
+        variant: "destructive",
+      });
+    },
   });
 
   const handleEdit = (investment: InvestmentWithPlatform) => {
@@ -38,6 +78,17 @@ export default function Investments() {
   const handleCompletePayment = (investment: InvestmentWithPlatform) => {
     setCompletingInvestment(investment);
     setCompletePaymentDialogOpen(true);
+  };
+
+  const handleDelete = (investment: InvestmentWithPlatform) => {
+    setDeletingInvestment(investment);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingInvestment) {
+      deleteMutation.mutate(deletingInvestment.id);
+    }
   };
 
   const isLoading = investmentsLoading || cashflowsLoading;
@@ -106,6 +157,7 @@ export default function Investments() {
                   cashflows={cashflows || []}
                   onEdit={() => handleEdit(investment)}
                   onCompletePayment={() => handleCompletePayment(investment)}
+                  onDelete={() => handleDelete(investment)}
                 />
               ))}
             </div>
@@ -124,6 +176,37 @@ export default function Investments() {
         onOpenChange={setCompletePaymentDialogOpen}
         investment={completingInvestment}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("investments.deleteConfirm")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("investments.deleteWarning")}
+              {deletingInvestment && (
+                <div className="mt-2 font-semibold">
+                  {deletingInvestment.name}
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">
+              {language === "ar" ? "إلغاء" : "Cancel"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+              data-testid="button-confirm-delete"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending
+                ? (language === "ar" ? "جاري الحذف..." : "Deleting...")
+                : (language === "ar" ? "حذف" : "Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

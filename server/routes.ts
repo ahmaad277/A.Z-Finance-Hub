@@ -25,6 +25,7 @@ import temporaryRolesRoutes from "./routes/temporary-roles";
 // Import field masking helpers
 import { getMaskingConfig, applyMasking, type MaskingConfig } from "./helpers/field-masking";
 import type { AuthenticatedRequest } from "./middleware/auth";
+import { requirePermission } from "./middleware/auth";
 
 // Rate limiting for login attempts
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
@@ -314,6 +315,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ error: error.message || "Invalid investment data" });
     }
   }));
+
+  app.delete("/api/investments/:id", requireAuth, requirePermission('investments:delete'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const authReq = req as AuthenticatedRequest;
+
+      const success = await storage.deleteInvestment(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Investment not found" });
+      }
+
+      // Log audit only after successful deletion
+      await storage.logAudit({
+        actorId: authReq.user!.id,
+        actionType: 'delete',
+        targetType: 'investment',
+        targetId: id,
+        details: 'Investment deleted',
+        ipAddress: req.ip || 'unknown',
+      });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Investment deletion error:", error);
+      res.status(500).json({ error: "Failed to delete investment" });
+    }
+  });
 
   // Cashflows
   app.get("/api/cashflows", optionalAuth, withMasking('cashflow')(async (_req, res) => {
