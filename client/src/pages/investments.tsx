@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Filter, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +20,7 @@ import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
+import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
 
 export default function Investments() {
   const { t, language } = useLanguage();
@@ -32,12 +33,21 @@ export default function Investments() {
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentWithPlatform | null>(null);
 
+  // Filter and Sort States
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("date-desc");
+
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
   });
 
   const { data: cashflows, isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
+  });
+
+  const { data: platforms } = useQuery<Platform[]>({
+    queryKey: ["/api/platforms"],
   });
 
   const deleteMutation = useMutation({
@@ -91,6 +101,45 @@ export default function Investments() {
     }
   };
 
+  // Filter and Sort Logic
+  const filteredAndSortedInvestments = useMemo(() => {
+    if (!investments) return [];
+
+    let filtered = investments;
+
+    // Filter by platform
+    if (selectedPlatform !== "all") {
+      filtered = filtered.filter(inv => inv.platformId === selectedPlatform);
+    }
+
+    // Filter by status
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter(inv => inv.status === selectedStatus);
+    }
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        case "date-asc":
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        case "amount-desc":
+          return parseFloat(b.amount) - parseFloat(a.amount);
+        case "amount-asc":
+          return parseFloat(a.amount) - parseFloat(b.amount);
+        case "end-date-asc":
+          return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+        case "end-date-desc":
+          return new Date(b.endDate).getTime() - new Date(a.endDate).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [investments, selectedPlatform, selectedStatus, sortBy]);
+
   const isLoading = investmentsLoading || cashflowsLoading;
 
   if (isLoading) {
@@ -130,27 +179,98 @@ export default function Investments() {
         </Button>
       </div>
 
-      {investments && investments.length === 0 ? (
+      {/* Filters and Sort */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+          <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-platform-filter">
+            <Filter className="h-4 w-4 mr-2 shrink-0" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{language === "ar" ? "كل المنصات" : "All Platforms"}</SelectItem>
+            {platforms?.map((platform) => (
+              <SelectItem key={platform.id} value={platform.id}>
+                {platform.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-status-filter">
+            <Filter className="h-4 w-4 mr-2 shrink-0" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{language === "ar" ? "كل الحالات" : "All Statuses"}</SelectItem>
+            <SelectItem value="active">{t("investments.active")}</SelectItem>
+            <SelectItem value="pending">{t("investments.pending")}</SelectItem>
+            <SelectItem value="completed">{t("investments.completed")}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-[220px]" data-testid="select-sort-by">
+            <ArrowUpDown className="h-4 w-4 mr-2 shrink-0" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">{language === "ar" ? "الأحدث أولاً" : "Newest First"}</SelectItem>
+            <SelectItem value="date-asc">{language === "ar" ? "الأقدم أولاً" : "Oldest First"}</SelectItem>
+            <SelectItem value="end-date-asc">{language === "ar" ? "الأقرب انتهاءً" : "Ending Soonest"}</SelectItem>
+            <SelectItem value="end-date-desc">{language === "ar" ? "الأبعد انتهاءً" : "Ending Latest"}</SelectItem>
+            <SelectItem value="amount-desc">{language === "ar" ? "الأكبر مبلغاً" : "Largest Amount"}</SelectItem>
+            <SelectItem value="amount-asc">{language === "ar" ? "الأصغر مبلغاً" : "Smallest Amount"}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {(selectedPlatform !== "all" || selectedStatus !== "all" || sortBy !== "date-desc") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedPlatform("all");
+              setSelectedStatus("all");
+              setSortBy("date-desc");
+            }}
+            className="w-full sm:w-auto"
+          >
+            {language === "ar" ? "إعادة تعيين" : "Reset"}
+          </Button>
+        )}
+      </div>
+
+      {filteredAndSortedInvestments.length === 0 ? (
         <Card className="p-12" data-testid="card-empty-state">
           <div className="flex flex-col items-center justify-center text-center">
             <div className="rounded-full bg-muted p-4 mb-4">
               <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">{t("investments.noInvestmentsYet")}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {investments && investments.length === 0
+                ? t("investments.noInvestmentsYet")
+                : (language === "ar" ? "لا توجد استثمارات مطابقة" : "No matching investments")}
+            </h3>
             <p className="text-muted-foreground mb-4 max-w-sm">
-              {t("investments.noInvestmentsDesc")}
+              {investments && investments.length === 0
+                ? t("investments.noInvestmentsDesc")
+                : (language === "ar"
+                  ? "جرب تغيير الفلاتر لرؤية المزيد من الاستثمارات"
+                  : "Try changing the filters to see more investments")}
             </p>
-            <Button onClick={handleAddNew} data-testid="button-add-first-investment">
-              <Plus className="h-4 w-4 mr-2" />
-              {t("investments.addFirstInvestment")}
-            </Button>
+            {investments && investments.length === 0 && (
+              <Button onClick={handleAddNew} data-testid="button-add-first-investment">
+                <Plus className="h-4 w-4 mr-2" />
+                {t("investments.addFirstInvestment")}
+              </Button>
+            )}
           </div>
         </Card>
       ) : (
         <Card>
-          <CardContent className="p-4">
-            <div className="space-y-2">
-              {investments?.map((investment) => (
+          <CardContent className="p-2 sm:p-4">
+            <div className="space-y-1">
+              {filteredAndSortedInvestments.map((investment) => (
                 <InvestmentRow
                   key={investment.id}
                   investment={investment}

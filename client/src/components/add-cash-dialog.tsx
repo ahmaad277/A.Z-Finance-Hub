@@ -62,9 +62,9 @@ export function AddCashDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button data-testid="button-add-cash" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          {t("cash.addCash")}
+        <Button data-testid="button-add-cash" size="sm" className="whitespace-nowrap">
+          <Plus className="h-4 w-4 mr-2 shrink-0" />
+          <span className="truncate">{t("cash.addCash")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]" data-testid="dialog-add-cash">
