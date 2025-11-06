@@ -36,7 +36,19 @@ The application is built with a modern web stack:
         - Full bilingual support with responsive design
         - localStorage preference persistence for view mode (Classic vs Grid)
     - **Design System**: Implements dark/light mode, full bilingual support (English/Arabic) with RTL typography enhancements (e.g., Arabic secondary text sizing, muted text font-weight adjustment, sidebar auto-close on navigation).
-- **Core Entities**: Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings (with dashboardLayout and hiddenWidgets for widget customization), PortfolioStats, and AnalyticsData.
+    - **Roles & Permissions System** (Multi-User):
+        - **6 Role Types**: Owner, Admin, Advanced Analyst, Basic Analyst, Data Entry, Viewer
+        - **29 Permissions** organized in 11 categories: System, Data Access, Investments, Cashflows, Cash, Analytics, Users, Export/View Requests, Roles, Alerts, Platform Management
+        - **Granular Permission Gates**: Separate permissions for create, edit, and delete operations (e.g., CREATE_ROLES, EDIT_ROLES, DELETE_ROLES)
+        - **Atomic Transactions**: Role creation/update uses database transactions for data consistency
+        - **Field-Level Masking**: Sensitive data masked based on VIEW_ABSOLUTE_AMOUNTS, VIEW_PERCENTAGES, VIEW_SENSITIVE permissions
+        - **Admin Section**: Sidebar section with Users and Roles management, visible only with appropriate permissions
+        - **Audit Logging**: All sensitive actions tracked with actor, action type, target details, and IP address
+        - **Impersonation**: Admins can view/operate as other users with full audit trail
+        - **Temporary Roles**: Time-limited role assignments with automatic expiration
+        - **Export/View Approval Workflows**: Request-based access for sensitive operations
+        - **Translation System**: Comprehensive English/Arabic translations for all permission categories and role management UI
+- **Core Entities**: Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings (with dashboardLayout and hiddenWidgets for widget customization), PortfolioStats, AnalyticsData, Users, Roles, Permissions, RolePermissions, UserPlatforms, TemporaryRoles, AuditLogs, ExportRequests, ViewRequests, ImpersonationSessions.
 
 ## External Dependencies
 - **AI/ML**: OpenAI GPT-5 (for Smart Advisor features like recommendations, risk analysis, and cashflow forecasting).
