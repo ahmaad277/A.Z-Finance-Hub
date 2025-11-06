@@ -290,6 +290,22 @@ const translations = {
     "dialog.actualPaymentDate": "Actual Payment Date",
     "dialog.investmentCompleted": "Investment marked as completed successfully",
     
+    // Calculator
+    "calculator.title": "Investment Goal Calculator",
+    "calculator.description": "Calculate your future investment value based on deposits and returns",
+    "calculator.initialAmount": "Initial Amount (SAR)",
+    "calculator.monthlyDeposit": "Monthly Deposit (SAR)",
+    "calculator.expectedIRR": "Expected Annual Return (%)",
+    "calculator.durationYears": "Duration (Years)",
+    "calculator.calculate": "Calculate Goal",
+    "calculator.futureValue": "Future Value",
+    "calculator.totalDeposits": "Total Deposits",
+    "calculator.totalReturns": "Total Returns",
+    "calculator.projectionChart": "Investment Projection",
+    "calculator.years": "Years",
+    "calculator.year": "Year",
+    "calculator.deposits": "Deposits",
+    
     // Export
     "export.report": "Export",
     "export.monthly": "Monthly Report",
@@ -714,6 +730,22 @@ const translations = {
     "dialog.confirmPaymentDesc": "وضع علامة على هذا الاستثمار كمسدد بالكامل ومكتمل",
     "dialog.actualPaymentDate": "تاريخ السداد الفعلي",
     "dialog.investmentCompleted": "تم وضع علامة على الاستثمار كمكتمل بنجاح",
+    
+    // Calculator
+    "calculator.title": "حاسبة الهدف الاستثماري",
+    "calculator.description": "احسب القيمة المستقبلية لاستثماراتك بناءً على الإيداعات والعوائد",
+    "calculator.initialAmount": "المبلغ الابتدائي (ريال)",
+    "calculator.monthlyDeposit": "الإيداع الشهري (ريال)",
+    "calculator.expectedIRR": "العائد السنوي المتوقع (%)",
+    "calculator.durationYears": "المدة (سنوات)",
+    "calculator.calculate": "احسب الهدف",
+    "calculator.futureValue": "القيمة المستقبلية",
+    "calculator.totalDeposits": "إجمالي الإيداعات",
+    "calculator.totalReturns": "إجمالي العوائد",
+    "calculator.projectionChart": "توقعات الاستثمار",
+    "calculator.years": "السنوات",
+    "calculator.year": "السنة",
+    "calculator.deposits": "الإيداعات",
     
     // Export
     "export.report": "تصدير",

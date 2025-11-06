@@ -14,6 +14,7 @@ import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { AddCashDialog } from "@/components/add-cash-dialog";
+import { GoalCalculator } from "@/components/goal-calculator";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
@@ -568,6 +569,18 @@ export default function Dashboard() {
                 )}
               </AnimatePresence>
             </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Goal Calculator - Pro Mode Only */}
+      <AnimatePresence mode="wait">
+        {(!settings || settings.viewMode === "pro") && (
+          <motion.div
+            key="goal-calculator"
+            {...fadeInUp}
+          >
+            <GoalCalculator />
           </motion.div>
         )}
       </AnimatePresence>
