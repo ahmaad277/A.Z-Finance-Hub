@@ -99,7 +99,8 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetDefinition> = {
 };
 
 export function getDefaultLayout(): WidgetDefinition['defaultLayout'][] {
-  return Object.values(WIDGET_REGISTRY).map(widget => widget.defaultLayout);
+  // Return deep copy to prevent mutations
+  return Object.values(WIDGET_REGISTRY).map(widget => ({ ...widget.defaultLayout }));
 }
 
 export function getAvailableWidgets(viewMode: 'simple' | 'professional' = 'simple'): WidgetDefinition[] {

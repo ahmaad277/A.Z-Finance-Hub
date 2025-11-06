@@ -55,8 +55,11 @@ export function GridDashboard({ viewMode }: GridDashboardProps) {
     }
   }, [settings]);
   
-  const [currentLayout, setCurrentLayout] = useState<Layout[]>(dashboardConfig.layouts);
-  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetId[]>(dashboardConfig.hiddenWidgets);
+  // Clone layouts to prevent mutations
+  const [currentLayout, setCurrentLayout] = useState<Layout[]>(() => 
+    dashboardConfig.layouts.map(l => ({ ...l }))
+  );
+  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetId[]>(() => [...dashboardConfig.hiddenWidgets]);
   
   // Get available widgets based on view mode
   const availableWidgets = useMemo(() => {
@@ -102,8 +105,9 @@ export function GridDashboard({ viewMode }: GridDashboardProps) {
   }, [currentLayout, hiddenWidgets, saveLayoutMutation]);
   
   const handleCancelEdit = useCallback(() => {
-    setCurrentLayout(dashboardConfig.layouts);
-    setHiddenWidgets(dashboardConfig.hiddenWidgets);
+    // Clone to prevent mutations
+    setCurrentLayout(dashboardConfig.layouts.map(l => ({ ...l })));
+    setHiddenWidgets([...dashboardConfig.hiddenWidgets]);
     setIsEditing(false);
   }, [dashboardConfig]);
   
