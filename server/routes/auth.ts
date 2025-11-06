@@ -108,10 +108,10 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// Logout
-router.post('/logout', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+// Logout (no auth required - allows cleanup of expired sessions)
+router.post('/logout', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.session?.userId;
 
     if (userId) {
       await logAudit({
@@ -124,8 +124,10 @@ router.post('/logout', requireAuth, async (req: AuthenticatedRequest, res: Respo
 
     req.session.destroy((err) => {
       if (err) {
+        console.error('Session destroy error:', err);
         return res.status(500).json({ error: 'Logout failed' });
       }
+      res.clearCookie('connect.sid');
       res.json({ success: true });
     });
   } catch (error) {
