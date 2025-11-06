@@ -70,15 +70,27 @@ A.Z Finance Hub is an intelligent personal investment management platform design
 - Mark as read functionality
 - Severity-based color coding
 
-### 7. AI Insights (Phase 3)
-- **AI-Powered Recommendations**: Personalized investment suggestions with confidence scores
-- **Risk Analysis**: Comprehensive portfolio risk assessment with mitigation strategies
-- **Cashflow Forecasting**: AI predictions of future cashflows and distributions
-- **Vision 2040 Progress**: AI-powered forecasts for reaching financial independence
-- **Market Insights**: General market analysis and trends
+### 7. Smart Advisor - المستشار الذكي (Enhanced - November 2025)
+- **Tabbed Interface**: Modern, organized layout with 4 specialized tabs
+  - Overview: Vision 2040 progress + Market insights
+  - Recommendations: Personalized investment suggestions with confidence scores
+  - Risk Analysis: Comprehensive portfolio risk assessment with mitigation strategies
+  - Forecast: AI cashflow predictions with confidence levels
+- **Enhanced Visual Design**: 
+  - Gradient hero header with Sparkles icon
+  - Animated tab transitions using Framer Motion
+  - Improved card layouts with better information hierarchy
+  - Color-coded badges for risk levels and recommendation types
+- **AI-Powered Features**:
+  - Investment recommendations with action items and potential returns
+  - Risk factors analysis with positive/negative impact indicators
+  - Cashflow forecasting with reasoning and confidence scores
+  - Vision 2040 progress tracking with AI suggestions
+  - Market insights and trends analysis
 - Powered by OpenAI GPT-5 (latest model from August 2025)
-- Bilingual AI responses (English/Arabic)
+- Full bilingual support (English/Arabic) with RTL awareness
 - Rate limiting and error handling with retries
+- Interactive progress bars and hover effects
 
 ### 8. Platform Management (NEW - November 2025)
 - **Platform Details Page**: Dedicated page for each platform (`/platform/:id`)
@@ -205,6 +217,7 @@ All interactive elements and data displays include `data-testid` attributes for 
 ✅ Cashflow forecasting
 ✅ Vision 2040 progress predictions
 ✅ Market insights
+✅ **Smart Advisor redesign**: Tabbed interface with gradient hero, animations, and improved UX
 ✅ Compact, information-dense dashboard design
 ✅ Platform overview cards with drill-down navigation
 ✅ Platform details page with filtered statistics
