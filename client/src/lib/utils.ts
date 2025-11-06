@@ -47,3 +47,20 @@ export function calculateIRR(cashflows: Array<{ date: Date; amount: number }>): 
   if (years === 0 || totalInvestment === 0) return 0;
   return ((totalReturns / totalInvestment) / years) * 100;
 }
+
+export function calculateROI(investmentAmount: number | string, totalReturns: number | string): number {
+  const amount = typeof investmentAmount === "string" ? parseFloat(investmentAmount) : investmentAmount;
+  const returns = typeof totalReturns === "string" ? parseFloat(totalReturns) : totalReturns;
+  
+  if (amount === 0) return 0;
+  return ((returns - amount) / amount) * 100;
+}
+
+export function getInvestmentTotalReturns(
+  investmentId: string,
+  cashflows: Array<{ investmentId: string; amount: number | string; status: string }>
+): number {
+  return cashflows
+    .filter(cf => cf.investmentId === investmentId && cf.status === "received")
+    .reduce((sum, cf) => sum + (typeof cf.amount === "string" ? parseFloat(cf.amount) : cf.amount), 0);
+}

@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
 import { InvestmentCard } from "@/components/investment-card";
 import { InvestmentDialog } from "@/components/investment-dialog";
-import type { InvestmentWithPlatform } from "@shared/schema";
+import { getInvestmentTotalReturns } from "@/lib/utils";
+import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 
 export default function Investments() {
   const { t } = useLanguage();
@@ -15,6 +16,10 @@ export default function Investments() {
 
   const { data: investments, isLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
+  });
+
+  const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
+    queryKey: ["/api/cashflows"],
   });
 
   const handleEdit = (investment: InvestmentWithPlatform) => {
@@ -90,13 +95,20 @@ export default function Investments() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {investments?.map((investment) => (
-            <InvestmentCard
-              key={investment.id}
-              investment={investment}
-              onEdit={() => handleEdit(investment)}
-            />
-          ))}
+          {investments?.map((investment) => {
+            const totalReturns = cashflows 
+              ? getInvestmentTotalReturns(investment.id, cashflows)
+              : 0;
+            
+            return (
+              <InvestmentCard
+                key={investment.id}
+                investment={investment}
+                totalReturns={totalReturns}
+                onEdit={() => handleEdit(investment)}
+              />
+            );
+          })}
         </div>
       )}
 

@@ -1,21 +1,25 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock } from "lucide-react";
+import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
 
 interface InvestmentCardProps {
   investment: InvestmentWithPlatform;
+  totalReturns?: number;
   onEdit: () => void;
 }
 
-export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
+export function InvestmentCard({ investment, totalReturns = 0, onEdit }: InvestmentCardProps) {
   const { t, language } = useLanguage();
   const daysRemaining = calculateDaysUntil(investment.endDate);
   const isActive = investment.status === "active";
   const isCompleted = investment.status === "completed";
+  
+  const roi = calculateROI(investment.amount, totalReturns);
+  const hasReturns = totalReturns > 0;
   
   // Calculate delay duration for completed investments
   const delayDays = isCompleted && investment.actualEndDate
@@ -78,6 +82,24 @@ export function InvestmentCard({ investment, onEdit }: InvestmentCardProps) {
             <div className="text-lg font-bold text-chart-1">{formatPercentage(investment.expectedIrr)}</div>
           </div>
         </div>
+        
+        {hasReturns && (
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <DollarSign className="h-3 w-3" />
+                {t("investments.actualROI")}
+              </div>
+              <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`} data-testid={`stat-roi-${investment.id}`}>
+                {formatPercentage(roi)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">{t("dashboard.totalReturns")}</div>
+              <div className="text-lg font-bold text-chart-2">{formatCurrency(totalReturns)}</div>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
