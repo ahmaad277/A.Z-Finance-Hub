@@ -86,15 +86,19 @@ Consider:
 4. Portfolio rebalancing suggestions
 5. Vision 2040 goal alignment
 
-Return a JSON array where each recommendation has:
+Return JSON in this format:
 {
-  "type": "opportunity" | "warning" | "optimization",
-  "title": "Brief title",
-  "description": "Detailed explanation in Arabic",
-  "confidence": 0-100,
-  "actionItems": ["Action 1", "Action 2"],
-  "potentialReturn": "Expected return if applicable",
-  "riskLevel": "low" | "medium" | "high"
+  "recommendations": [
+    {
+      "type": "opportunity" | "warning" | "optimization",
+      "title": "Brief title",
+      "description": "Detailed explanation in Arabic",
+      "confidence": 0-100,
+      "actionItems": ["Action 1", "Action 2"],
+      "potentialReturn": "Expected return if applicable",
+      "riskLevel": "low" | "medium" | "high"
+    }
+  ]
 }`
   );
 
