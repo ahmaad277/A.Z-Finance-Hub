@@ -140,6 +140,7 @@ const translations = {
     
     // Common
     "common.back": "Back",
+    "common.edit": "Edit",
     
     // Investments
     "investments.title": "Investments",
@@ -169,6 +170,8 @@ const translations = {
     "investments.completed": "Completed",
     "investments.pending": "Pending",
     "investments.confirmPayment": "Confirm Payment",
+    "investments.duration": "Duration",
+    "investments.avgPayment": "Avg Payment",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -794,6 +797,7 @@ const translations = {
     
     // Common
     "common.back": "رجوع",
+    "common.edit": "تعديل",
     
     // Investments
     "investments.title": "الاستثمارات",
@@ -823,6 +827,8 @@ const translations = {
     "investments.completed": "مكتمل",
     "investments.pending": "قيد الانتظار",
     "investments.confirmPayment": "تأكيد السداد",
+    "investments.duration": "المدة",
+    "investments.avgPayment": "متوسط الدفعة",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",

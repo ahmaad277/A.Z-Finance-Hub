@@ -2,26 +2,26 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
-import { InvestmentCard } from "@/components/investment-card";
+import { InvestmentRow } from "@/components/investment-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
-import { getInvestmentTotalReturns } from "@/lib/utils";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 
 export default function Investments() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRtl = language === "ar";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
 
-  const { data: investments, isLoading } = useQuery<InvestmentWithPlatform[]>({
+  const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
   });
 
-  const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
+  const { data: cashflows, isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
   });
 
@@ -40,6 +40,8 @@ export default function Investments() {
     setCompletePaymentDialogOpen(true);
   };
 
+  const isLoading = investmentsLoading || cashflowsLoading;
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -49,17 +51,9 @@ export default function Investments() {
             <div className="h-4 w-96 animate-pulse rounded bg-muted mt-2" />
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 w-24 rounded bg-muted" />
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="h-4 w-full rounded bg-muted" />
-                <div className="h-4 w-3/4 rounded bg-muted" />
-              </CardContent>
-            </Card>
+            <div key={i} className="h-20 w-full animate-pulse rounded-lg bg-muted border-l-4 border-l-muted-foreground" />
           ))}
         </div>
       </div>
@@ -67,7 +61,7 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-6" data-testid="page-investments">
+    <div className="space-y-6" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("investments.title")}</h1>
@@ -102,23 +96,21 @@ export default function Investments() {
           </div>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {investments?.map((investment) => {
-            const totalReturns = cashflows 
-              ? getInvestmentTotalReturns(investment.id, cashflows)
-              : 0;
-            
-            return (
-              <InvestmentCard
-                key={investment.id}
-                investment={investment}
-                totalReturns={totalReturns}
-                onEdit={() => handleEdit(investment)}
-                onCompletePayment={() => handleCompletePayment(investment)}
-              />
-            );
-          })}
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <div className="space-y-2">
+              {investments?.map((investment) => (
+                <InvestmentRow
+                  key={investment.id}
+                  investment={investment}
+                  cashflows={cashflows || []}
+                  onEdit={() => handleEdit(investment)}
+                  onCompletePayment={() => handleCompletePayment(investment)}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <InvestmentDialog
