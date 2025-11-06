@@ -68,13 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (data: any) => {
       queryClient.setQueryData(["/api/v2/auth/me"], data);
       toast({
-        title: t("تم تسجيل الدخول بنجاح", "Login successful"),
-        description: t(`مرحباً ${data.user?.name}`, `Welcome ${data.user?.name}`),
+        title: t("loginSuccess"),
+        description: t("loginSuccessDesc"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: t("فشل تسجيل الدخول", "Login failed"),
+        title: t("loginFailed"),
         description: error.message,
         variant: "destructive",
       });
@@ -88,13 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.setQueryData(["/api/v2/auth/me"], null);
       toast({
-        title: t("تم تسجيل الخروج", "Logged out"),
-        description: t("تم تسجيل الخروج بنجاح", "You have been logged out successfully"),
+        title: t("logoutSuccess"),
+        description: t("logoutSuccessDesc"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: t("فشل تسجيل الخروج", "Logout failed"),
+        title: t("logoutFailed"),
         description: error.message,
         variant: "destructive",
       });

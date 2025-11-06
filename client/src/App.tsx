@@ -10,6 +10,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import { LogoutButton } from "@/components/logout-button";
 import { ProtectedRoute } from "@/lib/protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -69,6 +70,7 @@ function AppContent() {
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <LanguageToggle />
+              <LogoutButton />
             </div>
           </header>
           <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
