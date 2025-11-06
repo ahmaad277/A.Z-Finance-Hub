@@ -63,6 +63,12 @@ export function LockScreen({
     }
   };
 
+  const convertArabicToEnglishNumerals = (str: string) => {
+    const arabicNumerals = "٠١٢٣٤٥٦٧٨٩";
+    const englishNumerals = "0123456789";
+    return str.replace(/[٠-٩]/g, (c) => englishNumerals[arabicNumerals.indexOf(c)]);
+  };
+
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.length < 4) return;
@@ -114,10 +120,12 @@ export function LockScreen({
                 id="pin"
                 type="password"
                 inputMode="numeric"
-                pattern="[0-9]*"
                 maxLength={6}
                 value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const converted = convertArabicToEnglishNumerals(e.target.value);
+                  setPin(converted.replace(/\D/g, ''));
+                }}
                 placeholder="••••••"
                 className="text-center text-2xl tracking-widest"
                 disabled={isVerifying}
