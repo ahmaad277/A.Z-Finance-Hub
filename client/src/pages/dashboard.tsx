@@ -49,14 +49,19 @@ export default function Dashboard() {
 
   // Toggle between Classic and Grid Dashboard (stored in localStorage)
   const [useGridView, setUseGridView] = useState(() => {
-    const stored = localStorage.getItem("dashboard-view");
-    return stored === "grid";
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("dashboard-view");
+      return stored === "grid";
+    }
+    return false;
   });
 
   const toggleView = () => {
     const newView = !useGridView;
     setUseGridView(newView);
-    localStorage.setItem("dashboard-view", newView ? "grid" : "classic");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("dashboard-view", newView ? "grid" : "classic");
+    }
   };
 
   const { data: platforms } = useQuery<Platform[]>({
