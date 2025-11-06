@@ -70,7 +70,8 @@ export function LockScreen({
     setIsVerifying(true);
     try {
       const response = await apiRequest("POST", "/api/auth/login", { pin });
-      if (response.success) {
+      const data = await response.json();
+      if (data.success) {
         onUnlock();
       } else {
         toast({

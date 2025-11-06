@@ -315,7 +315,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (/^\d{4,6}$/.test(data.pinHash)) {
           data.pinHash = hashPIN(data.pinHash);
         }
-        // Otherwise assume it's already hashed (shouldn't happen, but safety check)
       }
       
       const settings = await storage.updateSettings(data);
