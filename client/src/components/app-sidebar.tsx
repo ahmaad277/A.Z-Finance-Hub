@@ -77,6 +77,12 @@ const adminItems = [
     icon: Users,
     permission: "USER_MANAGE",
   },
+  {
+    key: "roles",
+    url: "/admin/roles",
+    icon: Shield,
+    permission: "ROLE_MANAGE",
+  },
 ];
 
 export function AppSidebar() {

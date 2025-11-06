@@ -112,6 +112,8 @@ export interface IStorage {
   createRole(role: InsertRole): Promise<Role>;
   updateRole(id: string, role: Partial<InsertRole>): Promise<Role | undefined>;
   deleteRole(id: string): Promise<boolean>;
+  createRoleWithPermissions(roleData: InsertRole, permissionIds: string[]): Promise<RoleWithPermissions>;
+  updateRoleWithPermissions(id: string, roleData: Partial<InsertRole>, permissionIds?: string[]): Promise<RoleWithPermissions | undefined>;
 
   // Permissions
   getPermissions(): Promise<Permission[]>;
@@ -693,6 +695,96 @@ export class DatabaseStorage implements IStorage {
       .delete(roles)
       .where(eq(roles.id, id));
     return result.rowCount! > 0;
+  }
+
+  // Atomic role operations with permissions
+  async createRoleWithPermissions(roleData: InsertRole, permissionIds: string[]): Promise<RoleWithPermissions> {
+    return await db.transaction(async (tx) => {
+      // Create role
+      const [role] = await tx
+        .insert(roles)
+        .values(roleData)
+        .returning();
+      
+      // Assign permissions
+      if (permissionIds.length > 0) {
+        await tx
+          .insert(rolePermissions)
+          .values(permissionIds.map(permissionId => ({
+            roleId: role.id,
+            permissionId,
+          })));
+      }
+      
+      // Fetch and return role with permissions within transaction
+      const result = await tx.query.roles.findFirst({
+        where: eq(roles.id, role.id),
+        with: {
+          rolePermissions: {
+            with: {
+              permission: true,
+            },
+          },
+        },
+      });
+      
+      if (!result) throw new Error('Failed to create role');
+      
+      const permissions = result.rolePermissions.map(rp => rp.permission);
+      return { ...result, permissions };
+    });
+  }
+
+  async updateRoleWithPermissions(
+    id: string,
+    roleData: Partial<InsertRole>,
+    permissionIds?: string[]
+  ): Promise<RoleWithPermissions | undefined> {
+    return await db.transaction(async (tx) => {
+      // Update role
+      const [role] = await tx
+        .update(roles)
+        .set(roleData)
+        .where(eq(roles.id, id))
+        .returning();
+      
+      if (!role) return undefined;
+      
+      // Update permissions if provided
+      if (permissionIds !== undefined) {
+        // Remove all existing permissions
+        await tx
+          .delete(rolePermissions)
+          .where(eq(rolePermissions.roleId, id));
+        
+        // Insert new permissions
+        if (permissionIds.length > 0) {
+          await tx
+            .insert(rolePermissions)
+            .values(permissionIds.map(permissionId => ({
+              roleId: id,
+              permissionId,
+            })));
+        }
+      }
+      
+      // Fetch and return role with permissions within transaction
+      const result = await tx.query.roles.findFirst({
+        where: eq(roles.id, id),
+        with: {
+          rolePermissions: {
+            with: {
+              permission: true,
+            },
+          },
+        },
+      });
+      
+      if (!result) return undefined;
+      
+      const permissions = result.rolePermissions.map(rp => rp.permission);
+      return { ...result, permissions };
+    });
   }
 
   // Permissions

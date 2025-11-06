@@ -5,6 +5,9 @@ export const PERMISSION_KEYS = {
   // System Management
   MANAGE_USERS: 'system:manage_users',
   MANAGE_ROLES: 'system:manage_roles',
+  CREATE_ROLES: 'system:create_roles',
+  EDIT_ROLES: 'system:edit_roles',
+  DELETE_ROLES: 'system:delete_roles',
   VIEW_AUDIT_LOG: 'system:view_audit_log',
   EXPORT_AUDIT_LOG: 'system:export_audit_log',
   MANAGE_PLATFORMS: 'system:manage_platforms',

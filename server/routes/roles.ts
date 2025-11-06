@@ -7,15 +7,32 @@ import { PERMISSION_KEYS } from '../helpers/permissions';
 
 const router = Router();
 
-// All routes require authentication and MANAGE_ROLES permission
+// All routes require authentication
 router.use(requireAuth);
-router.use(requirePermission(PERMISSION_KEYS.MANAGE_ROLES));
 
-// Get all roles
-router.get('/', async (req: AuthenticatedRequest, res: Response) => {
+// Get all permissions (must be before /:id route)
+router.get('/permissions/all', requirePermission(PERMISSION_KEYS.MANAGE_ROLES), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const permissions = await storage.getPermissions();
+    res.json(permissions);
+  } catch (error) {
+    console.error('Get permissions error:', error);
+    res.status(500).json({ error: 'Failed to fetch permissions' });
+  }
+});
+
+// Get all roles with permissions
+router.get('/', requirePermission(PERMISSION_KEYS.MANAGE_ROLES), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const roles = await storage.getRoles();
-    res.json(roles);
+    // Fetch permissions for each role
+    const rolesWithPermissions = await Promise.all(
+      roles.map(async (role) => {
+        const roleWithPerms = await storage.getRole(role.id);
+        return roleWithPerms;
+      })
+    );
+    res.json(rolesWithPermissions);
   } catch (error) {
     console.error('Get roles error:', error);
     res.status(500).json({ error: 'Failed to fetch roles' });
@@ -23,7 +40,7 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 // Get role with permissions
-router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', requirePermission(PERMISSION_KEYS.MANAGE_ROLES), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const role = await storage.getRole(id);
@@ -39,19 +56,8 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
-// Get all permissions
-router.get('/permissions/all', async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const permissions = await storage.getPermissions();
-    res.json(permissions);
-  } catch (error) {
-    console.error('Get permissions error:', error);
-    res.status(500).json({ error: 'Failed to fetch permissions' });
-  }
-});
-
 // Assign permission to role
-router.post('/:id/permissions', async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/permissions', requirePermission(PERMISSION_KEYS.EDIT_ROLES), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { permissionId } = req.body;
@@ -78,7 +84,7 @@ router.post('/:id/permissions', async (req: AuthenticatedRequest, res: Response)
 });
 
 // Remove permission from role
-router.delete('/:id/permissions/:permissionId', async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id/permissions/:permissionId', requirePermission(PERMISSION_KEYS.EDIT_ROLES), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id, permissionId } = req.params;
 
@@ -100,6 +106,82 @@ router.delete('/:id/permissions/:permissionId', async (req: AuthenticatedRequest
   } catch (error) {
     console.error('Remove permission error:', error);
     res.status(500).json({ error: 'Failed to remove permission' });
+  }
+});
+
+// Create role with permissions
+router.post('/', requirePermission(PERMISSION_KEYS.CREATE_ROLES), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { permissions, ...roleData } = req.body;
+    
+    // Create role with permissions atomically
+    const role = await storage.createRoleWithPermissions(roleData, permissions || []);
+    
+    await logAudit({
+      req,
+      action: 'create',
+      targetType: 'role',
+      targetId: role.id,
+      details: { name: role.name, permissionCount: permissions?.length || 0 },
+    });
+    
+    res.status(201).json(role);
+  } catch (error) {
+    console.error('Create role error:', error);
+    res.status(500).json({ error: 'Failed to create role' });
+  }
+});
+
+// Update role with permissions
+router.patch('/:id', requirePermission(PERMISSION_KEYS.EDIT_ROLES), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { permissions, ...roleData } = req.body;
+    
+    // Update role with permissions atomically
+    const role = await storage.updateRoleWithPermissions(id, roleData, permissions);
+    
+    if (!role) {
+      return res.status(404).json({ error: 'Role not found' });
+    }
+    
+    await logAudit({
+      req,
+      action: 'update',
+      targetType: 'role',
+      targetId: id,
+      details: { name: role.name, permissionCount: role.permissions?.length || 0 },
+    });
+    
+    res.json(role);
+  } catch (error) {
+    console.error('Update role error:', error);
+    res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+// Delete role
+router.delete('/:id', requirePermission(PERMISSION_KEYS.DELETE_ROLES), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const success = await storage.deleteRole(id);
+    
+    if (!success) {
+      return res.status(404).json({ error: 'Role not found' });
+    }
+    
+    await logAudit({
+      req,
+      action: 'delete',
+      targetType: 'role',
+      targetId: id,
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete role error:', error);
+    res.status(500).json({ error: 'Failed to delete role' });
   }
 });
 
