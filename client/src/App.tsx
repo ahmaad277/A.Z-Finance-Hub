@@ -7,11 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/hooks/use-auth";
 import { AppSidebar } from "@/components/app-sidebar";
 import { LockScreen } from "@/components/lock-screen";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import { ProtectedRoute } from "@/lib/protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
@@ -34,20 +35,20 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path="/" component={Dashboard} />
-      <Route path="/investments" component={Investments} />
-      <Route path="/cashflows" component={Cashflows} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/ai-insights" component={AIInsights} />
-      <Route path="/timeline" component={Timeline} />
-      <Route path="/alerts" component={Alerts} />
-      <Route path="/reinvestment" component={Reinvestment} />
-      <Route path="/help" component={Help} />
-      <Route path="/settings" component={Settings} />
-      <Route path="/platform/:id" component={PlatformDetails} />
-      <Route path="/admin/users" component={UserManagement} />
-      <Route path="/admin/roles" component={RoleManagement} />
-      <Route path="/admin/audit" component={AuditLog} />
+      <ProtectedRoute path="/" component={Dashboard} />
+      <ProtectedRoute path="/investments" component={Investments} />
+      <ProtectedRoute path="/cashflows" component={Cashflows} />
+      <ProtectedRoute path="/analytics" component={Analytics} />
+      <ProtectedRoute path="/ai-insights" component={AIInsights} />
+      <ProtectedRoute path="/timeline" component={Timeline} />
+      <ProtectedRoute path="/alerts" component={Alerts} />
+      <ProtectedRoute path="/reinvestment" component={Reinvestment} />
+      <ProtectedRoute path="/help" component={Help} />
+      <ProtectedRoute path="/settings" component={Settings} />
+      <ProtectedRoute path="/platform/:id" component={PlatformDetails} />
+      <ProtectedRoute path="/admin/users" component={UserManagement} />
+      <ProtectedRoute path="/admin/roles" component={RoleManagement} />
+      <ProtectedRoute path="/admin/audit" component={AuditLog} />
       <Route component={NotFound} />
     </Switch>
   );

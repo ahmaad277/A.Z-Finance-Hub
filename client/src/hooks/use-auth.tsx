@@ -7,7 +7,7 @@ import {
 import { User } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "./use-language";
+import { useLanguage } from "@/lib/language-provider";
 
 type AuthUser = {
   user: Omit<User, "passwordHash">;
