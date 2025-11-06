@@ -124,6 +124,8 @@ export const userSettings = pgTable("user_settings", {
   alertsEnabled: integer("alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
   alertDaysBefore: integer("alert_days_before").notNull().default(7), // Days before cashflow due date to alert
   latePaymentAlertsEnabled: integer("late_payment_alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
+  dashboardLayout: text("dashboard_layout"), // JSON string storing widget layouts (react-grid-layout format)
+  hiddenWidgets: text("hidden_widgets"), // JSON array of hidden widget IDs
 });
 
 export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });

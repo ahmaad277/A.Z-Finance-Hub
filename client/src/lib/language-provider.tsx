@@ -305,6 +305,15 @@ const translations = {
     "settings.alertsGeneratedDesc": "new alerts created",
     "settings.alertsGenerateError": "Failed to generate alerts",
     
+    // Dashboard Customization
+    "dashboard.customizeLayout": "Customize Layout",
+    "dashboard.layoutSaved": "Layout Saved",
+    "dashboard.layoutSavedDesc": "Your dashboard layout has been saved successfully",
+    "dashboard.layoutSaveError": "Failed to save layout",
+    "dashboard.resetLayout": "Reset Layout",
+    "dashboard.widgetVisibility": "Widget Visibility",
+    "dashboard.noPlatforms": "No platforms available",
+    
     // Calculator
     "calculator.title": "Investment Goal Calculator",
     "calculator.description": "Calculate your future investment value based on deposits and returns",
@@ -760,6 +769,15 @@ const translations = {
     "settings.alertsGenerated": "تم إنشاء التنبيهات",
     "settings.alertsGeneratedDesc": "تنبيهات جديدة تم إنشاؤها",
     "settings.alertsGenerateError": "فشل إنشاء التنبيهات",
+    
+    // Dashboard Customization
+    "dashboard.customizeLayout": "تخصيص التخطيط",
+    "dashboard.layoutSaved": "تم حفظ التخطيط",
+    "dashboard.layoutSavedDesc": "تم حفظ تخطيط لوحة التحكم بنجاح",
+    "dashboard.layoutSaveError": "فشل حفظ التخطيط",
+    "dashboard.resetLayout": "إعادة تعيين التخطيط",
+    "dashboard.widgetVisibility": "رؤية الويدجت",
+    "dashboard.noPlatforms": "لا توجد منصات متاحة",
     
     // Calculator
     "calculator.title": "حاسبة الهدف الاستثماري",
