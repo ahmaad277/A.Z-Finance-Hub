@@ -65,10 +65,10 @@ Portfolio Overview:
 - Average IRR: ${stats.averageIrr.toFixed(2)}%
 - Available Cash: SAR ${stats.availableCash.toLocaleString()}
 - Active Investments: ${investments.filter(i => i.status === 'active').length}
-- Platforms: ${Array.from(new Set(investments.map(i => i.platform.name))).join(', ')}
+- Platforms: ${Array.from(new Set(investments.map(i => i.platform?.name || 'Unknown').filter(Boolean))).join(', ')}
 
 Current Investments:
-${investments.map(inv => `- ${inv.name}: SAR ${inv.amount.toLocaleString()}, IRR: ${inv.expectedIrr}%, Risk: ${inv.riskScore}/10, Platform: ${inv.platform.name}`).join('\n')}
+${investments.map(inv => `- ${inv.name}: SAR ${inv.amount.toLocaleString()}, IRR: ${inv.expectedIrr}%, Risk: ${inv.riskScore}/10, Platform: ${inv.platform?.name || 'Unknown'}`).join('\n')}
 
 Analytics:
 - Monthly Returns Trend: ${analytics.monthlyReturns.slice(-3).map((m: any) => `${m.month}: SAR ${m.amount}`).join(', ')}
@@ -128,8 +128,8 @@ export async function getAIRiskAnalysis(
   const context = `
 Portfolio Risk Profile:
 - Total Investments: ${investments.length}
-- Average Risk Score: ${(investments.reduce((sum, i) => sum + i.riskScore, 0) / investments.length).toFixed(1)}/10
-- Platform Distribution: ${Array.from(new Set(investments.map(i => i.platform.name))).join(', ')}
+- Average Risk Score: ${investments.length > 0 ? (investments.reduce((sum, i) => sum + i.riskScore, 0) / investments.length).toFixed(1) : 0}/10
+- Platform Distribution: ${Array.from(new Set(investments.map(i => i.platform?.name || 'Unknown').filter(Boolean))).join(', ')}
 - Capital Allocation: SAR ${stats.totalCapital.toLocaleString()}
 - Distressed Investments: ${stats.distressedInvestments}
 
@@ -195,7 +195,7 @@ export async function getAICashflowForecast(
 ): Promise<AICashflowForecast[]> {
   const context = `
 Historical Cashflows:
-${cashflows.slice(-10).map(cf => `- ${cf.investment.name}: SAR ${cf.amount.toLocaleString()}, ${cf.type}, ${cf.status}, Date: ${cf.expectedDate}`).join('\n')}
+${cashflows.slice(-10).map(cf => `- ${cf.investment?.name || 'Unknown'}: SAR ${cf.amount.toLocaleString()}, ${cf.type}, ${cf.status}, Date: ${cf.expectedDate}`).join('\n')}
 
 Active Investments with Expected Returns:
 ${investments.filter(i => i.status === 'active').map(inv => 

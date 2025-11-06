@@ -335,8 +335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getComprehensiveAIInsights } = await import("./ai-service");
       
       const [investments, cashflows, stats, analytics] = await Promise.all([
-        storage.listInvestments(),
-        storage.listCashflows(),
+        storage.getInvestments(),
+        storage.getCashflows(),
         storage.getPortfolioStats(),
         storage.getAnalyticsData(),
       ]);
@@ -360,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getAIRecommendations } = await import("./ai-service");
       
       const [investments, stats, analytics] = await Promise.all([
-        storage.listInvestments(),
+        storage.getInvestments(),
         storage.getPortfolioStats(),
         storage.getAnalyticsData(),
       ]);
@@ -378,7 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getAIRiskAnalysis } = await import("./ai-service");
       
       const [investments, stats] = await Promise.all([
-        storage.listInvestments(),
+        storage.getInvestments(),
         storage.getPortfolioStats(),
       ]);
 
@@ -395,8 +395,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getAICashflowForecast } = await import("./ai-service");
       
       const [cashflows, investments] = await Promise.all([
-        storage.listCashflows(),
-        storage.listInvestments(),
+        storage.getCashflows(),
+        storage.getInvestments(),
       ]);
 
       const forecast = await getAICashflowForecast(cashflows, investments);
