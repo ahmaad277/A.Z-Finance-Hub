@@ -13,8 +13,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { useLanguage } from "@/lib/language-provider";
 
@@ -129,11 +127,7 @@ export function AppSidebar() {
           <div className="text-xs text-muted-foreground">
             <div>{t("app.copyright")}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <ViewModeToggle />
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
+          <ViewModeToggle />
         </div>
       </SidebarFooter>
     </Sidebar>

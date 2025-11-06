@@ -9,6 +9,8 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { LockScreen } from "@/components/lock-screen";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
@@ -91,7 +93,11 @@ function AppContent() {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-end border-b p-4">
+          <header className="flex items-center justify-between gap-4 border-b px-4 py-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
             <SidebarTrigger data-testid="button-sidebar-toggle" />
           </header>
           <main className="flex-1 overflow-y-auto p-6">
