@@ -70,9 +70,9 @@ async function optionalAuth(req: Request, res: Response, next: NextFunction) {
     const attachOwnerUser = async () => {
       if (!authReq.user) {
         const users = await storage.getUsers();
-        const owner = users.find(u => u.roleId === '1'); // Owner role
+        const owner = users.find(u => u.role?.name === 'owner'); // Find by role name
         if (owner) {
-          const role = await storage.getRole('1');
+          const role = await storage.getRole(owner.roleId);
           authReq.user = {
             id: owner.id,
             email: owner.email,
@@ -88,7 +88,7 @@ async function optionalAuth(req: Request, res: Response, next: NextFunction) {
     };
     
     // If security is not enabled, allow access with owner permissions
-    if (!settings || settings.securityEnabled !== 1 || !settings.pinHash) {
+    if (!settings || settings.securityEnabled !== 1) {
       // Always attach owner user in open-access mode to prevent masking
       await attachOwnerUser();
       return next();
