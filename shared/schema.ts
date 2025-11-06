@@ -106,9 +106,77 @@ export const insertCashTransactionSchema = createInsertSchema(cashTransactions).
 export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
 export type CashTransaction = typeof cashTransactions.$inferSelect;
 
-// User preferences and settings
+// Roles - Define user roles (Owner, Admin, Advanced Analyst, etc.)
+export const roles = pgTable("roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // 'owner' | 'admin' | 'advanced_analyst' | 'basic_analyst' | 'data_entry' | 'viewer'
+  displayName: text("display_name").notNull(),
+  displayNameAr: text("display_name_ar").notNull(),
+  description: text("description"),
+  descriptionAr: text("description_ar"),
+  isSystem: integer("is_system").notNull().default(0), // 0 = custom, 1 = system (cannot be deleted)
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertRoleSchema = createInsertSchema(roles).omit({ id: true, createdAt: true });
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type Role = typeof roles.$inferSelect;
+
+// Permissions - Define granular permissions
+export const permissions = pgTable("permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(), // e.g., 'view_all_numbers', 'create_investment', 'impersonate'
+  displayName: text("display_name").notNull(),
+  displayNameAr: text("display_name_ar").notNull(),
+  description: text("description"),
+  descriptionAr: text("description_ar"),
+  category: text("category").notNull(), // 'data_access' | 'crud' | 'export' | 'admin' | 'advanced'
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({ id: true, createdAt: true });
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type Permission = typeof permissions.$inferSelect;
+
+// Role Permissions - Many-to-many relationship between roles and permissions
+export const rolePermissions = pgTable("role_permissions", {
+  roleId: varchar("role_id").notNull(),
+  permissionId: varchar("permission_id").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({ createdAt: true });
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+export type RolePermission = typeof rolePermissions.$inferSelect;
+
+// Users - Multi-user support
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone"),
+  passwordHash: text("password_hash"), // For non-Owner users
+  roleId: varchar("role_id").notNull(),
+  isActive: integer("is_active").notNull().default(1), // 0 = suspended, 1 = active
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: varchar("created_by"), // User ID who created this user
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({ 
+  id: true, 
+  createdAt: true,
+  lastLogin: true,
+}).extend({
+  email: z.string().email(),
+});
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+// User Settings - Now linked to a user
 export const userSettings = pgTable("user_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"), // Nullable for backward compatibility, will link to Owner
   theme: text("theme").notNull().default("dark"), // 'dark' | 'light'
   language: text("language").notNull().default("en"), // 'en' | 'ar'
   viewMode: text("view_mode").notNull().default("pro"), // 'pro' | 'lite'
@@ -117,7 +185,7 @@ export const userSettings = pgTable("user_settings", {
   targetCapital2040: numeric("target_capital_2040", { precision: 15, scale: 2 }),
   currency: text("currency").notNull().default("SAR"),
   securityEnabled: integer("security_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
-  pinHash: text("pin_hash"), // Hashed PIN for authentication
+  pinHash: text("pin_hash"), // Hashed PIN for Owner authentication (backward compatibility)
   biometricEnabled: integer("biometric_enabled").notNull().default(0), // 0 = disabled, 1 = enabled
   biometricCredentialId: text("biometric_credential_id"), // WebAuthn credential ID
   collapsedSections: text("collapsed_sections"), // JSON array of collapsed section IDs
@@ -131,6 +199,131 @@ export const userSettings = pgTable("user_settings", {
 export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });
 export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
 export type UserSettings = typeof userSettings.$inferSelect;
+
+// User Platforms - Platform-scoped permissions
+export const userPlatforms = pgTable("user_platforms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  platformId: varchar("platform_id").notNull(),
+  accessLevel: text("access_level").notNull().default("full"), // 'full' | 'read_only' | 'no_access'
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertUserPlatformSchema = createInsertSchema(userPlatforms).omit({ id: true, createdAt: true });
+export type InsertUserPlatform = z.infer<typeof insertUserPlatformSchema>;
+export type UserPlatform = typeof userPlatforms.$inferSelect;
+
+// Temporary Roles - Time-limited role assignments
+export const temporaryRoles = pgTable("temporary_roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  roleId: varchar("role_id").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  reason: text("reason"),
+  createdBy: varchar("created_by").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  isActive: integer("is_active").notNull().default(1), // 0 = expired/revoked, 1 = active
+});
+
+export const insertTemporaryRoleSchema = createInsertSchema(temporaryRoles).omit({ 
+  id: true, 
+  createdAt: true,
+  isActive: true,
+}).extend({
+  expiresAt: z.coerce.date(),
+});
+export type InsertTemporaryRole = z.infer<typeof insertTemporaryRoleSchema>;
+export type TemporaryRole = typeof temporaryRoles.$inferSelect;
+
+// Audit Log - Track all sensitive actions
+export const auditLog = pgTable("audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorId: varchar("actor_id"), // User who performed the action (null for system actions)
+  actionType: text("action_type").notNull(), // 'view' | 'create' | 'update' | 'delete' | 'export' | 'impersonate' | 'login' | 'logout'
+  targetType: text("target_type"), // 'investment' | 'user' | 'role' | 'platform' | 'settings'
+  targetId: varchar("target_id"), // ID of the affected entity
+  details: text("details"), // JSON string with additional context
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLog).omit({ 
+  id: true, 
+  timestamp: true 
+});
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLog.$inferSelect;
+
+// Export Requests - Approval workflow for exports
+export const exportRequests = pgTable("export_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requesterId: varchar("requester_id").notNull(),
+  exportType: text("export_type").notNull(), // 'investments' | 'cashflows' | 'analytics' | 'full'
+  reason: text("reason"),
+  status: text("status").notNull().default("pending"), // 'pending' | 'approved' | 'rejected'
+  approvedBy: varchar("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertExportRequestSchema = createInsertSchema(exportRequests).omit({ 
+  id: true, 
+  createdAt: true,
+  status: true,
+  approvedBy: true,
+  approvedAt: true,
+});
+export type InsertExportRequest = z.infer<typeof insertExportRequestSchema>;
+export type ExportRequest = typeof exportRequests.$inferSelect;
+
+// View Requests - Request access to masked/hidden fields
+export const viewRequests = pgTable("view_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requesterId: varchar("requester_id").notNull(),
+  fieldType: text("field_type").notNull(), // 'amount' | 'irr' | 'sensitive_data'
+  targetType: text("target_type"), // 'investment' | 'cashflow' | 'analytics'
+  targetId: varchar("target_id"),
+  reason: text("reason"),
+  status: text("status").notNull().default("pending"), // 'pending' | 'approved' | 'rejected'
+  approvedBy: varchar("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  expiresAt: timestamp("expires_at"), // Temporary access expiry
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertViewRequestSchema = createInsertSchema(viewRequests).omit({ 
+  id: true, 
+  createdAt: true,
+  status: true,
+  approvedBy: true,
+  approvedAt: true,
+}).extend({
+  expiresAt: z.coerce.date().optional().nullable(),
+});
+export type InsertViewRequest = z.infer<typeof insertViewRequestSchema>;
+export type ViewRequest = typeof viewRequests.$inferSelect;
+
+// Impersonation Sessions - Track impersonation sessions
+export const impersonationSessions = pgTable("impersonation_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerId: varchar("owner_id").notNull(), // The owner doing the impersonation
+  targetUserId: varchar("target_user_id").notNull(), // The user being impersonated
+  startedAt: timestamp("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  endedAt: timestamp("ended_at"),
+  isActive: integer("is_active").notNull().default(1), // 0 = ended, 1 = active
+  ipAddress: text("ip_address"),
+});
+
+export const insertImpersonationSessionSchema = createInsertSchema(impersonationSessions).omit({ 
+  id: true, 
+  startedAt: true,
+  endedAt: true,
+  isActive: true,
+});
+export type InsertImpersonationSession = z.infer<typeof insertImpersonationSessionSchema>;
+export type ImpersonationSession = typeof impersonationSessions.$inferSelect;
 
 // Extended types for frontend use
 export type InvestmentWithPlatform = Investment & {
@@ -169,6 +362,38 @@ export type AnalyticsData = {
   performanceVsTarget: Array<{ year: number; actual: number; target: number }>;
 };
 
+// Extended types for permissions system
+export type UserWithRole = User & {
+  role: Role;
+  settings?: UserSettings;
+  temporaryRole?: TemporaryRole;
+};
+
+export type RoleWithPermissions = Role & {
+  permissions: Permission[];
+};
+
+export type UserWithFullDetails = User & {
+  role: RoleWithPermissions;
+  settings?: UserSettings;
+  platforms: UserPlatform[];
+  temporaryRole?: TemporaryRole;
+};
+
+export type AuditLogWithActor = AuditLog & {
+  actor?: User;
+};
+
+export type ExportRequestWithUser = ExportRequest & {
+  requester: User;
+  approver?: User;
+};
+
+export type ViewRequestWithUser = ViewRequest & {
+  requester: User;
+  approver?: User;
+};
+
 // Relations
 export const platformsRelations = relations(platforms, ({ many }) => ({
   investments: many(investments),
@@ -194,5 +419,85 @@ export const alertsRelations = relations(alerts, ({ one }) => ({
   investment: one(investments, {
     fields: [alerts.investmentId],
     references: [investments.id],
+  }),
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
+  rolePermissions: many(rolePermissions),
+  temporaryRoles: many(temporaryRoles),
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  role: one(roles, {
+    fields: [rolePermissions.roleId],
+    references: [roles.id],
+  }),
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  }),
+  settings: one(userSettings, {
+    fields: [users.id],
+    references: [userSettings.userId],
+  }),
+  userPlatforms: many(userPlatforms),
+  temporaryRoles: many(temporaryRoles),
+  auditLogs: many(auditLog),
+  exportRequests: many(exportRequests),
+  viewRequests: many(viewRequests),
+}));
+
+export const userPlatformsRelations = relations(userPlatforms, ({ one }) => ({
+  user: one(users, {
+    fields: [userPlatforms.userId],
+    references: [users.id],
+  }),
+  platform: one(platforms, {
+    fields: [userPlatforms.platformId],
+    references: [platforms.id],
+  }),
+}));
+
+export const temporaryRolesRelations = relations(temporaryRoles, ({ one }) => ({
+  user: one(users, {
+    fields: [temporaryRoles.userId],
+    references: [users.id],
+  }),
+  role: one(roles, {
+    fields: [temporaryRoles.roleId],
+    references: [roles.id],
+  }),
+}));
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+  actor: one(users, {
+    fields: [auditLog.actorId],
+    references: [users.id],
+  }),
+}));
+
+export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
+  requester: one(users, {
+    fields: [exportRequests.requesterId],
+    references: [users.id],
+  }),
+}));
+
+export const viewRequestsRelations = relations(viewRequests, ({ one }) => ({
+  requester: one(users, {
+    fields: [viewRequests.requesterId],
+    references: [users.id],
   }),
 }));
