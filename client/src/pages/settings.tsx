@@ -13,7 +13,17 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2, Bell } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2, Bell, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +41,7 @@ export default function Settings() {
   const [confirmPin, setConfirmPin] = useState("");
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [isRegisteringBiometric, setIsRegisteringBiometric] = useState(false);
+  const [platformToDelete, setPlatformToDelete] = useState<Platform | null>(null);
 
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
@@ -93,6 +104,32 @@ export default function Settings() {
       toast({
         title: t("dialog.error"),
         description: t("settings.platformAddError"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletePlatformMutation = useMutation({
+    mutationFn: async (platformId: string) => {
+      return apiRequest("DELETE", `/api/platforms/${platformId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      setPlatformToDelete(null);
+      toast({
+        title: t("settings.platformDeleted"),
+        description: t("settings.platformDeletedDesc"),
+      });
+    },
+    onError: (error: any) => {
+      setPlatformToDelete(null);
+      const errorMessage = error.message || error.error || t("settings.platformDeleteError");
+      toast({
+        title: t("dialog.error"),
+        description: errorMessage.includes("investment") 
+          ? t("settings.platformHasInvestments")
+          : errorMessage,
         variant: "destructive",
       });
     },
@@ -521,13 +558,7 @@ export default function Settings() {
                         size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         data-testid={`button-delete-platform-${platform.id}`}
-                        onClick={() => {
-                          // Delete platform functionality will be added
-                          toast({
-                            title: t("settings.deletePlatform"),
-                            description: t("settings.deletePlatformComingSoon"),
-                          });
-                        }}
+                        onClick={() => setPlatformToDelete(platform)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -701,6 +732,40 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Platform Confirmation Dialog */}
+      <AlertDialog open={!!platformToDelete} onOpenChange={(open) => !open && setPlatformToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertDialogTitle>{t("settings.deletePlatform")}</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="space-y-2">
+              <p>{t("settings.deletePlatformConfirm")}</p>
+              {platformToDelete && (
+                <p className="font-semibold text-foreground">
+                  {platformToDelete.name}
+                </p>
+              )}
+              <p className="text-destructive">{t("settings.deletePlatformWarning")}</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-platform">
+              {t("dialog.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => platformToDelete && deletePlatformMutation.mutate(platformToDelete.id)}
+              disabled={deletePlatformMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete-platform"
+            >
+              {deletePlatformMutation.isPending ? t("dialog.deleting") : t("dialog.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

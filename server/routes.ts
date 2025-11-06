@@ -74,9 +74,13 @@ async function optionalAuth(req: Request, res: Response, next: NextFunction) {
           const role = await storage.getRole('1');
           authReq.user = {
             id: owner.id,
+            email: owner.email,
+            name: owner.name,
             effectiveUserId: owner.id,
-            permissions: role?.permissions || [],
+            permissions: role?.permissions?.map(p => p.key) || [],
             roleId: owner.roleId,
+            isActive: owner.isActive,
+            isImpersonating: false,
           };
         }
       }
@@ -254,11 +258,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (authReq.user) {
         const { logAudit } = await import('./helpers/audit');
         await logAudit({
-          actorId: authReq.user.effectiveUserId || authReq.user.id,
-          actionType: 'delete',
+          req,
+          action: 'delete',
           targetType: 'platform',
           targetId: id,
-          ipAddress: req.ip || req.socket.remoteAddress,
         });
       }
 
