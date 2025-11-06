@@ -26,18 +26,18 @@ export function LanguageToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => setLanguage("en")}
+          onSelect={() => setLanguage("en")}
           className={language === "en" ? "bg-accent" : ""}
           data-testid="menu-item-english"
         >
-          English
+          EN
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setLanguage("ar")}
+          onSelect={() => setLanguage("ar")}
           className={language === "ar" ? "bg-accent" : ""}
           data-testid="menu-item-arabic"
         >
-          العربية (Arabic)
+          العربية
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -15,6 +15,15 @@ type LanguageProviderState = {
 
 const LanguageProviderContext = createContext<LanguageProviderState | undefined>(undefined);
 
+// Custom hook - must be defined before being exported to fix Fast Refresh
+export function useLanguage() {
+  const context = useContext(LanguageProviderContext);
+  if (context === undefined) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
+}
+
 // Translation dictionaries
 const translations = {
   en: {
@@ -810,11 +819,3 @@ export function LanguageProvider({ children, defaultLanguage = "en" }: LanguageP
     </LanguageProviderContext.Provider>
   );
 }
-
-export const useLanguage = () => {
-  const context = useContext(LanguageProviderContext);
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
-  }
-  return context;
-};
