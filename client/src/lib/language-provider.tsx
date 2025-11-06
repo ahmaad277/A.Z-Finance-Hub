@@ -284,6 +284,9 @@ const translations = {
     "dialog.success": "Success",
     "dialog.createError": "Failed to create investment",
     "dialog.updateError": "Failed to update investment",
+    "dialog.confirmPayment": "Confirm Payment",
+    "dialog.confirmPaymentDesc": "Mark this investment as fully paid and completed",
+    "dialog.actualPaymentDate": "Actual Payment Date",
     
     // Export
     "export.report": "Export",
@@ -704,6 +707,9 @@ const translations = {
     "dialog.success": "نجاح",
     "dialog.createError": "فشل إنشاء الاستثمار",
     "dialog.updateError": "فشل تحديث الاستثمار",
+    "dialog.confirmPayment": "تأكيد السداد",
+    "dialog.confirmPaymentDesc": "وضع علامة على هذا الاستثمار كمسدد بالكامل ومكتمل",
+    "dialog.actualPaymentDate": "تاريخ السداد الفعلي",
     
     // Export
     "export.report": "تصدير",
