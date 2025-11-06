@@ -492,6 +492,21 @@ const translations = {
     "help.investmentGoalsSettingsDesc": "Set your Vision 2040 target capital to track long-term financial progress. Enable auto-reinvest to automatically deploy received distributions into new opportunities.",
     "help.platformManagement": "Platform Management",
     "help.platformManagementDesc": "View existing platforms (Sukuk, Manfa'a, Lendo) and add custom platforms. Enter platform name and select type (Sukuk/Manfa'a/Lendo/Other) to expand your investment universe.",
+    
+    // Auth & Login
+    "login": "Login",
+    "loginDescription": "Enter your credentials to access A.Z Finance Hub",
+    "username": "Username",
+    "password": "Password",
+    "enterUsername": "Enter your username",
+    "enterPassword": "Enter your password",
+    "loggingIn": "Logging in...",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login Failed",
+    "invalidCredentials": "Invalid username or password",
+    "pleaseEnterCredentials": "Please enter your username and password",
+    "error": "Error",
+    "success": "Success",
   },
   ar: {
     // Common
@@ -959,6 +974,21 @@ const translations = {
     "help.investmentGoalsSettingsDesc": "حدد رأس المال المستهدف لرؤية 2040 لتتبع التقدم المالي طويل الأجل. قم بتفعيل إعادة الاستثمار التلقائي لنشر التوزيعات المستلمة تلقائيًا في فرص جديدة.",
     "help.platformManagement": "إدارة المنصات",
     "help.platformManagementDesc": "عرض المنصات الحالية (صكوك، منفعة، ليندو) وإضافة منصات مخصصة. أدخل اسم المنصة واختر النوع (صكوك/منفعة/ليندو/أخرى) لتوسيع نطاق استثماراتك.",
+    
+    // Auth & Login
+    "login": "تسجيل الدخول",
+    "loginDescription": "أدخل بيانات الاعتماد للوصول إلى مركز A.Z المالي",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "enterUsername": "أدخل اسم المستخدم",
+    "enterPassword": "أدخل كلمة المرور",
+    "loggingIn": "جارٍ تسجيل الدخول...",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "loginFailed": "فشل تسجيل الدخول",
+    "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة",
+    "pleaseEnterCredentials": "يرجى إدخال اسم المستخدم وكلمة المرور",
+    "error": "خطأ",
+    "success": "نجح",
   },
 };
 

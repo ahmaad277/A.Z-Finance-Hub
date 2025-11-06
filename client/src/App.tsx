@@ -12,6 +12,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { LockScreen } from "@/components/lock-screen";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
@@ -29,6 +30,7 @@ import type { UserSettings } from "@shared/schema";
 function Router() {
   return (
     <Switch>
+      <Route path="/login" component={Login} />
       <Route path="/" component={Dashboard} />
       <Route path="/investments" component={Investments} />
       <Route path="/cashflows" component={Cashflows} />
