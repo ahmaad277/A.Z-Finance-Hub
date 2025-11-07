@@ -119,35 +119,17 @@ router.post('/logout', async (req: Request, res: Response) => {
   }
 });
 
-// Get current user
+// Get current user (simplified for single-user app)
 router.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const userDetails = await storage.getUser(req.user.effectiveUserId);
+    const userDetails = await storage.getUser(req.user.id);
     
     if (!userDetails) {
       return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Get role with permissions
-    let role = null;
-    if (userDetails.roleId) {
-      const roleData = await storage.getRole(userDetails.roleId);
-      if (roleData) {
-        const rolePermissions = await storage.getRolePermissions(roleData.id);
-        role = {
-          ...roleData,
-          permissions: rolePermissions.map((p: any) => ({
-            id: p.id,
-            key: p.key,
-            displayName: p.displayName,
-            displayNameAr: p.displayNameAr,
-          })),
-        };
-      }
     }
 
     // Remove sensitive data
@@ -155,9 +137,6 @@ router.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Response) 
 
     res.json({
       user: safeUser,
-      role,
-      isImpersonating: req.user.isImpersonating,
-      actualUserId: req.session.userId,
     });
   } catch (error) {
     console.error('Get current user error:', error);
@@ -212,72 +191,6 @@ router.get('/users-list', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Get users list error:', error);
     res.status(500).json({ error: 'Failed to get users list' });
-  }
-});
-
-// Self-registration (PUBLIC ENDPOINT - no auth required)
-const registerSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-router.post('/register', async (req: Request, res: Response) => {
-  try {
-    const data = registerSchema.parse(req.body);
-    
-    // Check if email already exists
-    const existingUser = await storage.getUserByEmail(data.email);
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email already in use' });
-    }
-
-    // Get default "Viewer" role (or create it if it doesn't exist)
-    const roles = await storage.getRoles();
-    let viewerRole = roles.find(r => r.name.toLowerCase() === 'viewer');
-    
-    if (!viewerRole) {
-      return res.status(500).json({ error: 'Default viewer role not found. Please contact administrator.' });
-    }
-
-    // Hash password
-    const passwordHash = await hashPassword(data.password);
-    
-    // Create user with Viewer role
-    const user = await storage.createUser({
-      name: data.name,
-      email: data.email,
-      phone: null,
-      passwordHash,
-      roleId: viewerRole.id,
-      isActive: 1,
-      createdBy: null, // Self-registered
-    });
-
-    // Create default settings for user
-    await storage.updateSettings({
-      userId: user.id,
-      theme: 'dark',
-      language: 'en',
-      viewMode: 'classic',
-      fontSize: 'medium',
-      autoReinvest: 0,
-      currency: 'SAR',
-    });
-
-    // Remove password hash
-    const { passwordHash: _, ...safeUser } = user;
-    
-    res.status(201).json({
-      success: true,
-      user: safeUser,
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
-    }
-    res.status(500).json({ error: 'Registration failed' });
   }
 });
 
