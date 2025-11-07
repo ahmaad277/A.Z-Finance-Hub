@@ -27,7 +27,7 @@ The application is built with a modern web stack:
 - **Styling**: Tailwind CSS with custom A.Z Finance Hub design tokens, supporting a comprehensive design system with custom color variables, typography hierarchy, and interactive states.
 - **UI/UX Decisions**:
     - **Dashboard**: Features two view modes:
-        - **Classic View**: Compact stat cards, platform overview section with clickable cards, portfolio performance charts, upcoming cashflows, and recent investments table.
+        - **Classic View**: Compact stat cards, **mobile-responsive Financial Metrics & Status grid** (13 metric/status cards with 2-column mobile, 4-5 column desktop layout), platform overview section with clickable cards, portfolio performance charts, upcoming cashflows, and recent investments table.
         - **Grid View** (Pro Mode Only): Customizable widget dashboard with drag-and-drop, resize, hide/show functionality. Includes 24 comprehensive widgets:
             - **Financial Metrics** (8 widgets): Portfolio Value, Cash Available, Returns Ratio, Cash Ratio, Portfolio APR, Portfolio ROI, Avg Duration, Avg Amount
             - **Status Counters** (5 widgets): Total Investments, Active, Completed, Late, Defaulted
