@@ -16,7 +16,8 @@ import { PlatformCard } from "@/components/platform-card";
 import { AddCashDialog } from "@/components/add-cash-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
-import { MobileMetricsGrid } from "@/components/mobile-metrics-grid";
+import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
+import { InvestmentStatusChart } from "@/components/investment-status-chart";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
@@ -440,7 +441,27 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Vision 2040 Progress Widget */}
+      {/* 1. Financial Metrics Only (8 metrics) */}
+      {dashboardMetrics && (
+        <motion.div
+          key="financial-metrics"
+          {...fadeInUp}
+        >
+          <FinancialMetricsOnly metrics={dashboardMetrics} />
+        </motion.div>
+      )}
+
+      {/* 2. Investment Status Pie Chart */}
+      {dashboardMetrics && (
+        <motion.div
+          key="status-chart"
+          {...fadeInUp}
+        >
+          <InvestmentStatusChart metrics={dashboardMetrics} />
+        </motion.div>
+      )}
+
+      {/* 3. Vision 2040 Progress Widget */}
       <Card className="hover-elevate transition-all duration-200" data-testid="card-vision-2040">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -511,16 +532,6 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Financial Metrics & Status - Mobile-Friendly Grid */}
-      {dashboardMetrics && (
-        <motion.div
-          key="mobile-metrics"
-          {...fadeInUp}
-        >
-          <MobileMetricsGrid metrics={dashboardMetrics} />
-        </motion.div>
-      )}
 
       {/* Cash Management Section - Pro Mode Only */}
       <AnimatePresence mode="wait">
