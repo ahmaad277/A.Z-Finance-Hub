@@ -914,14 +914,16 @@ export default function Settings() {
               <AlertTriangle className="h-5 w-5 text-destructive" />
               <AlertDialogTitle>{t("settings.deletePlatform")}</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="space-y-2">
-              <p>{t("settings.deletePlatformConfirm")}</p>
-              {platformToDelete && (
-                <p className="font-semibold text-foreground">
-                  {platformToDelete.name}
-                </p>
-              )}
-              <p className="text-destructive">{t("settings.deletePlatformWarning")}</p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>{t("settings.deletePlatformConfirm")}</p>
+                {platformToDelete && (
+                  <p className="font-semibold text-foreground">
+                    {platformToDelete.name}
+                  </p>
+                )}
+                <p className="text-destructive">{t("settings.deletePlatformWarning")}</p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
