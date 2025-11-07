@@ -16,9 +16,12 @@ import { PlatformCard } from "@/components/platform-card";
 import { AddCashDialog } from "@/components/add-cash-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
 import { GridDashboard } from "@/components/grid-dashboard";
+import { DateRangeFilter } from "@/components/date-range-filter";
+import { MobileMetricsGrid } from "@/components/mobile-metrics-grid";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform } from "@shared/schema";
+import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
+import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform, CashTransaction } from "@shared/schema";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -132,6 +135,18 @@ export default function Dashboard() {
   const { data: cashBalance } = useQuery<{balance: number}>({
     queryKey: ["/api/cash/balance"],
   });
+
+  const { data: cashTransactions } = useQuery<CashTransaction[]>({
+    queryKey: ["/api/cash/transactions"],
+  });
+
+  // Calculate dashboard metrics for mobile view
+  const dashboardMetrics = useMemo(() => {
+    if (!investments || !cashflows || !platforms || !cashTransactions) {
+      return null;
+    }
+    return calculateDashboardMetrics(investments, cashTransactions, platforms, cashflows);
+  }, [investments, cashflows, platforms, cashTransactions]);
 
   // Calculate filtered stats based on selected platform
   const filteredStats = useMemo(() => {
@@ -504,6 +519,16 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Financial Metrics & Status - Mobile-Friendly Grid */}
+      {dashboardMetrics && (
+        <motion.div
+          key="mobile-metrics"
+          {...fadeInUp}
+        >
+          <MobileMetricsGrid metrics={dashboardMetrics} />
+        </motion.div>
+      )}
 
       {/* Cash Management Section - Pro Mode Only */}
       <AnimatePresence mode="wait">
