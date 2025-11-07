@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
+import { TrendingUp, Wallet, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
