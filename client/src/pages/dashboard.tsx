@@ -400,13 +400,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 md:space-y-6" data-testid="page-dashboard">
-      <div className="flex flex-col gap-3 sm:gap-2">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-          <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-row items-center justify-between gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex-shrink min-w-0">{t("dashboard.title")}</h1>
+          <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-              <SelectTrigger className="w-full sm:w-[180px] h-9" data-testid="select-platform-filter">
-                <Filter className="h-4 w-4 mr-2" />
+              <SelectTrigger className="w-[120px] sm:w-[180px] h-9 text-xs sm:text-sm" data-testid="select-platform-filter">
+                <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -420,9 +420,9 @@ export default function Dashboard() {
             </Select>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="default" data-testid="button-export-report" className="whitespace-nowrap">
-                  <Download className="h-4 w-4 mr-2" />
-                  {t("export.report")}
+                <Button variant="outline" size="sm" data-testid="button-export-report" className="h-9 px-2 sm:px-4">
+                  <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("export.report")}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
