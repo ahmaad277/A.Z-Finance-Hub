@@ -2,7 +2,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 // Cache persistence helpers
 const CACHE_KEY = "azfinance-query-cache";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2"; // Updated to clear old cache
 const CACHE_TIME = 1000 * 60 * 60 * 24; // 24 hours
 
 async function throwIfResNotOk(res: Response) {
