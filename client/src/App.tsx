@@ -11,6 +11,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { LogoutButton } from "@/components/logout-button";
+import { UserProfile } from "@/components/user-profile";
 import { ProtectedRoute } from "@/lib/protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -68,6 +69,7 @@ function AppContent() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
             <div className="flex items-center gap-2">
+              <UserProfile />
               <ThemeToggle />
               <LanguageToggle />
               <LogoutButton />
