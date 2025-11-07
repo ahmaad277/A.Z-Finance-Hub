@@ -122,6 +122,15 @@ The following expensive/complex features have been removed to reduce costs and c
     - 53 cashflows (40 received, 11 expected, 2 late) across all investments
     - 5 cash transactions (2 deposits, 2 withdrawals, 1 distribution)
     - Cross-page data consistency verified via e2e testing
+- **Cache Management System Fixed (Nov 7, 2025)**:
+    - **Root Cause**: localStorage cache persisting deleted investments, causing 404 errors
+    - **Solution**: App-level version tracking system (APP_VERSION constant)
+    - On app load, checks localStorage version against current APP_VERSION
+    - Automatically clears cache on version mismatch to force fresh data fetch
+    - Version stored in localStorage under "azfinance-app-version"
+    - Current version: "3" (increment when making schema/data-breaking changes)
+    - All delete operations now work correctly without stale cache issues
+    - E2E tests confirm: login → view investments → delete → verify count updated
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
