@@ -342,8 +342,6 @@ export type PortfolioStats = {
   upcomingCashflow: number;
   progressTo2040: number;
   totalCashBalance: number;
-  availableCash: number;
-  reinvestedAmount: number;
   averageDuration: number;
   distressedCount: number;
 };

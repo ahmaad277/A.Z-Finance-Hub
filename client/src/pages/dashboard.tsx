@@ -314,8 +314,8 @@ export default function Dashboard() {
   const remainingYears = totalYears - elapsedYears;
   
   // Use actual portfolio value or initial portfolio as fallback
-  const currentPortfolioValue = displayStats && (displayStats.totalCapital + displayStats.availableCash) > 0
-    ? displayStats.totalCapital + displayStats.availableCash
+  const currentPortfolioValue = displayStats && (displayStats.totalCapital + displayStats.totalCashBalance) > 0
+    ? displayStats.totalCapital + displayStats.totalCashBalance
     : initialPortfolio;
     
   const currentProgress = Math.min(Math.max((currentPortfolioValue / target2040) * 100, 0), 100);
@@ -331,25 +331,11 @@ export default function Dashboard() {
 
   const cashStatCards = [
     {
-      key: "availableCash",
-      value: displayStats ? formatCurrency(displayStats.availableCash) : "-",
-      icon: Banknote,
-      color: "text-chart-2",
-      bgColor: "bg-chart-2/10",
-    },
-    {
       key: "totalCashBalance",
       value: displayStats ? formatCurrency(displayStats.totalCashBalance) : "-",
       icon: Wallet,
       color: "text-primary",
       bgColor: "bg-primary/10",
-    },
-    {
-      key: "reinvestedAmount",
-      value: displayStats ? formatCurrency(displayStats.reinvestedAmount) : "-",
-      icon: TrendingUp,
-      color: "text-chart-1",
-      bgColor: "bg-chart-1/10",
     },
   ];
 

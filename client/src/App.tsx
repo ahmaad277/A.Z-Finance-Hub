@@ -29,7 +29,7 @@ import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
 // App version - increment to force cache clear
-const APP_VERSION = "3";
+const APP_VERSION = "4";
 const VERSION_KEY = "azfinance-app-version";
 
 function Router() {

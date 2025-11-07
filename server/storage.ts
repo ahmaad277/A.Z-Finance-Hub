@@ -241,6 +241,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
+    // Create the investment
     const [investment] = await db
       .insert(investments)
       .values({
@@ -248,6 +249,19 @@ export class DatabaseStorage implements IStorage {
         actualIrr: null,
       })
       .returning();
+    
+    // If funded from cash, deduct from cash balance
+    if (insertInvestment.fundedFromCash === 1) {
+      await this.createCashTransaction({
+        amount: insertInvestment.amount,
+        type: 'investment',
+        source: 'investment',
+        notes: `Investment: ${insertInvestment.name}`,
+        date: insertInvestment.startDate,
+        investmentId: investment.id,
+      });
+    }
+    
     return investment;
   }
 
@@ -261,11 +275,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteInvestment(id: string): Promise<boolean> {
+    // Get investment details before deletion
+    const investment = await this.getInvestment(id);
+    if (!investment) return false;
+    
     // Delete related cashflows first
     await db.delete(cashflows).where(eq(cashflows.investmentId, id));
     
     // Delete related alerts
     await db.delete(alerts).where(eq(alerts.investmentId, id));
+    
+    // If investment was funded from cash, return amount to cash balance
+    if (investment.fundedFromCash === 1) {
+      await this.createCashTransaction({
+        amount: investment.amount,
+        type: 'deposit',
+        source: 'investment_return',
+        notes: `Investment cancelled: ${investment.name}`,
+        date: new Date(),
+        investmentId: id,
+      });
+    }
     
     // Delete the investment
     const result = await db.delete(investments).where(eq(investments.id, id));
@@ -345,9 +375,14 @@ export class DatabaseStorage implements IStorage {
   async createCashTransaction(transaction: InsertCashTransaction): Promise<CashTransaction> {
     const currentBalance = await this.getCashBalance();
     
+    // Convert amount to number and apply sign based on transaction type
     let amountChange = parseFloat(transaction.amount.toString());
+    
+    // Deduct for withdrawals and investments, add for deposits and distributions
     if (transaction.type === 'withdrawal' || transaction.type === 'investment') {
-      amountChange = -amountChange;
+      amountChange = -Math.abs(amountChange); // Ensure negative
+    } else {
+      amountChange = Math.abs(amountChange); // Ensure positive
     }
     
     const newBalance = currentBalance + amountChange;
@@ -356,6 +391,7 @@ export class DatabaseStorage implements IStorage {
       .insert(cashTransactions)
       .values({
         ...transaction,
+        amount: Math.abs(parseFloat(transaction.amount.toString())).toString(), // Store absolute value
         balanceAfter: newBalance.toString(),
       })
       .returning();
@@ -410,16 +446,9 @@ export class DatabaseStorage implements IStorage {
     const target2040 = 10000000; // 10M SAR target
     const progressTo2040 = totalCapital > 0 ? (totalCapital / target2040) * 100 : 0;
 
-    // Cash balance from cash transactions (not cashflows)
+    // Cash balance from cash transactions
     const cashBalance = await this.getCashBalance();
     const totalCashBalance = cashBalance;
-
-    // Only count active/pending reinvestments - completed ones have returned to cash
-    const reinvestedAmount = allInvestments
-      .filter((inv) => inv.isReinvestment === 1 && (inv.status === "active" || inv.status === "pending"))
-      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
-
-    const availableCash = totalCashBalance - reinvestedAmount;
 
     // Average duration calculation (for completed investments)
     const completedInvestments = allInvestments.filter((inv) => inv.status === "completed");
@@ -449,8 +478,6 @@ export class DatabaseStorage implements IStorage {
       upcomingCashflow,
       progressTo2040,
       totalCashBalance,
-      availableCash,
-      reinvestedAmount,
       averageDuration: Math.round(averageDuration),
       distressedCount,
     };
