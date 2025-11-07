@@ -142,9 +142,14 @@ The following expensive/complex features have been removed to reduce costs and c
     - **Known Limitation**: Investment create/delete and cash transactions are not atomic (low risk, noted by architect)
 - **Dashboard UI Simplified (Nov 7, 2025)**:
     - **Platform Filter**: Converted from Select dropdown to icon-only DropdownMenu (Filter icon button)
-    - **Add Cash Button**: Moved to Dashboard header next to filter, styled in primary blue color
-    - **Streamlined Header**: Compact design with Filter icon → Add Cash button → Export Report
-    - Quick access to cash management without separate page navigation
+    - **Cash Transaction Buttons**: Redesigned cash management with visual indicators
+        - Green down arrow (ArrowDown) for deposits - adds money to wallet
+        - Red up arrow (ArrowUp) for withdrawals - removes money from wallet
+        - Icon-only buttons (9×9px) for compact design
+        - Replaced text-based "Add Cash" button
+    - **Cash Management Card Removed**: Deleted Pro Mode cash management section from Dashboard
+    - **Streamlined Header**: Compact design - Filter icon → Deposit (green) → Withdraw (red) → Export Report
+    - Quick access to cash transactions without separate page or card sections
     - **Timeline/Cash Management Page Removed**: Deleted separate Timeline page - all cash operations now in Dashboard header
     - Removed Timeline navigation link from sidebar
     - Simplified navigation structure focusing on core features

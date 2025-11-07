@@ -13,7 +13,7 @@ import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
-import { AddCashDialog } from "@/components/add-cash-dialog";
+import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
@@ -463,8 +463,9 @@ export default function Dashboard() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* Add Cash Button - Blue Primary */}
-            <AddCashDialog />
+            {/* Cash Transaction Buttons */}
+            <CashTransactionDialog type="deposit" />
+            <CashTransactionDialog type="withdrawal" />
             
             {/* Export Report */}
             <DropdownMenu>
@@ -582,76 +583,6 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Cash Management Section - Pro Mode Only */}
-      <AnimatePresence mode="wait">
-        {(!settings || settings.viewMode === "pro") && (
-          <motion.div
-            key="cash-management"
-            {...fadeInUp}
-          >
-            <Card data-testid="card-cash-management">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>{t("dashboard.cashManagement")}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <AddCashDialog />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleSection('cash-management')}
-                    data-testid="button-toggle-cash-management"
-                    className="h-8 w-8 p-0"
-                  >
-                    {isSectionCollapsed('cash-management') ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronUp className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
-              <AnimatePresence initial={false}>
-                {!isSectionCollapsed('cash-management') && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <CardContent className="space-y-6">
-                      <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg" data-testid="widget-cash-balance">
-                        <div className="bg-primary/10 text-primary rounded-lg p-3">
-                          <Wallet className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">{t("cash.currentBalance")}</p>
-                          <p className="text-2xl font-bold" data-testid="stat-cash-balance">
-                            {cashBalance ? formatCurrency(cashBalance.balance) : formatCurrency(0)}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid gap-6 md:grid-cols-3">
-                        {cashStatCards.map((card) => (
-                          <div key={card.key} className="flex items-center gap-4" data-testid={`cash-stat-${card.key}`}>
-                            <div className={`${card.bgColor} ${card.color} rounded-lg p-3`}>
-                              <card.icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
-                              <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Additional Metrics Section - Pro Mode Only */}
       <AnimatePresence mode="wait">
