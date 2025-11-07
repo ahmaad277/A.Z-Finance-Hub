@@ -128,9 +128,18 @@ The following expensive/complex features have been removed to reduce costs and c
     - On app load, checks localStorage version against current APP_VERSION
     - Automatically clears cache on version mismatch to force fresh data fetch
     - Version stored in localStorage under "azfinance-app-version"
-    - Current version: "3" (increment when making schema/data-breaking changes)
+    - Current version: "4" (increment when making schema/data-breaking changes)
     - All delete operations now work correctly without stale cache issues
     - E2E tests confirm: login → view investments → delete → verify count updated
+- **Cash Balance System Simplified (Nov 7, 2025)**:
+    - **Critical Fix**: Cash-funded investments now properly deduct from cash balance
+    - **createCashTransaction**: Fixed amount sign logic - investments/withdrawals are negative, deposits/distributions are positive
+    - **Simplified Display**: Removed confusing "Available Cash" vs "Cash Balance" distinction - now showing only "Cash Balance"
+    - **Portfolio Calculation**: Total Portfolio = Active Investments + Cash Balance (no double-counting)
+    - **Investment Deletion**: Cash-funded investments automatically refund to cash balance when deleted
+    - **Verified Behavior**: 200K cash → 50K investment = 150K cash + 50K investment = 200K total (constant)
+    - **Schema Cleanup**: Removed `availableCash` and `reinvestedAmount` from PortfolioStats
+    - **Known Limitation**: Investment create/delete and cash transactions are not atomic (low risk, noted by architect)
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
