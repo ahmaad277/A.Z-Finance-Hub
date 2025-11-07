@@ -18,6 +18,7 @@ import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
 import Analytics from "@/pages/analytics";
+import Reports from "@/pages/reports";
 import Timeline from "@/pages/timeline";
 import Alerts from "@/pages/alerts";
 import Reinvestment from "@/pages/reinvestment";
@@ -34,6 +35,7 @@ function Router() {
       <ProtectedRoute path="/investments" component={Investments} />
       <ProtectedRoute path="/cashflows" component={Cashflows} />
       <ProtectedRoute path="/analytics" component={Analytics} />
+      <ProtectedRoute path="/reports" component={Reports} />
       <ProtectedRoute path="/timeline" component={Timeline} />
       <ProtectedRoute path="/alerts" component={Alerts} />
       <ProtectedRoute path="/reinvestment" component={Reinvestment} />

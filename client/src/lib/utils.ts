@@ -81,15 +81,21 @@ export function calculateROI(investmentAmount: number | string, totalReturns: nu
   const returns = typeof totalReturns === "string" ? parseFloat(totalReturns) : totalReturns;
   
   if (isNaN(amount) || isNaN(returns) || amount === 0) return 0;
-  return ((returns - amount) / amount) * 100;
+  // ROI = (Profit / Investment) * 100
+  // totalReturns already represents the profit (received cashflows)
+  return (returns / amount) * 100;
 }
 
 export function getInvestmentTotalReturns(
   investmentId: string,
-  cashflows: Array<{ investmentId: string; amount: number | string; status: string }>
+  cashflows: Array<{ investmentId: string; amount: number | string; status: string; type?: string }>
 ): number {
   return cashflows
-    .filter(cf => cf.investmentId === investmentId && cf.status === "received")
+    .filter(cf => 
+      cf.investmentId === investmentId && 
+      cf.status === "received" &&
+      cf.type === "profit" // Only count profit cashflows, not principal returns
+    )
     .reduce((sum, cf) => {
       const amount = typeof cf.amount === "string" ? parseFloat(cf.amount) : cf.amount;
       return sum + (isNaN(amount) ? 0 : amount);
