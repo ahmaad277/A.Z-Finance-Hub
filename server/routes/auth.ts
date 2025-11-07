@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { storage } from '../storage';
 import { hashPassword, verifyPassword } from '../auth';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
-import { logAudit } from '../helpers/audit';
 
 const router = Router();
 
@@ -67,8 +66,9 @@ router.post('/login', async (req: Request, res: Response) => {
     const { eq } = await import('drizzle-orm');
     await db.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id));
 
-    // Set session
+    // Set session (both fields for compatibility with legacy routes)
     req.session.userId = user.id;
+    req.session.isAuthenticated = true;
     
     // Handle "remember me" - extend session duration
     const rememberMe = req.body.rememberMe;
@@ -77,14 +77,6 @@ router.post('/login', async (req: Request, res: Response) => {
     } else if (req.session.cookie) {
       req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 24 hours
     }
-
-    // Log login
-    await logAudit({
-      req,
-      action: 'login',
-      targetType: 'user',
-      targetId: user.id,
-    });
 
     const userWithRole = await storage.getUser(user.id);
 
@@ -112,15 +104,6 @@ router.post('/login', async (req: Request, res: Response) => {
 router.post('/logout', async (req: Request, res: Response) => {
   try {
     const userId = req.session?.userId;
-
-    if (userId) {
-      await logAudit({
-        req,
-        action: 'logout',
-        targetType: 'user',
-        targetId: userId,
-      });
-    }
 
     req.session.destroy((err) => {
       if (err) {
@@ -282,18 +265,6 @@ router.post('/register', async (req: Request, res: Response) => {
       currency: 'SAR',
     });
 
-    // Log action
-    await logAudit({
-      req,
-      action: 'create',
-      targetType: 'user',
-      targetId: user.id,
-      details: {
-        selfRegistered: true,
-        email: user.email,
-      },
-    });
-
     // Remove password hash
     const { passwordHash: _, ...safeUser } = user;
     
@@ -373,18 +344,6 @@ router.patch('/update-profile', requireAuth, async (req: AuthenticatedRequest, r
     if (!updatedUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    // Log action
-    await logAudit({
-      req,
-      action: 'update',
-      targetType: 'user',
-      targetId: userId,
-      details: {
-        emailChanged: !!updateData.email,
-        passwordChanged: !!updateData.passwordHash,
-      },
-    });
 
     // Remove password hash
     const { passwordHash, ...safeUser } = updatedUser;

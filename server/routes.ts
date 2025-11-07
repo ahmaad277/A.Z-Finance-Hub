@@ -14,18 +14,6 @@ import {
 
 // Import new modular routes
 import authRoutes from "./routes/auth";
-import usersRoutes from "./routes/users";
-import rolesRoutes from "./routes/roles";
-import auditRoutes from "./routes/audit";
-import impersonationRoutes from "./routes/impersonation";
-import exportRequestsRoutes from "./routes/export-requests";
-import viewRequestsRoutes from "./routes/view-requests";
-import temporaryRolesRoutes from "./routes/temporary-roles";
-
-// Import field masking helpers
-import { getMaskingConfig, applyMasking, type MaskingConfig } from "./helpers/field-masking";
-import type { AuthenticatedRequest } from "./middleware/auth";
-import { requirePermission } from "./middleware/auth";
 
 // Rate limiting for login attempts
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
@@ -52,86 +40,12 @@ function hashPIN(pin: string): string {
   return crypto.createHash('sha256').update(pin).digest('hex');
 }
 
-// Auth middleware
+// Simple auth middleware - require login for all protected routes
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (req.session.isAuthenticated) {
     return next();
   }
   res.status(401).json({ error: "Unauthorized" });
-}
-
-// Middleware that allows public access but checks for security requirement
-async function optionalAuth(req: Request, res: Response, next: NextFunction) {
-  try {
-    const settings = await storage.getSettings();
-    const authReq = req as AuthenticatedRequest;
-    
-    // Helper to attach owner user for legacy compatibility
-    const attachOwnerUser = async () => {
-      if (!authReq.user) {
-        const users = await storage.getUsers();
-        const owner = users.find(u => u.role?.name === 'owner'); // Find by role name
-        if (owner) {
-          const role = await storage.getRole(owner.roleId);
-          authReq.user = {
-            id: owner.id,
-            email: owner.email,
-            name: owner.name,
-            effectiveUserId: owner.id,
-            permissions: role?.permissions?.map(p => p.key) || [],
-            roleId: owner.roleId,
-            isActive: owner.isActive,
-            isImpersonating: false,
-          };
-        }
-      }
-    };
-    
-    // If security is not enabled, allow access with owner permissions
-    if (!settings || settings.securityEnabled !== 1) {
-      // Always attach owner user in open-access mode to prevent masking
-      await attachOwnerUser();
-      return next();
-    }
-    
-    // Security is enabled, require authentication
-    if (req.session.isAuthenticated) {
-      // Attach owner user for legacy authenticated sessions
-      await attachOwnerUser();
-      return next();
-    }
-    
-    res.status(401).json({ error: "Authentication required" });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to check auth status" });
-  }
-}
-
-// Helper to apply field masking based on user permissions
-function withMasking(type: 'investment' | 'cashflow' | 'cash_transaction' | 'portfolio_stats' | 'analytics') {
-  return (handler: (req: Request, res: Response) => Promise<any>) => {
-    return async (req: Request, res: Response) => {
-      const authReq = req as AuthenticatedRequest;
-      
-      // Get masking config - if no user, apply default masking (no permissions)
-      const config: MaskingConfig = authReq.user 
-        ? getMaskingConfig(authReq)
-        : {
-            maskAbsoluteAmounts: true,  // Mask amounts for unauthenticated users
-            maskSensitiveData: true,    // Hide sensitive data
-            maskPersonalInfo: true,     // Hide personal info
-          };
-      
-      // Intercept res.json to apply masking
-      const originalJson = res.json.bind(res);
-      res.json = function(data: any) {
-        const masked = applyMasking(data, type, config);
-        return originalJson(masked);
-      };
-      
-      return handler(req, res);
-    };
-  };
 }
 
 // API schema that accepts date strings and coerces to Date objects with validation
@@ -141,15 +55,8 @@ const apiInvestmentSchema = insertInvestmentSchema.extend({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register new modular routes for multi-user system
+  // Register authentication routes
   app.use("/api/v2/auth", authRoutes);
-  app.use("/api/v2/users", usersRoutes);
-  app.use("/api/v2/roles", rolesRoutes);
-  app.use("/api/v2/audit", auditRoutes);
-  app.use("/api/v2/impersonation", impersonationRoutes);
-  app.use("/api/v2/export-requests", exportRequestsRoutes);
-  app.use("/api/v2/view-requests", viewRequestsRoutes);
-  app.use("/api/v2/temporary-roles", temporaryRolesRoutes);
 
   // Legacy authentication endpoints (kept for backward compatibility)
   app.post("/api/auth/login", async (req, res) => {
@@ -216,8 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Platforms (protected)
-  app.get("/api/platforms", optionalAuth, async (_req, res) => {
+  // Platforms
+  app.get("/api/platforms", requireAuth, async (_req, res) => {
     try {
       const platforms = await storage.getPlatforms();
       res.json(platforms);
@@ -226,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/platforms", optionalAuth, async (req, res) => {
+  app.post("/api/platforms", requireAuth, async (req, res) => {
     try {
       const data = insertPlatformSchema.parse(req.body);
       const platform = await storage.createPlatform(data);
@@ -236,34 +143,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/platforms/:id", optionalAuth, async (req, res) => {
+  app.delete("/api/platforms/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const authReq = req as AuthenticatedRequest;
-      
-      // Check if user has permission to manage platforms
-      if (authReq.user && authReq.user.permissions) {
-        const hasPermission = authReq.user.permissions.includes('system:manage_platforms');
-        if (!hasPermission) {
-          return res.status(403).json({ error: "Insufficient permissions to delete platforms" });
-        }
-      }
-
       const success = await storage.deletePlatform(id);
       
       if (!success) {
         return res.status(404).json({ error: "Platform not found" });
-      }
-
-      // Log audit entry
-      if (authReq.user) {
-        const { logAudit } = await import('./helpers/audit');
-        await logAudit({
-          req,
-          action: 'delete',
-          targetType: 'platform',
-          targetId: id,
-        });
       }
 
       res.json({ success: true });
@@ -277,18 +163,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Investments
-  app.get("/api/investments", optionalAuth, withMasking('investment')(async (_req, res) => {
+  app.get("/api/investments", requireAuth, async (_req, res) => {
     try {
       const investments = await storage.getInvestments();
       res.json(investments);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch investments" });
     }
-  }));
+  });
 
-  app.post("/api/investments", optionalAuth, withMasking('investment')(async (req, res) => {
+  app.post("/api/investments", requireAuth, async (req, res) => {
     try {
-      // Use API schema that coerces date strings to Date objects with validation
       const data = apiInvestmentSchema.parse(req.body);
       const investment = await storage.createInvestment(data);
       res.status(201).json(investment);
@@ -296,12 +181,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Investment creation error:", error);
       res.status(400).json({ error: error.message || "Invalid investment data" });
     }
-  }));
+  });
 
-  app.patch("/api/investments/:id", optionalAuth, withMasking('investment')(async (req, res) => {
+  app.patch("/api/investments/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      // Use API schema that coerces date strings to Date objects with validation
       const data = apiInvestmentSchema.partial().parse(req.body);
       const investment = await storage.updateInvestment(id, data);
       
@@ -314,28 +198,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Investment update error:", error);
       res.status(400).json({ error: error.message || "Invalid investment data" });
     }
-  }));
+  });
 
-  app.delete("/api/investments/:id", requireAuth, requirePermission('investments:delete'), async (req: Request, res: Response) => {
+  app.delete("/api/investments/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const authReq = req as AuthenticatedRequest;
-
       const success = await storage.deleteInvestment(id);
       
       if (!success) {
         return res.status(404).json({ error: "Investment not found" });
       }
-
-      // Log audit only after successful deletion
-      await storage.logAudit({
-        actorId: authReq.user!.id,
-        actionType: 'delete',
-        targetType: 'investment',
-        targetId: id,
-        details: 'Investment deleted',
-        ipAddress: req.ip || 'unknown',
-      });
 
       res.json({ success: true });
     } catch (error: any) {
@@ -345,16 +217,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cashflows
-  app.get("/api/cashflows", optionalAuth, withMasking('cashflow')(async (_req, res) => {
+  app.get("/api/cashflows", requireAuth, async (_req, res) => {
     try {
       const cashflows = await storage.getCashflows();
       res.json(cashflows);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cashflows" });
     }
-  }));
+  });
 
-  app.post("/api/cashflows", optionalAuth, withMasking('cashflow')(async (req, res) => {
+  app.post("/api/cashflows", requireAuth, async (req, res) => {
     try {
       const data = insertCashflowSchema.parse(req.body);
       const cashflow = await storage.createCashflow(data);
@@ -362,9 +234,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid cashflow data" });
     }
-  }));
+  });
 
-  app.patch("/api/cashflows/:id", optionalAuth, withMasking('cashflow')(async (req, res) => {
+  app.patch("/api/cashflows/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const data = insertCashflowSchema.partial().parse(req.body);
@@ -378,10 +250,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid cashflow data" });
     }
-  }));
+  });
 
   // Alerts
-  app.get("/api/alerts", optionalAuth, async (_req, res) => {
+  app.get("/api/alerts", requireAuth, async (_req, res) => {
     try {
       const alerts = await storage.getAlerts();
       res.json(alerts);
@@ -390,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts", optionalAuth, async (req, res) => {
+  app.post("/api/alerts", requireAuth, async (req, res) => {
     try {
       const data = insertAlertSchema.parse(req.body);
       const alert = await storage.createAlert(data);
@@ -400,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/alerts/:id/read", optionalAuth, async (req, res) => {
+  app.patch("/api/alerts/:id/read", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const alert = await storage.markAlertAsRead(id);
@@ -415,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts/generate", optionalAuth, async (_req, res) => {
+  app.post("/api/alerts/generate", requireAuth, async (_req, res) => {
     try {
       const settings = await storage.getSettings();
       
@@ -482,16 +354,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cash Transactions
-  app.get("/api/cash/transactions", optionalAuth, withMasking('cash_transaction')(async (_req, res) => {
+  app.get("/api/cash/transactions", requireAuth, async (_req, res) => {
     try {
       const transactions = await storage.getCashTransactions();
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cash transactions" });
     }
-  }));
+  });
 
-  app.post("/api/cash/transactions", optionalAuth, withMasking('cash_transaction')(async (req, res) => {
+  app.post("/api/cash/transactions", requireAuth, async (req, res) => {
     try {
       const data = insertCashTransactionSchema.parse(req.body);
       const transaction = await storage.createCashTransaction(data);
@@ -499,9 +371,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message || "Invalid transaction data" });
     }
-  }));
+  });
 
-  app.get("/api/cash/balance", optionalAuth, async (_req, res) => {
+  app.get("/api/cash/balance", requireAuth, async (_req, res) => {
     try {
       const balance = await storage.getCashBalance();
       res.json({ balance });
@@ -511,27 +383,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio Stats
-  app.get("/api/portfolio/stats", optionalAuth, withMasking('portfolio_stats')(async (_req, res) => {
+  app.get("/api/portfolio/stats", requireAuth, async (_req, res) => {
     try {
       const stats = await storage.getPortfolioStats();
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch portfolio stats" });
     }
-  }));
+  });
 
   // Analytics
-  app.get("/api/analytics", optionalAuth, withMasking('analytics')(async (_req, res) => {
+  app.get("/api/analytics", requireAuth, async (_req, res) => {
     try {
       const analytics = await storage.getAnalyticsData();
       res.json(analytics);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch analytics data" });
     }
-  }));
+  });
 
   // Settings
-  app.get("/api/settings", optionalAuth, async (req, res) => {
+  app.get("/api/settings", requireAuth, async (req, res) => {
     try {
       const settings = await storage.getSettings();
       if (!settings) {
@@ -547,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/settings", optionalAuth, async (req, res) => {
+  app.put("/api/settings", requireAuth, async (req, res) => {
     try {
       let data = insertUserSettingsSchema.partial().parse(req.body);
       
@@ -568,84 +440,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Settings update error:", error);
       res.status(400).json({ error: error.message || "Invalid settings data" });
-    }
-  });
-
-  // AI Insights endpoints
-  app.get("/api/ai/insights", optionalAuth, async (_req, res) => {
-    try {
-      const { getComprehensiveAIInsights } = await import("./ai-service");
-      
-      const [investments, cashflows, stats, analytics] = await Promise.all([
-        storage.getInvestments(),
-        storage.getCashflows(),
-        storage.getPortfolioStats(),
-        storage.getAnalyticsData(),
-      ]);
-
-      const insights = await getComprehensiveAIInsights(
-        investments,
-        cashflows,
-        stats,
-        analytics
-      );
-      
-      res.json(insights);
-    } catch (error: any) {
-      console.error("AI insights error:", error);
-      res.status(500).json({ error: "Failed to generate AI insights" });
-    }
-  });
-
-  app.get("/api/ai/recommendations", optionalAuth, async (_req, res) => {
-    try {
-      const { getAIRecommendations } = await import("./ai-service");
-      
-      const [investments, stats, analytics] = await Promise.all([
-        storage.getInvestments(),
-        storage.getPortfolioStats(),
-        storage.getAnalyticsData(),
-      ]);
-
-      const recommendations = await getAIRecommendations(investments, stats, analytics);
-      res.json(recommendations);
-    } catch (error: any) {
-      console.error("AI recommendations error:", error);
-      res.status(500).json({ error: "Failed to generate AI recommendations" });
-    }
-  });
-
-  app.get("/api/ai/risk-analysis", optionalAuth, async (_req, res) => {
-    try {
-      const { getAIRiskAnalysis } = await import("./ai-service");
-      
-      const [investments, stats] = await Promise.all([
-        storage.getInvestments(),
-        storage.getPortfolioStats(),
-      ]);
-
-      const riskAnalysis = await getAIRiskAnalysis(investments, stats);
-      res.json(riskAnalysis);
-    } catch (error: any) {
-      console.error("AI risk analysis error:", error);
-      res.status(500).json({ error: "Failed to generate AI risk analysis" });
-    }
-  });
-
-  app.get("/api/ai/cashflow-forecast", optionalAuth, async (_req, res) => {
-    try {
-      const { getAICashflowForecast } = await import("./ai-service");
-      
-      const [cashflows, investments] = await Promise.all([
-        storage.getCashflows(),
-        storage.getInvestments(),
-      ]);
-
-      const forecast = await getAICashflowForecast(cashflows, investments);
-      res.json(forecast);
-    } catch (error: any) {
-      console.error("AI cashflow forecast error:", error);
-      res.status(500).json({ error: "Failed to generate cashflow forecast" });
     }
   });
 

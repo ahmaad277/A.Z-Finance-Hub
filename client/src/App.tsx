@@ -18,18 +18,12 @@ import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
 import Analytics from "@/pages/analytics";
-import AIInsights from "@/pages/ai-insights";
 import Timeline from "@/pages/timeline";
 import Alerts from "@/pages/alerts";
 import Reinvestment from "@/pages/reinvestment";
 import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
-import UserManagement from "@/pages/user-management";
-import RoleManagement from "@/pages/role-management";
-import AuditLog from "@/pages/audit-log";
-import ExportRequests from "@/pages/export-requests";
-import ViewRequests from "@/pages/view-requests";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -40,18 +34,12 @@ function Router() {
       <ProtectedRoute path="/investments" component={Investments} />
       <ProtectedRoute path="/cashflows" component={Cashflows} />
       <ProtectedRoute path="/analytics" component={Analytics} />
-      <ProtectedRoute path="/ai-insights" component={AIInsights} />
       <ProtectedRoute path="/timeline" component={Timeline} />
       <ProtectedRoute path="/alerts" component={Alerts} />
       <ProtectedRoute path="/reinvestment" component={Reinvestment} />
       <ProtectedRoute path="/help" component={Help} />
       <ProtectedRoute path="/settings" component={Settings} />
       <ProtectedRoute path="/platform/:id" component={PlatformDetails} />
-      <ProtectedRoute path="/admin/users" component={UserManagement} />
-      <ProtectedRoute path="/admin/roles" component={RoleManagement} />
-      <ProtectedRoute path="/admin/audit" component={AuditLog} />
-      <ProtectedRoute path="/admin/export-requests" component={ExportRequests} />
-      <ProtectedRoute path="/admin/view-requests" component={ViewRequests} />
       <Route component={NotFound} />
     </Switch>
   );

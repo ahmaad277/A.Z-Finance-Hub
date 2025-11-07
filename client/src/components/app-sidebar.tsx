@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield, FileText, FileDown, Eye } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, Clock, RefreshCw, BookOpen, Settings2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -38,11 +38,6 @@ const menuItems = [
     icon: BarChart3,
   },
   {
-    key: "aiInsights",
-    url: "/ai-insights",
-    icon: Sparkles,
-  },
-  {
     key: "reinvestment",
     url: "/reinvestment",
     icon: RefreshCw,
@@ -69,53 +64,14 @@ const menuItems = [
   },
 ];
 
-const adminItems = [
-  {
-    key: "users",
-    url: "/admin/users",
-    icon: Users,
-    permission: "VIEW_USERS|CREATE_USERS|EDIT_USERS",
-  },
-  {
-    key: "roles",
-    url: "/admin/roles",
-    icon: Shield,
-    permission: "VIEW_ROLES|CREATE_ROLES|EDIT_ROLES",
-  },
-  {
-    key: "audit",
-    url: "/admin/audit",
-    icon: FileText,
-    permission: "VIEW_USERS|VIEW_ROLES",
-  },
-  {
-    key: "exportRequests",
-    url: "/admin/export-requests",
-    icon: FileDown,
-    permission: "REQUEST_EXPORT|APPROVE_EXPORT",
-  },
-  {
-    key: "viewRequests",
-    url: "/admin/view-requests",
-    icon: Eye,
-    permission: "REQUEST_VIEW|APPROVE_VIEW",
-  },
-];
 
 export function AppSidebar() {
   const [location] = useLocation();
   const { t } = useLanguage();
   const { setOpenMobile } = useSidebar();
-  const { hasPermission } = useAuth();
 
   const handleNavClick = () => {
     setOpenMobile(false);
-  };
-
-  // Helper to check OR permissions (separated by |)
-  const checkPermission = (permission: string) => {
-    const permissions = permission.split('|');
-    return permissions.some(p => hasPermission(p.trim()));
   };
 
   return (
@@ -160,37 +116,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
-        {adminItems.some(item => checkPermission(item.permission)) && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Administration
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminItems.map((item) => {
-                  if (!checkPermission(item.permission)) return null;
-                  const isActive = location === item.url;
-                  return (
-                    <SidebarMenuItem key={item.key}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        data-testid={`link-admin-${item.key}`}
-                        className="hover-elevate active-elevate-2"
-                      >
-                        <Link href={item.url} onClick={handleNavClick}>
-                          <item.icon className="h-5 w-5" />
-                          <span className="font-medium">{t(`admin.${item.key}`)}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
