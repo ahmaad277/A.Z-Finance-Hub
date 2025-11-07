@@ -1,10 +1,19 @@
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { cn, normalizeNumberInput } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
-    // h-9 to match icon buttons and default buttons.
+  ({ className, type, onChange, ...props }, ref) => {
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      if (type === "number" && e.target.value) {
+        const normalized = normalizeNumberInput(e.target.value);
+        if (normalized !== e.target.value) {
+          e.target.value = normalized;
+        }
+      }
+      onChange?.(e);
+    }, [type, onChange]);
+
     return (
       <input
         type={type}
@@ -13,6 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onChange={handleChange}
         {...props}
       />
     )

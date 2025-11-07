@@ -95,3 +95,19 @@ export function getInvestmentTotalReturns(
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 }
+
+export function convertArabicToEnglishNumbers(str: string): string {
+  const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  
+  let result = str;
+  arabicNumbers.forEach((arabic, index) => {
+    result = result.replace(new RegExp(arabic, 'g'), englishNumbers[index]);
+  });
+  
+  return result;
+}
+
+export function normalizeNumberInput(value: string): string {
+  return convertArabicToEnglishNumbers(value);
+}
