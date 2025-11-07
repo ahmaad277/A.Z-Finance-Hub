@@ -149,11 +149,30 @@ router.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Response) 
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Get role with permissions
+    let role = null;
+    if (userDetails.roleId) {
+      const roleData = await storage.getRole(userDetails.roleId);
+      if (roleData) {
+        const rolePermissions = await storage.getRolePermissions(roleData.id);
+        role = {
+          ...roleData,
+          permissions: rolePermissions.map((p: any) => ({
+            id: p.id,
+            key: p.key,
+            displayName: p.displayName,
+            displayNameAr: p.displayNameAr,
+          })),
+        };
+      }
+    }
+
     // Remove sensitive data
     const { passwordHash, ...safeUser } = userDetails;
 
     res.json({
       user: safeUser,
+      role,
       isImpersonating: req.user.isImpersonating,
       actualUserId: req.session.userId,
     });
