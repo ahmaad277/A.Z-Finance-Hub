@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, clearCache } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +26,11 @@ import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+
+// App version - increment to force cache clear
+const APP_VERSION = "3";
+const VERSION_KEY = "azfinance-app-version";
 
 function Router() {
   return (
@@ -79,6 +84,15 @@ function AppContent() {
 }
 
 function App() {
+  useEffect(() => {
+    const storedVersion = localStorage.getItem(VERSION_KEY);
+    if (storedVersion !== APP_VERSION) {
+      console.log('[App] Version mismatch - clearing cache');
+      clearCache();
+      localStorage.setItem(VERSION_KEY, APP_VERSION);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
