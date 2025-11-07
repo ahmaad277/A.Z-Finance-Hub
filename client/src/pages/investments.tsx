@@ -279,7 +279,7 @@ export default function Investments() {
                   cashflows={cashflows || []}
                   onEdit={() => handleEdit(investment)}
                   onCompletePayment={() => handleCompletePayment(investment)}
-                  onDelete={hasPermission('DELETE_INVESTMENTS') ? () => handleDelete(investment) : undefined}
+                  onDelete={() => handleDelete(investment)}
                 />
               ))}
             </div>
