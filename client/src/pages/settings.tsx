@@ -53,6 +53,8 @@ export default function Settings() {
 
   // Local settings state for Save/Cancel/Reset functionality
   const [localSettings, setLocalSettings] = useState<Partial<UserSettings>>({});
+  const [localTheme, setLocalTheme] = useState<string>("dark");
+  const [localLanguage, setLocalLanguage] = useState<string>("en");
   const [hasChanges, setHasChanges] = useState(false);
 
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
@@ -69,6 +71,8 @@ export default function Settings() {
       setLocalSettings({
         fontSize: settings.fontSize,
         viewMode: settings.viewMode,
+        theme: settings.theme,
+        language: settings.language,
         targetCapital2040: settings.targetCapital2040,
         autoReinvest: settings.autoReinvest,
         alertsEnabled: settings.alertsEnabled,
@@ -76,6 +80,8 @@ export default function Settings() {
         latePaymentAlertsEnabled: settings.latePaymentAlertsEnabled,
         securityEnabled: settings.securityEnabled,
       });
+      setLocalTheme(settings.theme || "dark");
+      setLocalLanguage(settings.language || "en");
       setHasChanges(false);
     }
   }, [settings]);
@@ -219,13 +225,17 @@ export default function Settings() {
   };
 
   const handleThemeChange = (newTheme: string) => {
+    setLocalTheme(newTheme);
     setTheme(newTheme as "light" | "dark");
-    updateSettingsMutation.mutate({ theme: newTheme });
+    setLocalSettings(prev => ({ ...prev, theme: newTheme }));
+    setHasChanges(true);
   };
 
   const handleLanguageChange = (newLanguage: string) => {
+    setLocalLanguage(newLanguage);
     setLanguage(newLanguage as "en" | "ar");
-    updateSettingsMutation.mutate({ language: newLanguage });
+    setLocalSettings(prev => ({ ...prev, language: newLanguage }));
+    setHasChanges(true);
   };
 
   const handleTargetCapitalChange = (value: string) => {
@@ -271,6 +281,8 @@ export default function Settings() {
       setLocalSettings({
         fontSize: settings.fontSize,
         viewMode: settings.viewMode,
+        theme: settings.theme,
+        language: settings.language,
         targetCapital2040: settings.targetCapital2040,
         autoReinvest: settings.autoReinvest,
         alertsEnabled: settings.alertsEnabled,
@@ -278,6 +290,10 @@ export default function Settings() {
         latePaymentAlertsEnabled: settings.latePaymentAlertsEnabled,
         securityEnabled: settings.securityEnabled,
       });
+      setLocalTheme(settings.theme || "dark");
+      setLocalLanguage(settings.language || "en");
+      setTheme((settings.theme || "dark") as "light" | "dark");
+      setLanguage((settings.language || "en") as "en" | "ar");
       setHasChanges(false);
       toast({
         title: language === "ar" ? "تم الإلغاء" : "Cancelled",
@@ -290,6 +306,8 @@ export default function Settings() {
     const defaults = {
       fontSize: "medium",
       viewMode: "pro",
+      theme: "dark",
+      language: "en",
       targetCapital2040: "1000000",
       autoReinvest: 0,
       alertsEnabled: 1,
@@ -298,6 +316,10 @@ export default function Settings() {
       securityEnabled: 0,
     };
     setLocalSettings(defaults);
+    setLocalTheme("dark");
+    setLocalLanguage("en");
+    setTheme("dark");
+    setLanguage("en");
     setHasChanges(true);
     toast({
       title: language === "ar" ? "تم إعادة التعيين" : "Reset",
@@ -469,7 +491,7 @@ export default function Settings() {
             {/* Theme Toggle */}
             <div className="space-y-2">
               <Label>{t("settings.theme")}</Label>
-              <Select value={theme} onValueChange={handleThemeChange}>
+              <Select value={localTheme} onValueChange={handleThemeChange}>
                 <SelectTrigger data-testid="select-theme">
                   <SelectValue />
                 </SelectTrigger>
@@ -527,7 +549,7 @@ export default function Settings() {
             {/* Language */}
             <div className="space-y-2">
               <Label>{t("settings.language")}</Label>
-              <Select value={language} onValueChange={handleLanguageChange}>
+              <Select value={localLanguage} onValueChange={handleLanguageChange}>
                 <SelectTrigger data-testid="select-language">
                   <SelectValue />
                 </SelectTrigger>
@@ -906,8 +928,8 @@ export default function Settings() {
             <div className="space-y-2">
               <Label>{language === "ar" ? "المستخدم الحالي" : "Current User"}</Label>
               <div className="p-3 rounded-md bg-muted/50 border">
-                <p className="font-medium">{user?.name}</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <p className="font-medium">{user?.user.name}</p>
+                <p className="text-sm text-muted-foreground">{user?.user.email}</p>
               </div>
             </div>
 
