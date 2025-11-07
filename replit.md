@@ -15,8 +15,10 @@ The application is built with a modern web stack:
 - **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Recharts for charting, Wouter for routing, TanStack Query for state management, and react-grid-layout for customizable widgets.
 - **Backend**: Express.js and Node.js with session-based authentication.
 - **Authentication**: Full authentication system with:
-    - Session-based login with encrypted sessions (PostgreSQL session store)
+    - Session-based login with encrypted sessions (PostgreSQL session store for persistence)
     - User selection dropdown on login page (all active users)
+    - Self-registration endpoint (/api/v2/auth/register) - new users default to Viewer role
+    - Profile update endpoint (/api/v2/auth/update-profile) - users can change email/password without MANAGE_USERS permission
     - "Remember me" functionality (30-day sessions)
     - Password hashing using scrypt with salt
     - Default owner user: **A.Z** (email: az@azfinance.sa, password: az2040)
@@ -26,7 +28,13 @@ The application is built with a modern web stack:
 - **UI/UX Decisions**:
     - **Dashboard**: Features two view modes:
         - **Classic View**: Compact stat cards, platform overview section with clickable cards, portfolio performance charts, upcoming cashflows, and recent investments table.
-        - **Grid View** (Pro Mode Only): Customizable widget dashboard with drag-and-drop, resize, hide/show functionality. Includes 3 widgets: Stats Overview, Platform Cards, and Portfolio Chart. Layout preferences are saved to the database.
+        - **Grid View** (Pro Mode Only): Customizable widget dashboard with drag-and-drop, resize, hide/show functionality. Includes 24 comprehensive widgets:
+            - **Financial Metrics** (8 widgets): Portfolio Value, Cash Available, Returns Ratio, Cash Ratio, Portfolio APR, Portfolio ROI, Avg Duration, Avg Amount
+            - **Status Counters** (5 widgets): Total Investments, Active, Completed, Late, Defaulted
+            - **Interactive Charts** (2 widgets): Status Distribution Pie Chart, Platform Distribution Pie Chart (with value/count toggle)
+            - **Legacy Widgets** (9 widgets): Stats Overview, Platform Cards, Portfolio Chart, Upcoming Cashflows, Recent Investments, Cash Balance, Goal Calculator, Quick Actions
+            - Layout preferences are saved to the database with deep copy protection for mutations
+            - Widget categories: metrics, counters, charts, stats, professional, actions
     - The dashboard supports a "Pro mode" toggle for advanced features like Cash Balance Widget, Goal Calculator, and Grid Dashboard.
     - **Investment Management**: Features a horizontal row-based layout for efficient space utilization on desktop, with responsive mobile layout that stacks information vertically. Desktop view displays investments as thin rows with status-based color coding (active: green tint, completed: muted, pending: blue tint). Each row shows: duration in months, expected payment date, nominal value, net profit, ROI percentage, average payment amount, payment count, and a visual progress indicator with small boxes (6px × 6px) representing received vs. remaining payments. Mobile view uses a grid layout (2 columns) to show key stats: amount, total returns, ROI, end date, and payment progress. Includes platform-based categorization, risk scoring, and real-time ROI calculations. Full RTL support for Arabic and responsive design for all screen sizes.
     - **Cashflow Tracking**: Provides a detailed table with status indicators and distribution type tracking.
@@ -57,6 +65,13 @@ The application is built with a modern web stack:
         - **Temporary Roles**: Time-limited role assignments with automatic expiration
         - **Export/View Approval Workflows**: Request-based access for sensitive operations
         - **Translation System**: Comprehensive English/Arabic translations for all permission categories and role management UI
+- **Financial Metrics System**: Comprehensive calculation utilities (`lib/dashboardMetrics.ts`) for:
+    - Portfolio calculations: Total value, cash ratio, investment returns (actual vs expected)
+    - Performance metrics: APR (Annual Percentage Rate), ROI (Return on Investment)
+    - Statistical analysis: Average duration, average amount, average payment
+    - Status tracking: Late investments (overdue cashflows), Defaulted investments (>60 days overdue)
+    - Platform distribution: Value and count breakdown by platform
+    - All calculations respect date ranges and support real-time filtering
 - **Core Entities**: Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings (with dashboardLayout and hiddenWidgets for widget customization), PortfolioStats, AnalyticsData, Users, Roles, Permissions, RolePermissions, UserPlatforms, TemporaryRoles, AuditLogs, ExportRequests, ViewRequests, ImpersonationSessions.
 
 ## External Dependencies

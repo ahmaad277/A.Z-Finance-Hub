@@ -64,6 +64,9 @@ export default function Dashboard() {
     }
   };
 
+  // Date Range Filter for analytics
+  const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | undefined>();
+
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
   });

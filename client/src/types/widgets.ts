@@ -8,7 +8,22 @@ export type WidgetId =
   | 'recent-investments'
   | 'cash-balance'
   | 'goal-calculator'
-  | 'quick-actions';
+  | 'quick-actions'
+  | 'portfolio-value'
+  | 'cash-available'
+  | 'returns-ratio'
+  | 'cash-ratio'
+  | 'portfolio-apr'
+  | 'portfolio-roi'
+  | 'avg-duration'
+  | 'avg-amount'
+  | 'total-investments'
+  | 'active-investments'
+  | 'completed-investments'
+  | 'late-investments'
+  | 'defaulted-investments'
+  | 'status-pie-chart'
+  | 'platform-pie-chart';
 
 export interface WidgetLayout {
   i: string; // widget ID
@@ -31,7 +46,7 @@ export interface WidgetDefinition {
   defaultLayout: WidgetLayout;
   component: React.ComponentType<WidgetProps>;
   icon: React.ComponentType<{ className?: string }>;
-  category: 'stats' | 'charts' | 'actions' | 'professional';
+  category: 'stats' | 'charts' | 'actions' | 'professional' | 'metrics' | 'counters';
   requiredMode?: 'simple' | 'professional'; // undefined = available in both
 }
 

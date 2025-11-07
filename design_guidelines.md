@@ -13,8 +13,14 @@
   - Section titles: 24px (xl) semibold
   - Card titles: 18px (lg) medium
   - Body text: 16px (base) regular
-  - Secondary info: 14px (sm) regular
+  - Secondary info: 15px (sm+) regular / medium weight for Arabic (improved readability)
   - Labels/captions: 12px (xs) medium
+  
+**Arabic Typography Enhancements**:
+- Secondary text in Arabic uses `text-[15px]` (slightly larger than standard sm)
+- Arabic secondary text uses `font-medium` weight for better clarity
+- Muted/tertiary text in Arabic maintains readable weight (not too thin)
+- Number formatting respects Arabic numerals when language is Arabic
 
 ### Layout System
 **Spacing Units**: Tailwind 4, 6, 8, 12, 16 (p-4, gap-6, mb-8, etc.)
