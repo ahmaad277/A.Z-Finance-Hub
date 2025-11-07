@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/language-provider";
 import { Target, TrendingUp, DollarSign, Calendar } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import type { InvestmentWithPlatform, CashTransaction } from "@shared/schema";
 
 interface CalculationResult {
   futureValue: number;
@@ -18,12 +20,51 @@ export function GoalCalculator() {
   const { t, language } = useLanguage();
   const isRTL = language === "ar";
 
+  // Fetch investments and cash balance to calculate current portfolio value
+  const { data: investments } = useQuery<InvestmentWithPlatform[]>({
+    queryKey: ["/api/investments"],
+  });
+
+  const { data: cashTransactions } = useQuery<CashTransaction[]>({
+    queryKey: ["/api/cash/transactions"],
+  });
+
+  // Calculate current portfolio value
+  const currentPortfolioValue = useMemo(() => {
+    if (!investments || !cashTransactions) return 10000; // Default fallback
+    
+    const activeInvestmentsValue = investments
+      .filter(inv => inv.status === "active")
+      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    
+    const cashBalance = cashTransactions.reduce((balance, tx) => {
+      const amount = parseFloat(tx.amount);
+      if (tx.type === 'deposit' || tx.type === 'distribution') {
+        return balance + amount;
+      } else if (tx.type === 'withdrawal' || tx.type === 'investment') {
+        return balance - amount;
+      }
+      return balance;
+    }, 0);
+    
+    const totalValue = activeInvestmentsValue + cashBalance;
+    return totalValue > 0 ? totalValue : 10000; // Use actual value or default
+  }, [investments, cashTransactions]);
+
   const [inputs, setInputs] = useState({
     initialAmount: 10000,
     monthlyDeposit: 1000,
     expectedIRR: 12,
     durationYears: 10,
   });
+
+  // Update initialAmount when currentPortfolioValue changes
+  useEffect(() => {
+    setInputs(prev => ({
+      ...prev,
+      initialAmount: Math.round(currentPortfolioValue)
+    }));
+  }, [currentPortfolioValue]);
 
   const [result, setResult] = useState<CalculationResult | null>(null);
 

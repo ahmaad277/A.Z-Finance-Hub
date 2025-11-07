@@ -353,20 +353,65 @@ export default function Dashboard() {
     },
   ];
 
+  // Calculate weighted average APR for additional metrics
+  const weightedAvgAPR = useMemo(() => {
+    if (!investments || investments.length === 0) return 0;
+    
+    const activeInvestments = selectedPlatform === "all" 
+      ? investments.filter(inv => inv.status === "active")
+      : investments.filter(inv => inv.status === "active" && inv.platformId === selectedPlatform);
+    
+    if (activeInvestments.length === 0) return 0;
+    
+    const totalValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    const weightedSum = activeInvestments.reduce((sum, inv) => {
+      const weight = parseFloat(inv.amount) / totalValue;
+      return sum + (parseFloat(inv.expectedIrr) * weight);
+    }, 0);
+    
+    return weightedSum;
+  }, [investments, selectedPlatform]);
+
+  // Calculate next payment expected
+  const nextPayment = useMemo(() => {
+    if (!cashflows) return null;
+    
+    const upcomingCashflows = selectedPlatform === "all"
+      ? cashflows.filter(cf => (cf.status === "expected" || cf.status === "upcoming"))
+      : cashflows.filter(cf => {
+          const investment = investments?.find(inv => inv.id === cf.investmentId);
+          return (cf.status === "expected" || cf.status === "upcoming") && investment?.platformId === selectedPlatform;
+        });
+    
+    if (upcomingCashflows.length === 0) return null;
+    
+    // Sort by due date
+    const sortedCashflows = upcomingCashflows.sort((a, b) => 
+      new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    );
+    
+    return {
+      amount: parseFloat(sortedCashflows[0].amount),
+      date: new Date(sortedCashflows[0].dueDate),
+      daysUntil: Math.ceil((new Date(sortedCashflows[0].dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    };
+  }, [cashflows, investments, selectedPlatform]);
+
   const additionalStatCards = [
     {
-      key: "averageDuration",
-      value: displayStats ? `${Math.round(displayStats.averageDuration / 30)} ${t("dashboard.months")}` : "-",
-      icon: Clock,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
+      key: "weightedAvgAPR",
+      value: formatPercentage(weightedAvgAPR),
+      icon: TrendingUp,
+      color: "text-chart-1",
+      bgColor: "bg-chart-1/10",
     },
     {
-      key: "distressedCount",
-      value: displayStats ? `${displayStats.distressedCount} ${t("dashboard.investments")}` : "-",
-      icon: AlertTriangle,
-      color: displayStats && displayStats.distressedCount > 0 ? "text-destructive" : "text-muted-foreground",
-      bgColor: displayStats && displayStats.distressedCount > 0 ? "bg-destructive/10" : "bg-muted/10",
+      key: "nextPaymentExpected",
+      value: nextPayment ? formatCurrency(nextPayment.amount) : "-",
+      secondaryValue: nextPayment ? `${t("cashflows.inDays").replace("{0}", nextPayment.daysUntil.toString())}` : t("dashboard.noDataYet"),
+      icon: Banknote,
+      color: nextPayment && nextPayment.daysUntil <= 7 ? "text-chart-2" : "text-primary",
+      bgColor: nextPayment && nextPayment.daysUntil <= 7 ? "bg-chart-2/10" : "bg-primary/10",
     },
   ];
 
@@ -647,6 +692,9 @@ export default function Dashboard() {
                             <div>
                               <p className="text-sm text-muted-foreground">{t(`dashboard.${card.key}`)}</p>
                               <p className="text-xl font-bold" data-testid={`stat-${card.key}`}>{card.value}</p>
+                              {card.secondaryValue && (
+                                <p className="text-xs text-muted-foreground mt-1">{card.secondaryValue}</p>
+                              )}
                             </div>
                           </div>
                         ))}

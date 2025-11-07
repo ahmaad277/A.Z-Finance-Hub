@@ -3,19 +3,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { TrendingUp, TrendingDown, Plus, CheckCircle2 } from "lucide-react";
-import type { Investment, Cashflow } from "@shared/schema";
+import { TrendingUp, TrendingDown, Plus, CheckCircle2, Wallet } from "lucide-react";
+import type { Investment, Cashflow, CashTransaction } from "@shared/schema";
 
 type TimelineEvent = {
   id: string;
   date: Date | string;
-  type: "investment" | "cashflow" | "maturity";
+  type: "investment" | "cashflow" | "maturity" | "cash_transaction";
   title: string;
   amount: number;
   description: string;
   icon: any;
   iconColor: string;
   bgColor: string;
+  transactionType?: string;
 };
 
 export default function Timeline() {
@@ -26,6 +27,10 @@ export default function Timeline() {
 
   const { data: cashflows } = useQuery<Cashflow[]>({
     queryKey: ["/api/cashflows"],
+  });
+
+  const { data: cashTransactions } = useQuery<CashTransaction[]>({
+    queryKey: ["/api/cash/transactions"],
   });
 
   const events: TimelineEvent[] = [];
@@ -69,6 +74,29 @@ export default function Timeline() {
       icon: TrendingUp,
       iconColor: "text-chart-2",
       bgColor: "bg-chart-2/10",
+    });
+  });
+
+  // Add cash transactions to timeline
+  cashTransactions?.forEach((tx) => {
+    const isWithdrawal = tx.type === 'withdrawal';
+    const isDeposit = tx.type === 'deposit';
+    
+    events.push({
+      id: `cash-tx-${tx.id}`,
+      date: tx.date,
+      type: "cash_transaction",
+      title: isWithdrawal 
+        ? (t("cash.withdrawal") || "Withdrawal") 
+        : isDeposit 
+          ? (t("cash.deposit") || "Deposit")
+          : t(`cash.${tx.type}`) || tx.type,
+      amount: parseFloat(tx.amount),
+      description: tx.notes || (isWithdrawal ? t("timeline.cashWithdrawn") || "Cash withdrawn from portfolio" : isDeposit ? t("timeline.cashDeposited") || "Cash deposited to portfolio" : tx.type),
+      icon: isWithdrawal ? TrendingDown : isDeposit ? Wallet : Plus,
+      iconColor: isWithdrawal ? "text-destructive" : "text-chart-2",
+      bgColor: isWithdrawal ? "bg-destructive/10" : "bg-chart-2/10",
+      transactionType: tx.type,
     });
   });
 
@@ -121,7 +149,8 @@ export default function Timeline() {
                         <p className="text-sm text-muted-foreground">{event.description}</p>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-chart-2">
+                        <div className={`font-semibold ${event.transactionType === 'withdrawal' ? 'text-destructive' : 'text-chart-2'}`}>
+                          {event.transactionType === 'withdrawal' && '-'}
                           {formatCurrency(event.amount)}
                         </div>
                         <div className="text-xs text-muted-foreground">

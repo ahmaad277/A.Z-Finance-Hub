@@ -133,6 +133,10 @@ const translations = {
     "dashboard.reinvestedAmount": "Reinvested",
     "dashboard.averageDuration": "Avg Duration",
     "dashboard.distressedCount": "Distressed",
+    "dashboard.weightedAvgAPR": "Weighted Avg APR",
+    "dashboard.nextPaymentExpected": "Next Payment",
+    "dashboard.portfolioDiversification": "Diversification",
+    "dashboard.reinvestmentRate": "Reinvestment Rate",
     "dashboard.days": "days",
     "dashboard.months": "months",
     "dashboard.investments": "investments",
@@ -153,6 +157,12 @@ const translations = {
     "dashboard.platformsOverview": "Platforms Overview",
     "dashboard.gridView": "Grid View",
     "dashboard.classicView": "Classic View",
+    
+    // Status labels for charts
+    "status.active": "Active",
+    "status.completed": "Completed",
+    "status.late": "Late",
+    "status.defaulted": "Defaulted",
     
     // Platform
     "platform.notFound": "Platform not found",
@@ -273,6 +283,9 @@ const translations = {
     "timeline.investment": "Investment",
     "timeline.cashflow": "Cashflow",
     "timeline.maturity": "Maturity",
+    "timeline.cash_transaction": "Cash Transaction",
+    "timeline.cashWithdrawn": "Cash withdrawn from portfolio",
+    "timeline.cashDeposited": "Cash deposited to portfolio",
     
     // Alerts
     "alerts.title": "Alerts",
@@ -818,6 +831,10 @@ const translations = {
     "dashboard.reinvestedAmount": "المعاد استثماره",
     "dashboard.averageDuration": "متوسط المدة",
     "dashboard.distressedCount": "متعثرة",
+    "dashboard.weightedAvgAPR": "متوسط APR المرجح",
+    "dashboard.nextPaymentExpected": "الدفعة التالية",
+    "dashboard.portfolioDiversification": "التنوع",
+    "dashboard.reinvestmentRate": "نسبة إعادة الاستثمار",
     "dashboard.days": "يوم",
     "dashboard.months": "شهر",
     "dashboard.investments": "استثمارات",
@@ -838,6 +855,12 @@ const translations = {
     "dashboard.platformsOverview": "نظرة عامة على المنصات",
     "dashboard.gridView": "عرض الشبكة",
     "dashboard.classicView": "العرض التقليدي",
+    
+    // Status labels for charts
+    "status.active": "نشطة",
+    "status.completed": "مكتملة",
+    "status.late": "متأخرة",
+    "status.defaulted": "متعثرة",
     
     // Platform
     "platform.notFound": "المنصة غير موجودة",
@@ -959,6 +982,9 @@ const translations = {
     "timeline.investment": "استثمار",
     "timeline.cashflow": "تدفق نقدي",
     "timeline.maturity": "استحقاق",
+    "timeline.cash_transaction": "معاملة نقدية",
+    "timeline.cashWithdrawn": "سحب نقدي من المحفظة",
+    "timeline.cashDeposited": "إيداع نقدي في المحفظة",
     
     // Alerts
     "alerts.title": "التنبيهات",
