@@ -97,6 +97,23 @@ The following expensive/complex features have been removed to reduce costs and c
     - Fixed `getInvestmentTotalReturns` to filter profit-only cashflows (`type === 'profit'`)
     - Prevents ROI inflation from principal repayments
     - Correct formula: `(profit / amount) × 100` where profit excludes principal returns
+- **Dashboard Metrics Enhanced (Nov 7, 2025)**:
+    - **Additional Metrics Redesigned**: Replaced averageDuration/distressedCount with Weighted Avg APR and Next Payment Expected
+    - **Weighted Avg APR**: Calculates portfolio-wide APR weighted by investment amounts
+    - **Next Payment Expected**: Shows upcoming payment amount and days until due
+    - Full bilingual translations for new metrics
+- **Goal Calculator Enhanced (Nov 7, 2025)**:
+    - **Dynamic Initial Amount**: Now automatically syncs with current portfolio value (active investments + cash balance)
+    - Real-time portfolio integration for Vision 2040 planning
+- **Timeline System Enhanced (Nov 7, 2025)**:
+    - **Color-Coded Cash Transactions**: Withdrawals in red (destructive), deposits in green (success)
+    - Integrated cash transactions with investment events for complete financial history
+    - Full bilingual support for transaction types
+- **Test Data Added (Nov 7, 2025)**:
+    - 8 diverse investments (6 active, 2 completed, 1 distressed with late payments)
+    - 53 cashflows (40 received, 11 expected, 2 late) across all investments
+    - 5 cash transactions (2 deposits, 2 withdrawals, 1 distribution)
+    - Cross-page data consistency verified via e2e testing
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
