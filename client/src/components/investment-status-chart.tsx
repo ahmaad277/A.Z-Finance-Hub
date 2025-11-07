@@ -10,7 +10,6 @@ interface InvestmentStatusChartProps {
 const COLORS = {
   active: "hsl(var(--chart-1))",
   completed: "hsl(var(--chart-2))",
-  pending: "hsl(var(--chart-3))",
   late: "hsl(var(--chart-4))",
   defaulted: "hsl(var(--destructive))",
 };
