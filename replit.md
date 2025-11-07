@@ -42,10 +42,20 @@ The application is built with a modern web stack:
     - **Cash Management System**: Tracks cash balances and transactions (deposits, withdrawals, transfers, investments, distributions) with real-time balance calculations.
     - **Goal Calculator**: A dynamic investment goal calculator for Vision 2040 planning, offering real-time projections and an interactive growth chart.
     - **Smart Payment Processing**: An enhanced dialog for completing investments, featuring automatic date confirmation, single-click processing, and ROI calculation.
+    - **Reports System**: Comprehensive financial reporting with:
+        - Excel export (XLSX) with multiple sheets (metrics, investments, cashflows)
+        - PDF export (jsPDF + autoTable) with professional formatting
+        - Customizable date ranges (All Time, YTD, Last Year, Last Quarter, Last Month)
+        - Platform filtering (All or specific platform)
+        - Report types: Summary, Detailed, Custom
+        - Real-time preview before export
+        - Full bilingual support (Arabic/English)
     - **Design System**: Implements dark/light mode, full bilingual support (English/Arabic) with RTL typography enhancements (e.g., Arabic secondary text sizing, muted text font-weight adjustment, sidebar auto-close on navigation).
 - **Financial Metrics System**: Comprehensive calculation utilities (`lib/dashboardMetrics.ts`) for:
     - Portfolio calculations: Total value, cash ratio, investment returns (actual vs expected)
     - Performance metrics: APR (Annual Percentage Rate), ROI (Return on Investment)
+        - **ROI Calculation**: Correctly filters profit-only cashflows (`type === 'profit'`) to prevent inflation from principal returns
+        - Formula: `(totalProfitReceived / investmentAmount) × 100`
     - Statistical analysis: Average duration, average amount, average payment
     - Status tracking: Late investments (overdue cashflows), Defaulted investments (>60 days overdue)
     - Platform distribution: Value and count breakdown by platform
@@ -78,6 +88,15 @@ The following expensive/complex features have been removed to reduce costs and c
 - Fixed critical session authentication bug (isAuthenticated flag)
 - All e2e tests passing successfully
 - **Portfolio Reset (Nov 7, 2025)**: Cleared all investment data (14 investments, 3 cashflows, 5 cash transactions) for fresh start while preserving 5 platforms and user accounts
+- **Reports System Added (Nov 7, 2025)**: 
+    - Comprehensive financial reports with Excel/PDF export
+    - Installed dependencies: xlsx, jspdf, jspdf-autotable
+    - Customizable date ranges, platform filters, and report types
+    - Real-time preview with bilingual support
+- **Critical ROI Bug Fixed (Nov 7, 2025)**:
+    - Fixed `getInvestmentTotalReturns` to filter profit-only cashflows (`type === 'profit'`)
+    - Prevents ROI inflation from principal repayments
+    - Correct formula: `(profit / amount) × 100` where profit excludes principal returns
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
