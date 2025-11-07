@@ -428,10 +428,7 @@
       font-size: 0.8125rem !important;
     }
 
-    /* Reduce button padding slightly */
-    button:not([class*="size-icon"]) {
-      padding-left: 0.75rem !important;
-      padding-right: 0.75rem !important;
-    }
+    /* Note: We don't reduce button padding on mobile to avoid breaking icon buttons */
+    /* Icon buttons use fixed h-9 w-9, so any padding changes would break their square shape */
   }
 }
