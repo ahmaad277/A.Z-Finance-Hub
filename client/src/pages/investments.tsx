@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/lib/language-provider";
+import { useAuth } from "@/hooks/use-auth";
 import { InvestmentRow } from "@/components/investment-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
@@ -24,6 +25,7 @@ import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@
 
 export default function Investments() {
   const { t, language } = useLanguage();
+  const { hasPermission } = useAuth();
   const isRtl = language === "ar";
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -277,7 +279,7 @@ export default function Investments() {
                   cashflows={cashflows || []}
                   onEdit={() => handleEdit(investment)}
                   onCompletePayment={() => handleCompletePayment(investment)}
-                  onDelete={() => handleDelete(investment)}
+                  onDelete={hasPermission('DELETE_INVESTMENTS') ? () => handleDelete(investment) : undefined}
                 />
               ))}
             </div>

@@ -387,7 +387,7 @@ export default function UserManagement() {
           form.reset();
         }
       }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle data-testid="text-dialog-title">
               {editingUser ? t("editUser") : t("addUser")}
