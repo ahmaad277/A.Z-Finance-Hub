@@ -1,4 +1,4 @@
-import { User, Shield, ChevronDown } from "lucide-react";
+import { User, Shield, ChevronDown, UserX, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,10 +13,35 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/lib/language-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiRequest } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserProfile() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
+  const { toast } = useToast();
+
+  const endImpersonationMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/v2/impersonation/end", "POST");
+    },
+    onSuccess: () => {
+      toast({
+        title: t("success"),
+        description: "Impersonation ended",
+      });
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: t("error"),
+        description: error.message || "Failed to end impersonation",
+      });
+    },
+  });
 
   if (!user) return null;
 
@@ -51,6 +76,22 @@ export function UserProfile() {
         className="w-80" 
         align="end"
       >
+        {user.isImpersonating && (
+          <>
+            <div className="px-2 py-3">
+              <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  {language === "ar" 
+                    ? "أنت الآن تعمل كمستخدم آخر" 
+                    : "You are impersonating another user"}
+                </AlertDescription>
+              </Alert>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
         <DropdownMenuLabel className="pb-3">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -97,6 +138,25 @@ export function UserProfile() {
             </div>
           </ScrollArea>
         </DropdownMenuGroup>
+
+        {user.isImpersonating && (
+          <>
+            <DropdownMenuSeparator />
+            <div className="px-2 py-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full"
+                onClick={() => endImpersonationMutation.mutate()}
+                disabled={endImpersonationMutation.isPending}
+                data-testid="button-end-impersonation"
+              >
+                <UserX className="h-4 w-4 mr-2" />
+                {language === "ar" ? "إنهاء الانتحال" : "End Impersonation"}
+              </Button>
+            </div>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
