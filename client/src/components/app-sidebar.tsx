@@ -13,7 +13,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { useLanguage } from "@/lib/language-provider";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -195,11 +194,8 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-xs text-muted-foreground">
-            <div>{t("app.copyright")}</div>
-          </div>
-          <ViewModeToggle />
+        <div className="text-xs text-muted-foreground text-center">
+          <div>{t("app.copyright")}</div>
         </div>
       </SidebarFooter>
     </Sidebar>

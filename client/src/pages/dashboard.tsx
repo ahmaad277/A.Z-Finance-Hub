@@ -323,9 +323,9 @@ export default function Dashboard() {
   const expectedProgressPercent = Math.min(Math.max((elapsedYears / totalYears) * 100, 0), 100);
   const expectedValue = (target2040 * expectedProgressPercent) / 100;
   
-  // Required annual return to reach target (safe division with fallback)
-  const requiredAnnualReturn = remainingYears > 0 && currentPortfolioValue > 0
-    ? (Math.pow(target2040 / currentPortfolioValue, 1 / remainingYears) - 1) * 100
+  // Required annual return to reach target (safe division with fallback, clamped to [0,100])
+  const requiredAnnualReturn = remainingYears > 0 && currentPortfolioValue > 0 && currentPortfolioValue < target2040
+    ? Math.min(Math.max((Math.pow(target2040 / currentPortfolioValue, 1 / remainingYears) - 1) * 100, 0), 100)
     : 0;
 
   const cashStatCards = [
