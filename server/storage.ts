@@ -328,11 +328,58 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCashflow(id: string, update: Partial<InsertCashflow>): Promise<Cashflow | undefined> {
+    // Get the original cashflow before update
+    const [originalCashflow] = await db
+      .select()
+      .from(cashflows)
+      .where(eq(cashflows.id, id));
+    
+    if (!originalCashflow) {
+      return undefined;
+    }
+    
+    // Update the cashflow
     const [cashflow] = await db
       .update(cashflows)
       .set(update)
       .where(eq(cashflows.id, id))
       .returning();
+    
+    // If status changed to "received", create a cash transaction automatically
+    if (update.status === 'received' && originalCashflow.status !== 'received') {
+      // Check if a transaction already exists for this cashflow to prevent duplicates
+      const [existingTransaction] = await db
+        .select()
+        .from(cashTransactions)
+        .where(eq(cashTransactions.cashflowId, id));
+      
+      if (!existingTransaction) {
+        const receivedDate = (update as any).receivedDate || new Date();
+        
+        // Get investment details for better notes
+        const [investment] = await db
+          .select()
+          .from(investments)
+          .where(eq(investments.id, cashflow.investmentId));
+        
+        // Determine transaction source based on cashflow type
+        const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
+        const transactionNotes = investment 
+          ? `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}` 
+          : `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} received`;
+        
+        await this.createCashTransaction({
+          amount: cashflow.amount,
+          type: 'distribution',
+          source: transactionSource,
+          notes: transactionNotes,
+          date: receivedDate,
+          investmentId: cashflow.investmentId,
+          cashflowId: id,
+        });
+      }
+    }
+    
     return cashflow || undefined;
   }
 
