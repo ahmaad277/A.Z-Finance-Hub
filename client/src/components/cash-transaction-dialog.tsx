@@ -78,7 +78,7 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
       <DialogTrigger asChild>
         <Button 
           size="icon" 
-          variant={isDeposit ? "default" : "destructive"}
+          variant={isDeposit ? "success" : "destructive"}
           className="h-9 w-9"
           data-testid={`button-${type}-cash`}
           title={isDeposit ? t("cash.addCash") : t("cash.withdrawCash")}
