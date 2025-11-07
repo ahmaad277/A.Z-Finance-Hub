@@ -140,6 +140,11 @@ The following expensive/complex features have been removed to reduce costs and c
     - **Verified Behavior**: 200K cash → 50K investment = 150K cash + 50K investment = 200K total (constant)
     - **Schema Cleanup**: Removed `availableCash` and `reinvestedAmount` from PortfolioStats
     - **Known Limitation**: Investment create/delete and cash transactions are not atomic (low risk, noted by architect)
+- **Dashboard UI Simplified (Nov 7, 2025)**:
+    - **Platform Filter**: Converted from Select dropdown to icon-only DropdownMenu (Filter icon button)
+    - **Add Cash Button**: Moved to Dashboard header next to filter, styled in primary blue color
+    - **Streamlined Header**: Compact design with Filter icon → Add Cash button → Export Report
+    - Quick access to cash management without separate page navigation
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:

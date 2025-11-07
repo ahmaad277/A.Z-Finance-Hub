@@ -435,20 +435,38 @@ export default function Dashboard() {
         <div className="flex flex-row items-center justify-between gap-2">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex-shrink min-w-0">{t("dashboard.title")}</h1>
           <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-              <SelectTrigger className="w-[120px] sm:w-[180px] h-9 text-xs sm:text-sm" data-testid="select-platform-filter">
-                <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dashboard.allPlatforms")}</SelectItem>
+            {/* Platform Filter - Icon Only */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => setSelectedPlatform("all")}
+                  data-testid="menu-filter-all"
+                  className={selectedPlatform === "all" ? "bg-accent" : ""}
+                >
+                  {t("dashboard.allPlatforms")}
+                </DropdownMenuItem>
                 {platforms?.map((platform) => (
-                  <SelectItem key={platform.id} value={platform.id}>
+                  <DropdownMenuItem 
+                    key={platform.id} 
+                    onClick={() => setSelectedPlatform(platform.id)}
+                    data-testid={`menu-filter-${platform.id}`}
+                    className={selectedPlatform === platform.id ? "bg-accent" : ""}
+                  >
                     {platform.name}
-                  </SelectItem>
+                  </DropdownMenuItem>
                 ))}
-              </SelectContent>
-            </Select>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Add Cash Button - Blue Primary */}
+            <AddCashDialog />
+            
+            {/* Export Report */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" data-testid="button-export-report" className="h-9 px-2 sm:px-4">
