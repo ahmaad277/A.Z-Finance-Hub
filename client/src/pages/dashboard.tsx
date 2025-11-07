@@ -399,46 +399,46 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6" data-testid="page-dashboard">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("dashboard.subtitle")}
-          </p>
+    <div className="space-y-4 md:space-y-6" data-testid="page-dashboard">
+      <div className="flex flex-col gap-3 sm:gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+          <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+              <SelectTrigger className="w-full sm:w-[180px] h-9" data-testid="select-platform-filter">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("dashboard.allPlatforms")}</SelectItem>
+                {platforms?.map((platform) => (
+                  <SelectItem key={platform.id} value={platform.id}>
+                    {platform.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="default" data-testid="button-export-report" className="whitespace-nowrap">
+                  <Download className="h-4 w-4 mr-2" />
+                  {t("export.report")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
+                  {t("export.monthly")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
+                  {t("export.quarterly")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-            <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-platform-filter">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("dashboard.allPlatforms")}</SelectItem>
-              {platforms?.map((platform) => (
-                <SelectItem key={platform.id} value={platform.id}>
-                  {platform.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" data-testid="button-export-report" className="w-full sm:w-auto justify-center">
-                <Download className="h-4 w-4 mr-2" />
-                {t("export.report")}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
-                {t("export.monthly")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
-                {t("export.quarterly")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {t("dashboard.subtitle")}
+        </p>
       </div>
 
       {/* 1. Financial Metrics Only (8 metrics) */}
