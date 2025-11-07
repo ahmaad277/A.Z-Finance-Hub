@@ -145,6 +145,9 @@ The following expensive/complex features have been removed to reduce costs and c
     - **Add Cash Button**: Moved to Dashboard header next to filter, styled in primary blue color
     - **Streamlined Header**: Compact design with Filter icon → Add Cash button → Export Report
     - Quick access to cash management without separate page navigation
+    - **Timeline/Cash Management Page Removed**: Deleted separate Timeline page - all cash operations now in Dashboard header
+    - Removed Timeline navigation link from sidebar
+    - Simplified navigation structure focusing on core features
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
