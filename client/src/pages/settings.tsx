@@ -51,6 +51,10 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Local settings state for Save/Cancel/Reset functionality
+  const [localSettings, setLocalSettings] = useState<Partial<UserSettings>>({});
+  const [hasChanges, setHasChanges] = useState(false);
+
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
   });
@@ -59,13 +63,30 @@ export default function Settings() {
     queryKey: ["/api/platforms"],
   });
 
-  // Apply fontSize from settings on initial load
+  // Initialize local settings from server settings
   useEffect(() => {
-    if (settings?.fontSize) {
-      document.documentElement.style.fontSize =
-        settings.fontSize === "small" ? "14px" : settings.fontSize === "large" ? "18px" : "16px";
+    if (settings) {
+      setLocalSettings({
+        fontSize: settings.fontSize,
+        viewMode: settings.viewMode,
+        targetCapital2040: settings.targetCapital2040,
+        autoReinvest: settings.autoReinvest,
+        alertsEnabled: settings.alertsEnabled,
+        alertDaysBefore: settings.alertDaysBefore,
+        latePaymentAlertsEnabled: settings.latePaymentAlertsEnabled,
+        securityEnabled: settings.securityEnabled,
+      });
+      setHasChanges(false);
     }
-  }, [settings?.fontSize]);
+  }, [settings]);
+
+  // Apply fontSize from local settings
+  useEffect(() => {
+    if (localSettings.fontSize) {
+      document.documentElement.style.fontSize =
+        localSettings.fontSize === "small" ? "14px" : localSettings.fontSize === "large" ? "18px" : "16px";
+    }
+  }, [localSettings.fontSize]);
 
   // Check biometric support on load
   useEffect(() => {
@@ -188,13 +209,13 @@ export default function Settings() {
   });
 
   const handleFontSizeChange = (fontSize: string) => {
-    updateSettingsMutation.mutate({ fontSize });
-    document.documentElement.style.fontSize =
-      fontSize === "small" ? "14px" : fontSize === "large" ? "18px" : "16px";
+    setLocalSettings(prev => ({ ...prev, fontSize }));
+    setHasChanges(true);
   };
 
   const handleViewModeChange = (viewMode: string) => {
-    updateSettingsMutation.mutate({ viewMode });
+    setLocalSettings(prev => ({ ...prev, viewMode }));
+    setHasChanges(true);
   };
 
   const handleThemeChange = (newTheme: string) => {
@@ -208,8 +229,80 @@ export default function Settings() {
   };
 
   const handleTargetCapitalChange = (value: string) => {
-    const numericValue = parseFloat(value) || 0;
-    updateSettingsMutation.mutate({ targetCapital2040: numericValue.toString() });
+    setLocalSettings(prev => ({ ...prev, targetCapital2040: value }));
+    setHasChanges(true);
+  };
+
+  const handleAutoReinvestChange = (checked: boolean) => {
+    setLocalSettings(prev => ({ ...prev, autoReinvest: checked ? 1 : 0 }));
+    setHasChanges(true);
+  };
+
+  const handleAlertsEnabledChange = (checked: boolean) => {
+    setLocalSettings(prev => ({ ...prev, alertsEnabled: checked ? 1 : 0 }));
+    setHasChanges(true);
+  };
+
+  const handleAlertDaysBeforeChange = (value: number) => {
+    setLocalSettings(prev => ({ ...prev, alertDaysBefore: value }));
+    setHasChanges(true);
+  };
+
+  const handleLatePaymentAlertsChange = (checked: boolean) => {
+    setLocalSettings(prev => ({ ...prev, latePaymentAlertsEnabled: checked ? 1 : 0 }));
+    setHasChanges(true);
+  };
+
+  const handleSecurityEnabledChange = (checked: boolean) => {
+    setLocalSettings(prev => ({ ...prev, securityEnabled: checked ? 1 : 0 }));
+    setHasChanges(true);
+  };
+
+  const handleSaveSettings = () => {
+    updateSettingsMutation.mutate(localSettings, {
+      onSuccess: () => {
+        setHasChanges(false);
+      },
+    });
+  };
+
+  const handleCancelChanges = () => {
+    if (settings) {
+      setLocalSettings({
+        fontSize: settings.fontSize,
+        viewMode: settings.viewMode,
+        targetCapital2040: settings.targetCapital2040,
+        autoReinvest: settings.autoReinvest,
+        alertsEnabled: settings.alertsEnabled,
+        alertDaysBefore: settings.alertDaysBefore,
+        latePaymentAlertsEnabled: settings.latePaymentAlertsEnabled,
+        securityEnabled: settings.securityEnabled,
+      });
+      setHasChanges(false);
+      toast({
+        title: language === "ar" ? "تم الإلغاء" : "Cancelled",
+        description: language === "ar" ? "تم إلغاء التغييرات" : "Changes have been cancelled",
+      });
+    }
+  };
+
+  const handleResetToDefaults = () => {
+    const defaults = {
+      fontSize: "medium",
+      viewMode: "pro",
+      targetCapital2040: "1000000",
+      autoReinvest: 0,
+      alertsEnabled: 1,
+      alertDaysBefore: 7,
+      latePaymentAlertsEnabled: 1,
+      securityEnabled: 0,
+    };
+    setLocalSettings(defaults);
+    setHasChanges(true);
+    toast({
+      title: language === "ar" ? "تم إعادة التعيين" : "Reset",
+      description: language === "ar" ? "تم إعادة الإعدادات إلى القيم الافتراضية" : "Settings have been reset to defaults",
+    });
   };
 
   const handleAddPlatform = () => {
@@ -390,7 +483,7 @@ export default function Settings() {
             {/* Font Size */}
             <div className="space-y-2">
               <Label>{t("settings.fontSize")}</Label>
-              <Select value={settings?.fontSize || "medium"} onValueChange={handleFontSizeChange}>
+              <Select value={localSettings.fontSize || "medium"} onValueChange={handleFontSizeChange}>
                 <SelectTrigger data-testid="select-font-size">
                   <SelectValue />
                 </SelectTrigger>
@@ -405,7 +498,7 @@ export default function Settings() {
             {/* View Mode */}
             <div className="space-y-2">
               <Label>{t("settings.viewMode")}</Label>
-              <Select value={settings?.viewMode || "pro"} onValueChange={handleViewModeChange}>
+              <Select value={localSettings.viewMode || "pro"} onValueChange={handleViewModeChange}>
                 <SelectTrigger data-testid="select-view-mode">
                   <SelectValue />
                 </SelectTrigger>
@@ -415,7 +508,7 @@ export default function Settings() {
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
-                {settings?.viewMode === "pro" ? t("settings.proModeDesc") : t("settings.liteModeDesc")}
+                {localSettings.viewMode === "pro" ? t("settings.proModeDesc") : t("settings.liteModeDesc")}
               </p>
             </div>
           </CardContent>
@@ -475,7 +568,7 @@ export default function Settings() {
                 type="number"
                 step="1000"
                 min="0"
-                value={settings?.targetCapital2040 || ""}
+                value={localSettings.targetCapital2040 || ""}
                 onChange={(e) => handleTargetCapitalChange(e.target.value)}
                 placeholder="1000000"
                 data-testid="input-target-capital"
@@ -490,10 +583,8 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground">{t("settings.autoReinvestDesc")}</p>
               </div>
               <Switch
-                checked={settings?.autoReinvest === 1}
-                onCheckedChange={(checked) => 
-                  updateSettingsMutation.mutate({ autoReinvest: checked ? 1 : 0 })
-                }
+                checked={localSettings.autoReinvest === 1}
+                onCheckedChange={handleAutoReinvestChange}
                 data-testid="switch-auto-reinvest"
               />
             </div>
@@ -517,10 +608,8 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground">{t("settings.enableAlertsDesc")}</p>
               </div>
               <Switch
-                checked={settings?.alertsEnabled === 1}
-                onCheckedChange={(checked) => 
-                  updateSettingsMutation.mutate({ alertsEnabled: checked ? 1 : 0 })
-                }
+                checked={localSettings.alertsEnabled === 1}
+                onCheckedChange={handleAlertsEnabledChange}
                 data-testid="switch-alerts-enabled"
               />
             </div>
@@ -534,11 +623,9 @@ export default function Settings() {
                 type="number"
                 min="1"
                 max="30"
-                value={settings?.alertDaysBefore || 7}
-                onChange={(e) => 
-                  updateSettingsMutation.mutate({ alertDaysBefore: parseInt(e.target.value) || 7 })
-                }
-                disabled={settings?.alertsEnabled === 0}
+                value={localSettings.alertDaysBefore || 7}
+                onChange={(e) => handleAlertDaysBeforeChange(parseInt(e.target.value) || 7)}
+                disabled={localSettings.alertsEnabled === 0}
                 data-testid="input-alert-days-before"
               />
               <p className="text-sm text-muted-foreground">{t("settings.alertDaysBeforeDesc")}</p>
@@ -553,11 +640,9 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground">{t("settings.latePaymentAlertsDesc")}</p>
               </div>
               <Switch
-                checked={settings?.latePaymentAlertsEnabled === 1}
-                onCheckedChange={(checked) => 
-                  updateSettingsMutation.mutate({ latePaymentAlertsEnabled: checked ? 1 : 0 })
-                }
-                disabled={settings?.alertsEnabled === 0}
+                checked={localSettings.latePaymentAlertsEnabled === 1}
+                onCheckedChange={handleLatePaymentAlertsChange}
+                disabled={localSettings.alertsEnabled === 0}
                 data-testid="switch-late-payment-alerts"
               />
             </div>
@@ -567,7 +652,7 @@ export default function Settings() {
             {/* Generate Alerts Button */}
             <Button
               onClick={() => generateAlertsMutation.mutate()}
-              disabled={settings?.alertsEnabled === 0 || generateAlertsMutation.isPending}
+              disabled={localSettings.alertsEnabled === 0 || generateAlertsMutation.isPending}
               className="w-full"
               data-testid="button-generate-alerts"
             >
@@ -697,10 +782,8 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground">{t("settings.enableSecurityDesc")}</p>
               </div>
               <Switch
-                checked={settings?.securityEnabled === 1}
-                onCheckedChange={(checked) => 
-                  updateSettingsMutation.mutate({ securityEnabled: checked ? 1 : 0 })
-                }
+                checked={localSettings.securityEnabled === 1}
+                onCheckedChange={handleSecurityEnabledChange}
                 data-testid="switch-security-enabled"
               />
             </div>
@@ -905,6 +988,45 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Save/Cancel/Reset Buttons */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={handleResetToDefaults}
+              data-testid="button-reset-settings"
+            >
+              {language === "ar" ? "إعادة تعيين إلى الافتراضي" : "Reset to Defaults"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCancelChanges}
+              disabled={!hasChanges}
+              data-testid="button-cancel-settings"
+            >
+              {language === "ar" ? "إلغاء التغييرات" : "Cancel Changes"}
+            </Button>
+            <Button
+              onClick={handleSaveSettings}
+              disabled={!hasChanges || updateSettingsMutation.isPending}
+              data-testid="button-save-settings"
+            >
+              {updateSettingsMutation.isPending 
+                ? (language === "ar" ? "جاري الحفظ..." : "Saving...") 
+                : (language === "ar" ? "حفظ الإعدادات" : "Save Settings")}
+            </Button>
+          </div>
+          {hasChanges && (
+            <p className="text-sm text-muted-foreground text-center mt-3">
+              {language === "ar" 
+                ? "لديك تغييرات غير محفوظة" 
+                : "You have unsaved changes"}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Delete Platform Confirmation Dialog */}
       <AlertDialog open={!!platformToDelete} onOpenChange={(open) => !open && setPlatformToDelete(null)}>
