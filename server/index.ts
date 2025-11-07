@@ -1,7 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { Pool } from "@neondatabase/serverless";
 
 const app = express();
 
@@ -9,6 +11,7 @@ declare module 'express-session' {
   interface SessionData {
     isAuthenticated?: boolean;
     userId?: string;
+    impersonatedUserId?: string;
   }
 }
 
@@ -18,8 +21,17 @@ declare module 'http' {
   }
 }
 
-// Session configuration
+// PostgreSQL Session Store
+const PgStore = connectPgSimple(session);
+const sessionStore = new PgStore({
+  pool: new Pool({ connectionString: process.env.DATABASE_URL }),
+  tableName: 'user_sessions',
+  createTableIfMissing: true,
+});
+
+// Session configuration with PostgreSQL store
 app.use(session({
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'az-finance-hub-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
