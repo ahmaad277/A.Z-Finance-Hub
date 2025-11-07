@@ -232,6 +232,84 @@ router.get('/users-list', async (req: Request, res: Response) => {
   }
 });
 
+// Self-registration (PUBLIC ENDPOINT - no auth required)
+const registerSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const data = registerSchema.parse(req.body);
+    
+    // Check if email already exists
+    const existingUser = await storage.getUserByEmail(data.email);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    // Get default "Viewer" role (or create it if it doesn't exist)
+    const roles = await storage.getRoles();
+    let viewerRole = roles.find(r => r.name.toLowerCase() === 'viewer');
+    
+    if (!viewerRole) {
+      return res.status(500).json({ error: 'Default viewer role not found. Please contact administrator.' });
+    }
+
+    // Hash password
+    const passwordHash = await hashPassword(data.password);
+    
+    // Create user with Viewer role
+    const user = await storage.createUser({
+      name: data.name,
+      email: data.email,
+      phone: null,
+      passwordHash,
+      roleId: viewerRole.id,
+      isActive: 1,
+      createdBy: null, // Self-registered
+    });
+
+    // Create default settings for user
+    await storage.updateSettings({
+      userId: user.id,
+      theme: 'dark',
+      language: 'en',
+      viewMode: 'classic',
+      fontSize: 'medium',
+      autoReinvest: 0,
+      currency: 'SAR',
+    });
+
+    // Log action
+    await logAudit({
+      req,
+      action: 'create',
+      targetType: 'user',
+      targetId: user.id,
+      details: {
+        selfRegistered: true,
+        email: user.email,
+      },
+    });
+
+    // Remove password hash
+    const { passwordHash: _, ...safeUser } = user;
+    
+    res.status(201).json({
+      success: true,
+      user: safeUser,
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
+    }
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
 // Update own profile (email/password)
 const updateProfileSchema = z.object({
   email: z.string().email().optional(),

@@ -40,12 +40,7 @@ export default function Login() {
   // Registration mutation
   const registerMutation = useMutation({
     mutationFn: async (data: { name: string; email: string; password: string }) => {
-      return await apiRequest('/api/v2/users', 'POST', {
-        ...data,
-        phone: '',
-        roleId: 'viewer', // Default role for self-registration
-        isActive: 1,
-      });
+      return await apiRequest('POST', '/api/v2/auth/register', data);
     },
     onSuccess: () => {
       toast({
