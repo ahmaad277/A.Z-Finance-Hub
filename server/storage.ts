@@ -394,7 +394,7 @@ export class DatabaseStorage implements IStorage {
       .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
 
     const totalReturns = allCashflows
-      .filter((cf) => cf.status === "received")
+      .filter((cf) => cf.status === "received" && cf.type === "profit")
       .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
 
     const activeInvestments = allInvestments.filter((inv) => inv.status === "active").length;
@@ -410,10 +410,9 @@ export class DatabaseStorage implements IStorage {
     const target2040 = 10000000; // 10M SAR target
     const progressTo2040 = totalCapital > 0 ? (totalCapital / target2040) * 100 : 0;
 
-    // Cash balance calculations
-    const totalCashBalance = allCashflows
-      .filter((cf) => cf.status === "received")
-      .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
+    // Cash balance from cash transactions (not cashflows)
+    const cashBalance = await this.getCashBalance();
+    const totalCashBalance = cashBalance;
 
     // Only count active/pending reinvestments - completed ones have returned to cash
     const reinvestedAmount = allInvestments
