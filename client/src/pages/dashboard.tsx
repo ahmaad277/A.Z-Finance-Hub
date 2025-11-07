@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart, LayoutGrid, List } from "lucide-react";
+import { TrendingUp, Wallet, BarChart3, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
@@ -15,7 +15,6 @@ import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { AddCashDialog } from "@/components/add-cash-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
-import { GridDashboard } from "@/components/grid-dashboard";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { MobileMetricsGrid } from "@/components/mobile-metrics-grid";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
@@ -49,23 +48,6 @@ export default function Dashboard() {
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
   });
-
-  // Toggle between Classic and Grid Dashboard (stored in localStorage)
-  const [useGridView, setUseGridView] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("dashboard-view");
-      return stored === "grid";
-    }
-    return false;
-  });
-
-  const toggleView = () => {
-    const newView = !useGridView;
-    setUseGridView(newView);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("dashboard-view", newView ? "grid" : "classic");
-    }
-  };
 
   // Date Range Filter for analytics
   const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | undefined>();
@@ -319,36 +301,32 @@ export default function Dashboard() {
     }
   };
 
-  const mainStatCards = [
-    {
-      key: "totalCapital",
-      value: displayStats ? formatCurrency(displayStats.totalCapital) : "-",
-      icon: Wallet,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
-    },
-    {
-      key: "totalReturns",
-      value: displayStats ? formatCurrency(displayStats.totalReturns) : "-",
-      icon: TrendingUp,
-      color: "text-chart-2",
-      bgColor: "bg-chart-2/10",
-    },
-    {
-      key: "averageIrr",
-      value: displayStats ? formatPercentage(displayStats.averageIrr) : "-",
-      icon: BarChart3,
-      color: "text-chart-1",
-      bgColor: "bg-chart-1/10",
-    },
-    {
-      key: "progressTo2040",
-      value: displayStats ? formatPercentage(displayStats.progressTo2040) : "-",
-      icon: Target,
-      color: "text-chart-2",
-      bgColor: "bg-chart-2/10",
-    },
-  ];
+  // Vision 2040 Target & Progress Calculations
+  const target2040 = settings?.targetCapital2040 ? parseFloat(settings.targetCapital2040) : 10000000;
+  const initialPortfolio = 600000; // Starting portfolio value
+  const currentDate = new Date();
+  const targetDate = new Date(2040, 0, 1); // January 1, 2040
+  const startDate = new Date(2024, 0, 1); // Assuming starting from 2024
+  
+  const totalYears = (targetDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  const elapsedYears = (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  const remainingYears = totalYears - elapsedYears;
+  
+  // Use actual portfolio value or initial portfolio as fallback
+  const currentPortfolioValue = displayStats && (displayStats.totalCapital + displayStats.availableCash) > 0
+    ? displayStats.totalCapital + displayStats.availableCash
+    : initialPortfolio;
+    
+  const currentProgress = Math.min(Math.max((currentPortfolioValue / target2040) * 100, 0), 100);
+  
+  // Expected progress based on time elapsed (clamped to [0,100])
+  const expectedProgressPercent = Math.min(Math.max((elapsedYears / totalYears) * 100, 0), 100);
+  const expectedValue = (target2040 * expectedProgressPercent) / 100;
+  
+  // Required annual return to reach target (safe division with fallback)
+  const requiredAnnualReturn = remainingYears > 0 && currentPortfolioValue > 0
+    ? (Math.pow(target2040 / currentPortfolioValue, 1 / remainingYears) - 1) * 100
+    : 0;
 
   const cashStatCards = [
     {
@@ -419,34 +397,6 @@ export default function Dashboard() {
     );
   }
 
-  // If Grid View is enabled, render GridDashboard instead
-  if (useGridView) {
-    return (
-      <div className="space-y-6" data-testid="page-dashboard">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-            <p className="text-muted-foreground mt-1">
-              {t("dashboard.subtitle")}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleView}
-              data-testid="button-toggle-grid-view"
-            >
-              <List className="h-4 w-4 mr-2" />
-              {t("dashboard.classicView")}
-            </Button>
-          </div>
-        </div>
-        <GridDashboard viewMode={settings?.viewMode === "pro" ? "professional" : "simple"} />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6" data-testid="page-dashboard">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -457,16 +407,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleView}
-            data-testid="button-toggle-grid-view"
-            className="w-full sm:w-auto justify-center"
-          >
-            <LayoutGrid className="h-4 w-4 mr-2" />
-            {t("dashboard.gridView")}
-          </Button>
           <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
             <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-platform-filter">
               <Filter className="h-4 w-4 mr-2" />
@@ -500,25 +440,77 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        {mainStatCards.map((card) => (
-          <Card key={card.key} className="hover-elevate transition-all duration-200" data-testid={`card-stat-${card.key}`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                {t(`dashboard.${card.key}`)}
-              </CardTitle>
-              <div className={`${card.bgColor} ${card.color} rounded-md p-1.5`}>
-                <card.icon className="h-3.5 w-3.5" />
+      {/* Vision 2040 Progress Widget */}
+      <Card className="hover-elevate transition-all duration-200" data-testid="card-vision-2040">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-chart-2/10 text-chart-2 rounded-md p-2">
+                <Target className="h-5 w-5" />
               </div>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 pt-1">
-              <div className="text-xl font-bold" data-testid={`stat-${card.key}`}>
-                {card.value}
+              <div>
+                <CardTitle className="text-lg">{t("dashboard.vision2040Progress")}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.vision2040Subtitle")}</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* Current Progress */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{t("dashboard.currentProgress")}</p>
+              <p className="text-2xl font-bold">{formatPercentage(currentProgress)}</p>
+              <p className="text-sm text-muted-foreground">{formatCurrency(currentPortfolioValue)}</p>
+            </div>
+            
+            {/* Expected Progress */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{t("dashboard.expectedProgress")}</p>
+              <p className="text-2xl font-bold">{formatPercentage(expectedProgressPercent)}</p>
+              <p className="text-sm text-muted-foreground">{formatCurrency(expectedValue)}</p>
+            </div>
+            
+            {/* Target */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{t("dashboard.target2040")}</p>
+              <p className="text-2xl font-bold">{formatCurrency(target2040)}</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.by2040")}</p>
+            </div>
+            
+            {/* Required Annual Return */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{t("dashboard.requiredAnnualReturn")}</p>
+              <p className="text-2xl font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.toReachTarget")}</p>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">{formatCurrency(initialPortfolio)}</span>
+              <span className="font-medium">{Math.round(elapsedYears * 10) / 10} / {Math.round(totalYears)} {t("dashboard.years")}</span>
+              <span className="text-muted-foreground">{formatCurrency(target2040)}</span>
+            </div>
+            <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="absolute h-full bg-chart-2 transition-all duration-500"
+                style={{ width: `${Math.min(currentProgress, 100)}%` }}
+              />
+              <div 
+                className="absolute h-full border-r-2 border-chart-1 opacity-50"
+                style={{ left: `${Math.min(expectedProgressPercent, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-center text-muted-foreground">
+              {currentProgress >= expectedProgressPercent 
+                ? t("dashboard.aheadOfSchedule") 
+                : t("dashboard.behindSchedule")}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Financial Metrics & Status - Mobile-Friendly Grid */}
       {dashboardMetrics && (
