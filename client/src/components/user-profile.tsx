@@ -30,7 +30,7 @@ export function UserProfile() {
     onSuccess: () => {
       toast({
         title: t("success"),
-        description: "Impersonation ended",
+        description: t("impersonationEnded"),
       });
       window.location.reload();
     },
@@ -38,7 +38,7 @@ export function UserProfile() {
       toast({
         variant: "destructive",
         title: t("error"),
-        description: error.message || "Failed to end impersonation",
+        description: error.message || t("impersonationEndFailed"),
       });
     },
   });
@@ -82,9 +82,7 @@ export function UserProfile() {
               <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  {language === "ar" 
-                    ? "أنت الآن تعمل كمستخدم آخر" 
-                    : "You are impersonating another user"}
+                  {t("impersonationActive")}
                 </AlertDescription>
               </Alert>
             </div>
@@ -152,7 +150,7 @@ export function UserProfile() {
                 data-testid="button-end-impersonation"
               >
                 <UserX className="h-4 w-4 mr-2" />
-                {language === "ar" ? "إنهاء الانتحال" : "End Impersonation"}
+                {t("endImpersonation")}
               </Button>
             </div>
           </>
