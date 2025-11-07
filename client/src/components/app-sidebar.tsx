@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield, FileText } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Sparkles, Bell, Clock, RefreshCw, BookOpen, Settings2, Users, Shield, FileText, FileDown, Eye } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -89,6 +89,18 @@ const adminItems = [
     icon: FileText,
     permission: "system:view_audit_log",
   },
+  {
+    key: "exportRequests",
+    url: "/admin/export-requests",
+    icon: FileDown,
+    permission: "requests:export|requests:approve_exports",
+  },
+  {
+    key: "viewRequests",
+    url: "/admin/view-requests",
+    icon: Eye,
+    permission: "requests:view|requests:approve_view",
+  },
 ];
 
 export function AppSidebar() {
@@ -99,6 +111,12 @@ export function AppSidebar() {
 
   const handleNavClick = () => {
     setOpenMobile(false);
+  };
+
+  // Helper to check OR permissions (separated by |)
+  const checkPermission = (permission: string) => {
+    const permissions = permission.split('|');
+    return permissions.some(p => hasPermission(p.trim()));
   };
 
   return (
@@ -144,7 +162,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         
-        {adminItems.some(item => hasPermission(item.permission)) && (
+        {adminItems.some(item => checkPermission(item.permission)) && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Administration
@@ -152,7 +170,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => {
-                  if (!hasPermission(item.permission)) return null;
+                  if (!checkPermission(item.permission)) return null;
                   const isActive = location === item.url;
                   return (
                     <SidebarMenuItem key={item.key}>

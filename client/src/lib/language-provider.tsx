@@ -44,10 +44,17 @@ const translations = {
     "nav.alerts": "Alerts",
     "nav.help": "Help & Guide",
     "nav.settings": "Settings",
+    "nav.users": "Users",
+    "nav.roles": "Roles",
+    "nav.audit": "Audit Log",
+    "nav.exportRequests": "Export Requests",
+    "nav.viewRequests": "View Requests",
     
     // Admin
     "admin.users": "Users",
     "admin.roles": "Roles",
+    "admin.exportRequests": "Export Requests",
+    "admin.viewRequests": "View Requests",
     "admin.audit": "Audit Log",
     
     // Audit Log
@@ -704,10 +711,17 @@ const translations = {
     "nav.alerts": "التنبيهات",
     "nav.help": "المساعدة والدليل",
     "nav.settings": "الإعدادات",
+    "nav.users": "المستخدمون",
+    "nav.roles": "الأدوار",
+    "nav.audit": "سجل التدقيق",
+    "nav.exportRequests": "طلبات التصدير",
+    "nav.viewRequests": "طلبات العرض",
     
     // Admin
     "admin.users": "المستخدمون",
     "admin.roles": "الأدوار",
+    "admin.exportRequests": "طلبات التصدير",
+    "admin.viewRequests": "طلبات العرض",
     "admin.audit": "سجل التدقيق",
     
     // Audit Log

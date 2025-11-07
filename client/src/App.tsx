@@ -28,6 +28,8 @@ import PlatformDetails from "@/pages/platform-details";
 import UserManagement from "@/pages/user-management";
 import RoleManagement from "@/pages/role-management";
 import AuditLog from "@/pages/audit-log";
+import ExportRequests from "@/pages/export-requests";
+import ViewRequests from "@/pages/view-requests";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -48,6 +50,8 @@ function Router() {
       <ProtectedRoute path="/admin/users" component={UserManagement} />
       <ProtectedRoute path="/admin/roles" component={RoleManagement} />
       <ProtectedRoute path="/admin/audit" component={AuditLog} />
+      <ProtectedRoute path="/admin/export-requests" component={ExportRequests} />
+      <ProtectedRoute path="/admin/view-requests" component={ViewRequests} />
       <Route component={NotFound} />
     </Switch>
   );
