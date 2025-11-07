@@ -75,7 +75,7 @@ const PERMISSION_CATEGORIES = {
     "USER_DELETE",
     "USER_VIEW_SENSITIVE",
   ],
-  role: ["ROLE_MANAGE", "ROLE_CREATE", "ROLE_EDIT", "ROLE_DELETE"],
+  role: ["ROLE_MANAGE", "CREATE_ROLES", "EDIT_ROLES", "DELETE_ROLES"],
   investment: [
     "INVESTMENT_VIEW",
     "INVESTMENT_CREATE",
@@ -241,7 +241,7 @@ export default function RoleManagement() {
     return roleName?.toLowerCase().includes("owner");
   };
 
-  if (!hasPermission("ROLE_MANAGE")) {
+  if (!hasPermission("VIEW_ROLES")) {
     return (
       <Card>
         <CardHeader>
@@ -299,7 +299,7 @@ export default function RoleManagement() {
               <CardTitle>{t("allRoles")}</CardTitle>
               <CardDescription>{t("viewAndManageSystemRoles")}</CardDescription>
             </div>
-            {hasPermission("ROLE_CREATE") && (
+            {hasPermission("CREATE_ROLES") && (
               <Button onClick={openAddDialog} data-testid="button-add-role">
                 <Plus className="h-4 w-4 mr-2" />
                 {t("addRole")}
@@ -353,7 +353,7 @@ export default function RoleManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {hasPermission("ROLE_EDIT") && (
+                          {hasPermission("EDIT_ROLES") && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -363,7 +363,7 @@ export default function RoleManagement() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           )}
-                          {hasPermission("ROLE_DELETE") && !isOwnerRole(role.name) && (
+                          {hasPermission("DELETE_ROLES") && !isOwnerRole(role.name) && (
                             <Button
                               size="sm"
                               variant="outline"

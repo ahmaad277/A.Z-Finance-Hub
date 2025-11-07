@@ -242,7 +242,7 @@ export default function UserManagement() {
     return "outline";
   };
 
-  if (!hasPermission("USER_MANAGE")) {
+  if (!hasPermission("VIEW_USERS")) {
     return (
       <Card>
         <CardHeader>
@@ -269,7 +269,7 @@ export default function UserManagement() {
             {t("manageUsersAndRoles")}
           </p>
         </div>
-        {hasPermission("USER_CREATE") && (
+        {hasPermission("CREATE_USERS") && (
           <Button onClick={openAddDialog} data-testid="button-add-user">
             <UserPlus className="mr-2 h-4 w-4" />
             {t("addUser")}
@@ -322,7 +322,7 @@ export default function UserManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {hasPermission("USER_EDIT") ? (
+                        {hasPermission("EDIT_USERS") ? (
                           <Switch
                             checked={isUserActive}
                             onCheckedChange={(checked) =>
@@ -348,7 +348,7 @@ export default function UserManagement() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
-                          {hasPermission("USER_EDIT") && (
+                          {hasPermission("EDIT_USERS") && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -358,7 +358,7 @@ export default function UserManagement() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           )}
-                          {hasPermission("USER_DELETE") && !userRole?.name?.toLowerCase().includes("owner") && (
+                          {hasPermission("DELETE_USERS") && !userRole?.name?.toLowerCase().includes("owner") && (
                             <Button
                               size="sm"
                               variant="outline"

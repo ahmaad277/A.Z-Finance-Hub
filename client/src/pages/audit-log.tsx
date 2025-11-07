@@ -35,11 +35,11 @@ export default function AuditLog() {
 
   const { data: logs = [], isLoading, refetch } = useQuery<AuditLog[]>({
     queryKey: ['/api/v2/audit'],
-    enabled: hasPermission('system:view_audit_log'),
+    enabled: hasPermission('VIEW_USERS'),
   });
 
   // Check permission
-  if (!hasPermission('system:view_audit_log')) {
+  if (!hasPermission('VIEW_USERS')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
@@ -117,7 +117,7 @@ export default function AuditLog() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('audit.refreshLog')}
               </Button>
-              {hasPermission('system:export_audit_log') && (
+              {hasPermission('EXPORT_DATA') && (
                 <Button
                   variant="outline"
                   size="sm"

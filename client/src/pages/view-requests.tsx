@@ -69,8 +69,8 @@ export default function ViewRequests() {
   const [approvingRequest, setApprovingRequest] = useState<ViewRequest | null>(null);
   const [rejectingRequest, setRejectingRequest] = useState<ViewRequest | null>(null);
 
-  const canRequest = hasPermission('requests:view');
-  const canApprove = hasPermission('requests:approve_view');
+  const canRequest = hasPermission('REQUEST_VIEW');
+  const canApprove = hasPermission('APPROVE_VIEW');
 
   // Fetch all view requests
   const { data: allRequests = [], isLoading, refetch } = useQuery<ViewRequest[]>({

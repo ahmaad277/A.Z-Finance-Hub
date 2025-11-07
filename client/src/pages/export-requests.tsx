@@ -61,8 +61,8 @@ export default function ExportRequests() {
   const [approvingRequest, setApprovingRequest] = useState<ExportRequest | null>(null);
   const [rejectingRequest, setRejectingRequest] = useState<ExportRequest | null>(null);
 
-  const canRequest = hasPermission('requests:export');
-  const canApprove = hasPermission('requests:approve_exports');
+  const canRequest = hasPermission('REQUEST_EXPORT');
+  const canApprove = hasPermission('APPROVE_EXPORT');
 
   // Fetch all export requests
   const { data: allRequests = [], isLoading, refetch } = useQuery<ExportRequest[]>({
