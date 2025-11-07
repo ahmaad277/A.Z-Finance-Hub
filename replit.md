@@ -67,16 +67,17 @@ The following expensive/complex features have been removed to reduce costs and c
 - **Third-Party Integrations**: Future integration with external platform APIs (Sukuk, Manfa'a, Lendo) is planned for automatic data synchronization.
 
 ## Recent Changes (November 2025)
-- Removed OpenAI integration and all AI-powered features
+- **Major Simplification**: Removed OpenAI integration and all AI-powered features
 - Removed complex roles and permissions system (6 roles, 29 permissions)
 - Removed field-level data masking
 - Removed audit logging and impersonation features
 - Removed export/view request approval workflows
 - Removed Grid View dashboard and customizable widgets
 - Removed all admin pages (user management, role management, audit logs)
-- Simplified authentication to basic login/logout
+- Simplified authentication to basic login/logout (removed self-registration for security)
 - Fixed critical session authentication bug (isAuthenticated flag)
 - All e2e tests passing successfully
+- **Portfolio Reset (Nov 7, 2025)**: Cleared all investment data (14 investments, 3 cashflows, 5 cash transactions) for fresh start while preserving 5 platforms and user accounts
 
 ## Database Schema Notes
 The database schema still contains legacy tables from the enterprise version that can be safely removed:
