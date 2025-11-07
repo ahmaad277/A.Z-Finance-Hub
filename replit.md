@@ -87,6 +87,14 @@ The following expensive/complex features have been removed to reduce costs and c
 - Simplified authentication to basic login/logout (removed self-registration for security)
 - Fixed critical session authentication bug (isAuthenticated flag)
 - All e2e tests passing successfully
+- **Delete Investment Feature Enabled (Nov 7, 2025)**:
+    - Delete button now always visible (removed permission check)
+    - Proper cascade deletion: investment → cashflows → alerts
+    - All pages update correctly after deletion
+- **Portfolio Stats Data Integrity Fixed (Nov 7, 2025)**:
+    - totalReturns now correctly filters for profit-only cashflows (type="profit")
+    - totalCashBalance now uses getCashBalance() from cash_transactions table
+    - reinvestedAmount calculation preserved for accurate availableCash
 - **Portfolio Reset (Nov 7, 2025)**: Cleared all investment data (14 investments, 3 cashflows, 5 cash transactions) for fresh start while preserving 5 platforms and user accounts
 - **Reports System Added (Nov 7, 2025)**: 
     - Comprehensive financial reports with Excel/PDF export
