@@ -405,7 +405,7 @@ export default function Dashboard() {
   }
 
   // If Grid View is enabled, render GridDashboard instead
-  if (useGridView && (!settings || settings.viewMode === "pro")) {
+  if (useGridView) {
     return (
       <div className="space-y-6" data-testid="page-dashboard">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -442,18 +442,16 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          {(!settings || settings.viewMode === "pro") && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleView}
-              data-testid="button-toggle-grid-view"
-              className="w-full sm:w-auto justify-center"
-            >
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              {t("dashboard.gridView")}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleView}
+            data-testid="button-toggle-grid-view"
+            className="w-full sm:w-auto justify-center"
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            {t("dashboard.gridView")}
+          </Button>
           <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
             <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-platform-filter">
               <Filter className="h-4 w-4 mr-2" />

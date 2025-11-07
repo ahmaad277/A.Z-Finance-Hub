@@ -61,6 +61,14 @@ export function GridDashboard({ viewMode }: GridDashboardProps) {
   );
   const [hiddenWidgets, setHiddenWidgets] = useState<WidgetId[]>(() => [...dashboardConfig.hiddenWidgets]);
   
+  // Update local state when dashboard config changes (e.g., when settings load)
+  useEffect(() => {
+    if (!isEditing) {
+      setCurrentLayout(dashboardConfig.layouts.map(l => ({ ...l })));
+      setHiddenWidgets([...dashboardConfig.hiddenWidgets]);
+    }
+  }, [dashboardConfig, isEditing]);
+  
   // Get available widgets based on view mode
   const availableWidgets = useMemo(() => {
     return getAvailableWidgets(viewMode).filter(
