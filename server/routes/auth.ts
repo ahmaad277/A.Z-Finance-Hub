@@ -232,4 +232,96 @@ router.get('/users-list', async (req: Request, res: Response) => {
   }
 });
 
+// Update own profile (email/password)
+const updateProfileSchema = z.object({
+  email: z.string().email().optional(),
+  currentPassword: z.string().min(6).optional(),
+  newPassword: z.string().min(6).optional(),
+});
+
+router.patch('/update-profile', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const data = updateProfileSchema.parse(req.body);
+    const userId = req.user.id;
+    
+    // Get current user
+    const currentUser = await storage.getUser(userId);
+    if (!currentUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // If changing email, check if new email is available
+    if (data.email && data.email !== currentUser.email) {
+      const existing = await storage.getUserByEmail(data.email);
+      if (existing) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
+
+    const updateData: any = {};
+    
+    // Update email if provided
+    if (data.email && data.email !== currentUser.email) {
+      updateData.email = data.email;
+    }
+
+    // Update password if provided
+    if (data.newPassword && data.currentPassword) {
+      // Verify current password
+      if (!currentUser.passwordHash) {
+        return res.status(400).json({ error: 'Current password verification failed' });
+      }
+      
+      const isValid = await verifyPassword(data.currentPassword, currentUser.passwordHash);
+      if (!isValid) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+      
+      // Hash new password
+      updateData.passwordHash = await hashPassword(data.newPassword);
+    }
+
+    // Only update if there are changes
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No changes provided' });
+    }
+
+    const updatedUser = await storage.updateUser(userId, updateData);
+    
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Log action
+    await logAudit({
+      req,
+      action: 'update',
+      targetType: 'user',
+      targetId: userId,
+      details: {
+        emailChanged: !!updateData.email,
+        passwordChanged: !!updateData.passwordHash,
+      },
+    });
+
+    // Remove password hash
+    const { passwordHash, ...safeUser } = updatedUser;
+    
+    res.json({
+      success: true,
+      user: safeUser,
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
+    }
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 export default router;
