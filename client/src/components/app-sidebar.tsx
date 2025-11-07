@@ -75,31 +75,31 @@ const adminItems = [
     key: "users",
     url: "/admin/users",
     icon: Users,
-    permission: "system:manage_users",
+    permission: "VIEW_USERS|CREATE_USERS|EDIT_USERS",
   },
   {
     key: "roles",
     url: "/admin/roles",
     icon: Shield,
-    permission: "system:manage_roles",
+    permission: "VIEW_ROLES|CREATE_ROLES|EDIT_ROLES",
   },
   {
     key: "audit",
     url: "/admin/audit",
     icon: FileText,
-    permission: "system:view_audit_log",
+    permission: "VIEW_USERS|VIEW_ROLES",
   },
   {
     key: "exportRequests",
     url: "/admin/export-requests",
     icon: FileDown,
-    permission: "requests:export|requests:approve_exports",
+    permission: "REQUEST_EXPORT|APPROVE_EXPORT",
   },
   {
     key: "viewRequests",
     url: "/admin/view-requests",
     icon: Eye,
-    permission: "requests:view|requests:approve_view",
+    permission: "REQUEST_VIEW|APPROVE_VIEW",
   },
 ];
 
