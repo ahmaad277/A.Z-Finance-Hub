@@ -56,10 +56,11 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
 
   const total = metrics.totalInvestments;
 
-  // Custom label renderer
+  // Custom label renderer - positioned outside the pie with better spacing
   const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent, value }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    // Position labels outside the pie chart with more spacing
+    const radius = outerRadius + 15;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -67,18 +68,17 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
       ? `${(percent * 100).toFixed(0)}%` 
       : `${value}`;
 
+    // Determine text anchor based on position relative to center
+    const anchor = x > cx ? 'start' : x < cx ? 'end' : 'middle';
+
     return (
       <text
         x={x}
         y={y}
-        fill="#000000"
-        stroke="#ffffff"
-        strokeWidth="2"
-        paintOrder="stroke"
-        textAnchor={x > cx ? 'start' : 'end'}
+        fill="currentColor"
+        textAnchor={anchor}
         dominantBaseline="central"
-        className="font-medium"
-        style={{ fontSize: '12px', fontWeight: 600 }}
+        className="fill-foreground font-semibold text-[11px]"
       >
         {displayText}
       </text>
@@ -116,14 +116,15 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
                   data={data}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
+                  labelLine={true}
                   label={renderLabel}
-                  outerRadius={42}
+                  outerRadius={35}
                   fill="#8884d8"
                   dataKey="value"
+                  stroke="none"
                 >
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                   ))}
                 </Pie>
                 <Tooltip
