@@ -17,7 +17,6 @@ import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
-import { InvestmentStatusChart } from "@/components/investment-status-chart";
 import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
@@ -491,7 +490,7 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* 1. Financial Metrics Only (8 metrics) */}
+      {/* 1. Financial Metrics Only (8 metrics + Investment Status) */}
       {dashboardMetrics && (
         <motion.div
           key="financial-metrics"
@@ -501,21 +500,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* 2. Investment Status Pie Chart */}
-      {dashboardMetrics && (
-        <motion.div
-          key="status-chart"
-          {...fadeInUp}
-        >
-          <InvestmentStatusChart 
-            metrics={dashboardMetrics} 
-            isCollapsed={isSectionCollapsed('status-chart')} 
-            onToggle={() => toggleSection('status-chart')}
-          />
-        </motion.div>
-      )}
-
-      {/* 3. Vision 2040 Progress Widget */}
+      {/* 2. Vision 2040 Progress Widget */}
       <Card className="hover-elevate transition-all duration-200" data-testid="card-vision-2040">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">

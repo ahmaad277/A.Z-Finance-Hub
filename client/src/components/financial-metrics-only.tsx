@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { InvestmentStatusChart } from "@/components/investment-status-chart";
 import { 
   Wallet, 
   DollarSign, 
@@ -124,6 +125,11 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
             </Card>
           );
         })}
+      </div>
+      
+      {/* Investment Status Chart as a metric card */}
+      <div className="mt-3">
+        <InvestmentStatusChart metrics={metrics} />
       </div>
     </div>
   );

@@ -159,6 +159,7 @@ const translations = {
     "dashboard.classicView": "Classic View",
     "dashboard.percentage": "%",
     "dashboard.count": "#",
+    "dashboard.clickToToggle": "Click to toggle %/#",
     
     // Status labels for charts
     "status.active": "Active",
@@ -868,6 +869,7 @@ const translations = {
     "dashboard.classicView": "العرض التقليدي",
     "dashboard.percentage": "%",
     "dashboard.count": "#",
+    "dashboard.clickToToggle": "اضغط للتبديل بين %/#",
     
     // Status labels for charts
     "status.active": "نشطة",

@@ -1,16 +1,10 @@
 import { useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Percent, Hash } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useLanguage } from "@/lib/language-provider";
 import type { DashboardMetrics } from "@/lib/dashboardMetrics";
 
 interface InvestmentStatusChartProps {
   metrics: DashboardMetrics;
-  isCollapsed?: boolean;
-  onToggle?: () => void;
 }
 
 const COLORS = {
@@ -20,9 +14,14 @@ const COLORS = {
   defaulted: "hsl(var(--destructive))",
 };
 
-export function InvestmentStatusChart({ metrics, isCollapsed = false, onToggle }: InvestmentStatusChartProps) {
+export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
   const { t } = useLanguage();
   const [showPercentage, setShowPercentage] = useState(true);
+  
+  // Toggle between percentage and count on chart click
+  const handleChartClick = () => {
+    setShowPercentage(!showPercentage);
+  };
 
   const data = [
     {
@@ -79,137 +78,75 @@ export function InvestmentStatusChart({ metrics, isCollapsed = false, onToggle }
   };
 
   return (
-    <Card data-testid="card-status-chart">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <CardTitle className="text-lg">{t("dashboard.investmentStatus")}</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={showPercentage ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowPercentage(!showPercentage)}
-              data-testid="button-toggle-percentage"
-              className="h-8 px-3"
-            >
-              {showPercentage ? (
-                <>
-                  <Percent className="h-3 w-3 mr-1.5" />
-                  <span className="text-xs">{t("dashboard.percentage")}</span>
-                </>
-              ) : (
-                <>
-                  <Hash className="h-3 w-3 mr-1.5" />
-                  <span className="text-xs">{t("dashboard.count")}</span>
-                </>
-              )}
-            </Button>
-            {onToggle && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onToggle}
-                data-testid="button-toggle-status-chart"
-                className="h-8 w-8 p-0"
-              >
-                {isCollapsed ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronUp className="h-4 w-4" />
-                )}
-              </Button>
-            )}
+    <div 
+      className="rounded-lg border bg-card hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden"
+      onClick={handleChartClick}
+      data-testid="card-status-chart"
+    >
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <PieChart className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">
+                {t("dashboard.investmentStatus")}
+              </p>
+            </div>
+            <p className="text-2xl font-bold">
+              {t("dashboard.totalInvestments")}: {total}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("dashboard.clickToToggle")}
+            </p>
+          </div>
+          
+          <div className="w-[120px] h-[120px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderLabel}
+                  outerRadius={50}
+                  fill="#8884d8"
+                  dataKey="value"
+                  onClick={handleChartClick}
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0];
+                      const value = Number(data.value ?? 0);
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                {data.name}
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {value} {t("dashboard.investments")} ({percentage}%)
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.totalInvestments")}: {total}
-        </p>
-      </CardHeader>
-      
-      {/* Chart - collapsible */}
-      <AnimatePresence initial={false}>
-        {!isCollapsed && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
-          >
-            <CardContent className="pt-0">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-full md:w-auto flex-shrink-0">
-                  <ResponsiveContainer width={240} height={240}>
-                    <PieChart>
-                      <Pie
-                        data={data}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={renderLabel}
-                        outerRadius={85}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {data.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0];
-                            const value = Number(data.value ?? 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return (
-                              <div className="rounded-lg border bg-background p-2 shadow-sm">
-                                <div className="grid gap-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      {data.name}
-                                    </span>
-                                    <span className="font-bold text-muted-foreground">
-                                      {value} {t("dashboard.investments")} ({percentage}%)
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="flex-1 grid grid-cols-2 gap-3 w-full">
-                  {data.map((entry, index) => (
-                    <div 
-                      key={`stat-${index}`} 
-                      className="flex items-center gap-3 p-3 rounded-lg border hover-elevate transition-all"
-                      data-testid={`status-stat-${entry.name.toLowerCase()}`}
-                    >
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground truncate">{entry.name}</p>
-                        <p className="text-lg font-bold">
-                          {showPercentage 
-                            ? `${((entry.value / total) * 100).toFixed(1)}%`
-                            : entry.value
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </Card>
+      </div>
+    </div>
   );
 }
