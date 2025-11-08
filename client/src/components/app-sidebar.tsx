@@ -81,8 +81,8 @@ export function AppSidebar() {
             <TrendingUp className="h-6 w-6" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight">{t("app.name")}</span>
-            <span className="text-xs text-muted-foreground">{t("app.subtitle")}</span>
+            <span className="text-lg font-bold tracking-tight">A.Z Finance Hub</span>
+            <span className="text-xs text-muted-foreground">Vision 2040</span>
           </div>
         </div>
       </SidebarHeader>
@@ -119,7 +119,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="text-xs text-muted-foreground text-center">
-          <div>{t("app.copyright")}</div>
+          <div>© 2025 A.Z Finance Hub. All rights reserved.</div>
         </div>
       </SidebarFooter>
     </Sidebar>
