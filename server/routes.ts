@@ -10,6 +10,7 @@ import {
   insertUserSettingsSchema,
   insertCashTransactionSchema,
 } from "@shared/schema";
+import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
 
 // API schema that accepts date strings and coerces to Date objects with validation
 const apiInvestmentSchema = insertInvestmentSchema.extend({
@@ -109,6 +110,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Investment deletion error:", error);
       res.status(500).json({ error: "Failed to delete investment" });
+    }
+  });
+
+  // Preview cashflows for investment (before creation)
+  app.post("/api/investments/preview-cashflows", async (req, res) => {
+    try {
+      const previewSchema = z.object({
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
+        faceValue: z.coerce.number().positive(),
+        totalExpectedProfit: z.coerce.number().nonnegative(),
+        distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity']),
+        profitPaymentStructure: z.enum(['periodic', 'at_maturity']).default('periodic'),
+      });
+
+      const data = previewSchema.parse(req.body);
+      
+      const previewCashflows = generateCashflows({
+        startDate: data.startDate,
+        endDate: data.endDate,
+        faceValue: data.faceValue,
+        totalExpectedProfit: data.totalExpectedProfit,
+        distributionFrequency: data.distributionFrequency as DistributionFrequency,
+        profitPaymentStructure: data.profitPaymentStructure as ProfitPaymentStructure,
+      });
+
+      res.json(previewCashflows);
+    } catch (error: any) {
+      console.error("Cashflow preview error:", error);
+      res.status(400).json({ error: error.message || "Invalid preview parameters" });
     }
   });
 

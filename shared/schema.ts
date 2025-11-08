@@ -47,6 +47,8 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   faceValue: z.coerce.number().positive(),
   totalExpectedProfit: z.coerce.number().nonnegative(),
   expectedIrr: z.coerce.number().min(0).max(100),
+  distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity']),
+  profitPaymentStructure: z.enum(['periodic', 'at_maturity']),
 });
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 export type Investment = typeof investments.$inferSelect;

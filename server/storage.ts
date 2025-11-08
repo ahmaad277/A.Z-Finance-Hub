@@ -321,9 +321,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInvestment(id: string, update: Partial<InsertInvestment>): Promise<Investment | undefined> {
+    // Convert numbers to strings for database
+    const dbUpdate: Partial<Investment> = { ...update };
+    if (update.amount !== undefined) dbUpdate.amount = String(update.amount);
+    if (update.faceValue !== undefined) dbUpdate.faceValue = String(update.faceValue);
+    if (update.totalExpectedProfit !== undefined) dbUpdate.totalExpectedProfit = String(update.totalExpectedProfit);
+    if (update.expectedIrr !== undefined) dbUpdate.expectedIrr = String(update.expectedIrr);
+    if (update.actualIrr !== undefined) dbUpdate.actualIrr = String(update.actualIrr);
+    
     const [investment] = await db
       .update(investments)
-      .set(update)
+      .set(dbUpdate)
       .where(eq(investments.id, id))
       .returning();
     return investment || undefined;
