@@ -104,7 +104,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
               className="hover-elevate transition-all duration-200" 
               data-testid={`metric-card-${card.id}`}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 pt-2 px-3">
                 <CardTitle className="text-xs font-medium text-muted-foreground line-clamp-1">
                   {card.label}
                 </CardTitle>
@@ -112,7 +112,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                   <Icon className="h-3 w-3" />
                 </div>
               </CardHeader>
-              <CardContent className="px-3 pb-3 pt-1">
+              <CardContent className="px-3 pb-2 pt-0.5">
                 <div className="text-lg font-bold" data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>

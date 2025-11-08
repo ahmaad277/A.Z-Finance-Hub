@@ -485,9 +485,6 @@ export default function Dashboard() {
             </DropdownMenu>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.subtitle")}
-        </p>
       </div>
 
       {/* 1. Financial Metrics Only (8 metrics + Investment Status) */}
