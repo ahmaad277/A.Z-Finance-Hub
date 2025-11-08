@@ -1132,7 +1132,7 @@ const translations = {
     
     // Calculator
     "calculator.title": "حاسبة الهدف الاستثماري",
-    "calculator.description": "احسب القيمة المستقبلية لاستثماراتك بناءً على الإيداعات والعوائد",
+    "calculator.description": "احسب قيمة استثماراتك  بناءً على الإيداعات والعوائد",
     "calculator.initialAmount": "المبلغ الابتدائي (ريال)",
     "calculator.monthlyDeposit": "الإيداع الشهري (ريال)",
     "calculator.expectedIRR": "العائد السنوي المتوقع (%)",
