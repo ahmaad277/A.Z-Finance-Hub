@@ -136,14 +136,24 @@ export function isInvestmentDefaulted(investment: Investment, cashflows: Cashflo
 
 /**
  * Calculate total cash from cash transactions
+ * Uses SUM aggregation to calculate balance correctly regardless of transaction order
  */
 export function calculateTotalCash(cashTransactions: CashTransaction[]): number {
   if (cashTransactions.length === 0) return 0;
-  // The most recent transaction has the current balance
-  const sortedTransactions = [...cashTransactions].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  return parseFloat(sortedTransactions[0]?.balanceAfter || '0');
+  
+  // Calculate balance by summing all transactions
+  return cashTransactions.reduce((balance, transaction) => {
+    const amount = parseFloat(transaction.amount);
+    
+    // Add for deposits and distributions, subtract for withdrawals and investments
+    if (transaction.type === 'deposit' || transaction.type === 'distribution') {
+      return balance + amount;
+    } else if (transaction.type === 'withdrawal' || transaction.type === 'investment') {
+      return balance - amount;
+    }
+    
+    return balance;
+  }, 0);
 }
 
 /**
