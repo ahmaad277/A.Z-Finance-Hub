@@ -643,17 +643,17 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     const monthlyReturns = this.calculateMonthlyReturns(allCashflows, now);
 
-    // Platform allocation
+    // Platform allocation (uses faceValue - actual deployed capital, not total including expected profit)
     const platformAllocation = allPlatforms.map((platform) => {
       const platformInvestments = allInvestments.filter(
         (inv) => inv.platformId === platform.id
       );
       const amount = platformInvestments.reduce(
-        (sum, inv) => sum + safeParseFloat(inv.amount),
+        (sum, inv) => sum + safeParseFloat(inv.faceValue),
         0
       );
       const totalAmount = allInvestments.reduce(
-        (sum, inv) => sum + safeParseFloat(inv.amount),
+        (sum, inv) => sum + safeParseFloat(inv.faceValue),
         0
       );
       const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
@@ -695,9 +695,9 @@ export class DatabaseStorage implements IStorage {
       monthlyData[monthLabel] = 0; // Store with label for final output
     }
 
-    // Sum up cashflows that were received in each month
+    // Sum up cashflows that were received in each month (PROFIT ONLY - excludes principal returns)
     cashflows
-      .filter((cf) => cf.status === "received" && cf.receivedDate)
+      .filter((cf) => cf.status === "received" && cf.receivedDate && cf.type === "profit")
       .forEach((cf) => {
         const receivedDate = new Date(cf.receivedDate!);
         const monthKey = `${receivedDate.getFullYear()}-${receivedDate.getMonth()}`;
@@ -732,13 +732,15 @@ export class DatabaseStorage implements IStorage {
       return isNaN(num) ? 0 : num;
     };
     
-    // Calculate actual portfolio value (invested capital + received returns)
+    // Calculate actual portfolio value (invested faceValue + received PROFIT returns)
+    // faceValue = actual deployed capital (excludes expected profit)
     const investedCapital = investments
       .filter((inv) => inv.status === "active")
-      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + safeParseFloat(inv.faceValue), 0);
     
+    // Received returns = PROFIT ONLY (principal returns don't increase portfolio value)
     const receivedReturns = cashflows
-      .filter((cf) => cf.status === "received")
+      .filter((cf) => cf.status === "received" && cf.type === "profit")
       .reduce((sum, cf) => sum + safeParseFloat(cf.amount), 0);
     
     const currentValue = investedCapital + receivedReturns;
