@@ -58,6 +58,7 @@ import {
   type ExportRequestWithUser,
   type ViewRequestWithUser,
 } from "@shared/schema";
+import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
 import { db, pool } from "./db";
 import { eq, desc, and, or, gte, lte, sum, inArray, sql } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
@@ -241,19 +242,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
-    // Create the investment
+    // Create the investment (convert numbers to strings for database)
     const [investment] = await db
       .insert(investments)
       .values({
         ...insertInvestment,
+        amount: String(insertInvestment.amount),
+        faceValue: String(insertInvestment.faceValue),
+        totalExpectedProfit: String(insertInvestment.totalExpectedProfit),
+        expectedIrr: String(insertInvestment.expectedIrr),
         actualIrr: null,
+        actualEndDate: null,
       })
       .returning();
     
     // If funded from cash, deduct from cash balance
     if (insertInvestment.fundedFromCash === 1) {
       await this.createCashTransaction({
-        amount: insertInvestment.amount,
+        amount: String(insertInvestment.amount),
         type: 'investment',
         source: 'investment',
         notes: `Investment: ${insertInvestment.name}`,
@@ -269,105 +275,49 @@ export class DatabaseStorage implements IStorage {
   }
   
   /**
-   * Generate cashflows automatically for an investment based on distribution frequency
-   * Uses proper calendar date arithmetic to avoid day-overflow issues
+   * Generate cashflows automatically for an investment using smart Sukuk logic
+   * Uses shared/cashflow-generator.ts for intelligent distribution
    */
   private async generateCashflowsForInvestment(investment: Investment): Promise<void> {
     const startDate = new Date(investment.startDate);
     const endDate = new Date(investment.endDate);
     
-    // Validate dates - if invalid, still create a single principal cashflow at end date
+    // Validate dates
     if (endDate <= startDate) {
       console.warn(`Invalid investment dates: end date (${endDate}) must be after start date (${startDate}). Creating single principal cashflow.`);
       await db.insert(cashflows).values([{
         investmentId: investment.id,
         dueDate: endDate,
-        amount: investment.amount,
+        amount: String((parseFloat(investment.faceValue || investment.amount) + parseFloat(investment.totalExpectedProfit || "0")).toFixed(2)),
         status: 'expected' as const,
         type: 'principal' as const,
       }]);
       return;
     }
     
-    const amount = parseFloat(investment.amount);
-    const expectedIrr = parseFloat(investment.expectedIrr) / 100;
+    const faceValue = parseFloat(investment.faceValue || investment.amount);
+    const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
     
-    // Calculate duration in months using calendar months
-    const durationMonths = Math.max(1, 
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-      (endDate.getMonth() - startDate.getMonth())
-    );
-    
-    // Calculate total expected profit
-    const totalExpectedProfit = amount * expectedIrr * (durationMonths / 12);
-    
-    // Determine payment frequency and count
-    const frequency = investment.distributionFrequency || 'quarterly';
-    let paymentCount = 1; // minimum 1 payment
-    let monthsPerPayment = 3; // default quarterly
-    
-    switch (frequency) {
-      case 'monthly':
-        monthsPerPayment = 1;
-        paymentCount = Math.max(1, durationMonths);
-        break;
-      case 'quarterly':
-        monthsPerPayment = 3;
-        paymentCount = Math.max(1, Math.ceil(durationMonths / 3));
-        break;
-      case 'semi-annual':
-        monthsPerPayment = 6;
-        paymentCount = Math.max(1, Math.ceil(durationMonths / 6));
-        break;
-      case 'annual':
-        monthsPerPayment = 12;
-        paymentCount = Math.max(1, Math.ceil(durationMonths / 12));
-        break;
-      case 'end-of-term':
-        monthsPerPayment = durationMonths;
-        paymentCount = 1;
-        break;
-      default:
-        monthsPerPayment = 3;
-        paymentCount = Math.max(1, Math.ceil(durationMonths / 3));
-    }
-    
-    // Distribute profit equally across payments (guaranteed paymentCount >= 1)
-    const profitPerPayment = totalExpectedProfit / paymentCount;
-    
-    // Generate cashflows using safe date arithmetic
-    const cashflowsToCreate = [];
-    for (let i = 0; i < paymentCount; i++) {
-      // Create a new date for each payment to avoid mutation issues
-      const dueDate = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth() + monthsPerPayment * (i + 1),
-        Math.min(startDate.getDate(), 28) // Avoid day overflow by capping at 28
-      );
-      
-      // Ensure due date doesn't exceed end date
-      const finalDueDate = dueDate > endDate ? new Date(endDate) : dueDate;
-      
-      cashflowsToCreate.push({
-        investmentId: investment.id,
-        dueDate: finalDueDate,
-        amount: String(Number(profitPerPayment.toFixed(2))), // Convert to string after rounding
-        status: 'expected' as const,
-        type: 'profit' as const,
-      });
-    }
-    
-    // Add principal return at the end
-    cashflowsToCreate.push({
-      investmentId: investment.id,
-      dueDate: endDate,
-      amount: investment.amount, // Already a string from schema
-      status: 'expected' as const,
-      type: 'principal' as const,
+    const generatedCashflows = generateCashflows({
+      startDate,
+      endDate,
+      faceValue,
+      totalExpectedProfit,
+      distributionFrequency: investment.distributionFrequency as DistributionFrequency,
+      profitPaymentStructure: (investment.profitPaymentStructure as ProfitPaymentStructure) || 'periodic',
     });
     
-    // Insert all cashflows
-    await db.insert(cashflows).values(cashflowsToCreate);
+    const cashflowsToCreate = generatedCashflows.map(cf => ({
+      investmentId: investment.id,
+      dueDate: cf.dueDate,
+      amount: String(cf.amount.toFixed(2)),
+      status: 'expected' as const,
+      type: cf.type as 'profit' | 'principal',
+    }));
+    
+    if (cashflowsToCreate.length > 0) {
+      await db.insert(cashflows).values(cashflowsToCreate);
+    }
   }
 
   async updateInvestment(id: string, update: Partial<InsertInvestment>): Promise<Investment | undefined> {
