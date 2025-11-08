@@ -230,7 +230,9 @@ export function calculateDashboardMetrics(
   const totalDuration = filteredInvestments.reduce((sum, inv) => {
     return sum + calculateDurationMonths(inv.startDate, inv.endDate);
   }, 0);
-  const avgDuration = filteredInvestments.length > 0 ? totalDuration / filteredInvestments.length : 0;
+  const avgDuration = filteredInvestments.length > 0 
+    ? Math.round((totalDuration / filteredInvestments.length) * 100) / 100 
+    : 0;
   const avgAmount = filteredInvestments.length > 0 
     ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0) / filteredInvestments.length 
     : 0;
