@@ -89,16 +89,33 @@ export default function Investments() {
       setDeletingInvestment(null);
     },
     onError: (error: any, id: string, context: any) => {
-      // Rollback to previous state on error
-      if (context?.previousInvestments) {
-        queryClient.setQueryData(["/api/investments"], context.previousInvestments);
-      }
+      // Check if it's a 404 error (investment already deleted or doesn't exist)
+      const is404 = error.message?.includes("404") || error.message?.includes("not found");
       
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: error.message || (language === "ar" ? "فشل حذف الاستثمار" : "Failed to delete investment"),
-        variant: "destructive",
-      });
+      if (is404) {
+        // Don't rollback - keep the optimistic update (investment removed from cache)
+        // Refetch to ensure cache is in sync with server
+        queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+        
+        toast({
+          title: language === "ar" ? "تم بالفعل" : "Already Deleted",
+          description: language === "ar" ? "هذا الاستثمار غير موجود أو تم حذفه مسبقاً. تم تحديث البيانات." : "This investment was already deleted or doesn't exist. Data refreshed.",
+        });
+      } else {
+        // Rollback to previous state for other errors
+        if (context?.previousInvestments) {
+          queryClient.setQueryData(["/api/investments"], context.previousInvestments);
+        }
+        
+        toast({
+          title: language === "ar" ? "خطأ" : "Error",
+          description: error.message || (language === "ar" ? "فشل حذف الاستثمار" : "Failed to delete investment"),
+          variant: "destructive",
+        });
+      }
       
       // Close dialog even on error to prevent re-attempts
       setDeleteDialogOpen(false);

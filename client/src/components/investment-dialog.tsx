@@ -366,8 +366,10 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                       type="number" 
                       min="0" 
                       max="100" 
-                      {...field} 
+                      value={field.value ?? 50}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      onBlur={field.onBlur}
+                      name={field.name}
                       data-testid="input-risk-score"
                     />
                   </FormControl>
