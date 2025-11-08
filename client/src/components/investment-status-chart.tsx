@@ -14,6 +14,31 @@ const COLORS = {
   defaulted: "hsl(var(--destructive))",
 };
 
+// Custom label renderer with contrasting text
+const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent }: any) => {
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#000000"
+      stroke="#ffffff"
+      strokeWidth="2"
+      paintOrder="stroke"
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="font-medium"
+      style={{ fontSize: '11px', fontWeight: 600 }}
+    >
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
+
 export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
   const { t } = useLanguage();
 
@@ -51,15 +76,15 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
         </p>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-              outerRadius={80}
+              label={renderLabel}
+              outerRadius={60}
               fill="#8884d8"
               dataKey="value"
             >

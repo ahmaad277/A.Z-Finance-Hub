@@ -19,6 +19,15 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
   const isActive = investment.status === "active";
   const isCompleted = investment.status === "completed";
   
+  // Calculate investment duration and expected profit using calendar months
+  const startDate = new Date(investment.startDate);
+  const endDate = new Date(investment.endDate);
+  const durationMonths = Math.max(1,
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+    (endDate.getMonth() - startDate.getMonth())
+  );
+  const expectedProfit = parseFloat(investment.amount) * (parseFloat(investment.expectedIrr) / 100) * (durationMonths / 12);
+  
   const roi = calculateROI(investment.amount, totalReturns);
   const hasReturns = totalReturns > 0;
   
@@ -81,6 +90,17 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
               {t("investments.irr")}
             </div>
             <div className="text-lg font-bold text-chart-1">{formatPercentage(investment.expectedIrr)}</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">{language === "ar" ? "الربح المتوقع" : "Expected Profit"}</div>
+            <div className="text-lg font-bold text-primary">{formatCurrency(expectedProfit)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">{language === "ar" ? "المدة" : "Duration"}</div>
+            <div className="text-lg font-bold">{durationMonths} {language === "ar" ? "شهر" : "months"}</div>
           </div>
         </div>
         
