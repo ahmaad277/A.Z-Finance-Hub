@@ -15,12 +15,14 @@ export const insertPlatformSchema = createInsertSchema(platforms).omit({ id: tru
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
 export type Platform = typeof platforms.$inferSelect;
 
-// Investment opportunities
+// Investment opportunities (Sukuk-optimized)
 export const investments = pgTable("investments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   platformId: varchar("platform_id").notNull(),
   name: text("name").notNull(),
-  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(), // Total investment amount
+  faceValue: numeric("face_value", { precision: 15, scale: 2 }).notNull(), // القيمة الاسمية - Principal to be returned
+  totalExpectedProfit: numeric("total_expected_profit", { precision: 15, scale: 2 }).notNull(), // إجمالي الأرباح المتوقعة
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(), // Expected end date
   actualEndDate: timestamp("actual_end_date"), // Actual completion date
@@ -29,17 +31,22 @@ export const investments = pgTable("investments", {
   status: text("status").notNull().default("active"), // 'active' | 'completed' | 'pending'
   riskScore: integer("risk_score").default(50), // 0-100
   distributionFrequency: text("distribution_frequency").notNull(), // 'monthly' | 'quarterly' | 'semi_annually' | 'annually' | 'at_maturity' | 'custom'
+  profitPaymentStructure: text("profit_payment_structure").notNull().default("periodic"), // 'periodic' = profits during term, 'at_maturity' = profits with principal at end
   isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
   fundedFromCash: integer("funded_from_cash").notNull().default(0), // 0 = external funding, 1 = funded from cash balance
 });
 
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
   id: true, 
-  actualIrr: true 
+  actualIrr: true,
+  actualEndDate: true
 }).extend({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
-  actualEndDate: z.coerce.date().optional().nullable()
+  amount: z.coerce.number().positive(),
+  faceValue: z.coerce.number().positive(),
+  totalExpectedProfit: z.coerce.number().nonnegative(),
+  expectedIrr: z.coerce.number().min(0).max(100),
 });
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 export type Investment = typeof investments.$inferSelect;
