@@ -1,10 +1,12 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardTitle } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-provider";
 import type { DashboardMetrics } from "@/lib/dashboardMetrics";
 
 interface InvestmentStatusChartProps {
   metrics: DashboardMetrics;
+  isCollapsed?: boolean;
 }
 
 const COLORS = {
@@ -39,7 +41,7 @@ const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent
   );
 };
 
-export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
+export function InvestmentStatusChart({ metrics, isCollapsed = false }: InvestmentStatusChartProps) {
   const { t } = useLanguage();
 
   const data = [
@@ -68,79 +70,87 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
   const total = metrics.totalInvestments;
 
   return (
-    <Card data-testid="card-status-chart">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
-          {/* Left side: Title and total */}
-          <div className="flex-shrink-0">
-            <CardTitle className="text-lg mb-2">{t("dashboard.investmentStatus")}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t("dashboard.totalInvestments")}: {total}
-            </p>
-          </div>
-          
-          {/* Right side: Chart */}
-          <div className="flex-1 min-w-0">
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderLabel}
-                  outerRadius={55}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0];
-                      return (
-                        <div className="rounded-lg border bg-background p-2 shadow-sm">
-                          <div className="grid gap-2">
-                            <div className="flex flex-col">
-                              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                {data.name}
-                              </span>
-                              <span className="font-bold text-muted-foreground">
-                                {data.value} {t("dashboard.investments")}
-                              </span>
+    <>
+      {/* Title and total - always visible */}
+      <div className="flex-shrink-0">
+        <CardTitle className="text-lg mb-2">{t("dashboard.investmentStatus")}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {t("dashboard.totalInvestments")}: {total}
+        </p>
+      </div>
+      
+      {/* Chart - collapsible */}
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <CardContent className="pt-4">
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderLabel}
+                    outerRadius={55}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0];
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  {data.name}
+                                </span>
+                                <span className="font-bold text-muted-foreground">
+                                  {data.value} {t("dashboard.investments")}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  height={30}
-                  content={({ payload }) => (
-                    <div className="flex flex-wrap justify-center gap-3 mt-2">
-                      {payload?.map((entry, index) => (
-                        <div key={`legend-${index}`} className="flex items-center gap-1.5">
-                          <div
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{ backgroundColor: entry.color }}
-                          />
-                          <span className="text-xs text-muted-foreground">{entry.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={30}
+                    content={({ payload }) => (
+                      <div className="flex flex-wrap justify-center gap-3 mt-2">
+                        {payload?.map((entry, index) => (
+                          <div key={`legend-${index}`} className="flex items-center gap-1.5">
+                            <div
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: entry.color }}
+                            />
+                            <span className="text-xs text-muted-foreground">{entry.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

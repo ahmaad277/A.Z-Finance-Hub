@@ -507,7 +507,29 @@ export default function Dashboard() {
           key="status-chart"
           {...fadeInUp}
         >
-          <InvestmentStatusChart metrics={dashboardMetrics} />
+          <Card data-testid="card-status-chart-wrapper">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="flex-1">
+                <InvestmentStatusChart 
+                  metrics={dashboardMetrics} 
+                  isCollapsed={isSectionCollapsed('status-chart')} 
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleSection('status-chart')}
+                data-testid="button-toggle-status-chart"
+                className="h-8 w-8 p-0 flex-shrink-0"
+              >
+                {isSectionCollapsed('status-chart') ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronUp className="h-4 w-4" />
+                )}
+              </Button>
+            </CardHeader>
+          </Card>
         </motion.div>
       )}
 
