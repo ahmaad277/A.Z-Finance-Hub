@@ -38,6 +38,13 @@ The application uses a modern web stack for both frontend and backend. It operat
 -   **Investment Dialog Calculated Fields:** Real-time calculation and display of total expected return, number of units, payment count, and payment value per installment within the investment dialog, with locale-aware number formatting.
 -   **Cash Balance Calculation:** Implemented sum aggregation across all transactions for accurate cash balance regardless of transaction creation order.
 -   **Page Header Redesign:** Unified blue header area for all page titles with action buttons, improved typography, and reduced spacing for a more compact layout.
+-   **Smart Sukuk Cashflow System (Phase 1 - Backend):** Intelligent automatic cashflow generation system integrated into the backend. The system understands Sukuk structure (faceValue + totalExpectedProfit), supports flexible profit payment schedules (periodic vs. at_maturity), and generates smart payment distributions based on frequency (monthly, quarterly, semi_annually, annually, at_maturity). Implementation includes:
+    - `shared/cashflow-generator.ts`: Core logic for generating cashflows with proper date arithmetic
+    - Enhanced schema with `faceValue`, `totalExpectedProfit`, `profitPaymentStructure` fields
+    - Enum validation across the entire stack to prevent invalid frequency values
+    - Preview endpoint (`POST /api/investments/preview-cashflows`) for frontend to test cashflow generation before creating investments
+    - Type conversion layer in storage to handle Drizzle's string-based numeric fields
+    - Full validation consistency between preview and creation endpoints
 
 ## External Dependencies
 -   **Charting:** Recharts for data visualization.

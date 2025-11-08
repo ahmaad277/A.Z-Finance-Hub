@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -55,56 +56,76 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     queryKey: ["/api/platforms"],
   });
 
+  const [userEditedProfit, setUserEditedProfit] = useState(false);
+  const isResettingRef = useRef(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       platformId: "",
       name: "",
-      amount: "0",
+      amount: 0,
+      faceValue: 0,
+      totalExpectedProfit: 0,
       startDate: new Date().toISOString().split("T")[0],
       endDate: "",
-      expectedIrr: "0",
+      expectedIrr: 0,
       status: "active",
       riskScore: 50,
       distributionFrequency: "quarterly",
+      profitPaymentStructure: "periodic",
       fundedFromCash: 0,
       isReinvestment: 0,
     },
   });
 
   useEffect(() => {
+    isResettingRef.current = true;
+    setUserEditedProfit(false);
+    
     if (investment) {
       form.reset({
         platformId: investment.platformId,
         name: investment.name,
-        amount: investment.amount,
+        amount: parseFloat(investment.amount),
+        faceValue: parseFloat(investment.faceValue),
+        totalExpectedProfit: parseFloat(investment.totalExpectedProfit),
         startDate: new Date(investment.startDate).toISOString().split("T")[0],
         endDate: new Date(investment.endDate).toISOString().split("T")[0],
         actualEndDate: investment.actualEndDate 
           ? new Date(investment.actualEndDate).toISOString().split("T")[0]
           : undefined,
-        expectedIrr: investment.expectedIrr,
+        expectedIrr: parseFloat(investment.expectedIrr),
         status: investment.status,
         riskScore: investment.riskScore || 50,
-        distributionFrequency: investment.distributionFrequency,
+        distributionFrequency: investment.distributionFrequency as "monthly" | "quarterly" | "semi_annually" | "annually" | "at_maturity",
+        profitPaymentStructure: (investment.profitPaymentStructure || "periodic") as "periodic" | "at_maturity",
         fundedFromCash: investment.fundedFromCash,
         isReinvestment: investment.isReinvestment,
       });
+      setUserEditedProfit(true);
     } else {
       form.reset({
         platformId: "",
         name: "",
-        amount: "0",
+        amount: 0,
+        faceValue: 0,
+        totalExpectedProfit: 0,
         startDate: new Date().toISOString().split("T")[0],
         endDate: "",
-        expectedIrr: "0",
+        expectedIrr: 0,
         status: "active",
         riskScore: 50,
         distributionFrequency: "quarterly",
+        profitPaymentStructure: "periodic",
         fundedFromCash: 0,
         isReinvestment: 0,
       });
     }
+    
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 0);
   }, [investment, form]);
 
   const createMutation = useMutation({
@@ -157,15 +178,51 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   // Watch form values for calculations
   const formValues = form.watch();
 
+  // Calculate suggested totalExpectedProfit from IRR
+  const suggestedProfit = useMemo(() => {
+    const faceValue = formValues.faceValue || 0;
+    const expectedIrr = formValues.expectedIrr || 0;
+    const startDate = formValues.startDate;
+    const endDate = formValues.endDate;
+
+    if (!faceValue || !expectedIrr || !startDate || !endDate) {
+      return 0;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const durationMs = end.getTime() - start.getTime();
+    const durationYears = durationMs / (1000 * 60 * 60 * 24 * 365.25);
+
+    if (durationYears <= 0) {
+      return 0;
+    }
+
+    return faceValue * (expectedIrr / 100) * durationYears;
+  }, [formValues.faceValue, formValues.expectedIrr, formValues.startDate, formValues.endDate]);
+
+  // Auto-fill totalExpectedProfit when inputs change (if user hasn't manually edited it)
+  useEffect(() => {
+    if (isResettingRef.current) return;
+    
+    if (!userEditedProfit && suggestedProfit > 0) {
+      const currentProfit = form.getValues("totalExpectedProfit");
+      if (!currentProfit || currentProfit === 0) {
+        form.setValue("totalExpectedProfit", Math.round(suggestedProfit * 100) / 100);
+      }
+    }
+  }, [suggestedProfit, userEditedProfit, form]);
+
   // Calculate investment metrics based on form values
   const calculatedMetrics = useMemo(() => {
-    const amount = parseFloat(formValues.amount || "0");
-    const expectedIrr = parseFloat(formValues.expectedIrr || "0");
+    const faceValue = formValues.faceValue || 0;
+    const totalExpectedProfit = formValues.totalExpectedProfit || 0;
     const startDate = formValues.startDate;
     const endDate = formValues.endDate;
     const frequency = formValues.distributionFrequency;
+    const profitStructure = formValues.profitPaymentStructure;
 
-    if (!amount || !expectedIrr || !startDate || !endDate) {
+    if (!faceValue || !startDate || !endDate) {
       return null;
     }
 
@@ -179,29 +236,35 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       return null;
     }
 
-    // Calculate total expected return (simple interest)
-    const totalExpectedReturn = amount * (expectedIrr / 100) * durationYears;
+    // Calculate number of payments based on frequency and profit structure
+    let paymentCount = 0;
+    let paymentsPerYear = 0;
 
-    // Calculate number of payments based on frequency
-    let paymentsPerYear = 4; // quarterly
-    if (frequency === "semi-annual") paymentsPerYear = 2;
-    if (frequency === "annual") paymentsPerYear = 1;
-    
-    const paymentCount = Math.ceil(durationYears * paymentsPerYear);
+    if (profitStructure === "at_maturity" || frequency === "at_maturity") {
+      paymentCount = 1; // All profits paid at maturity
+    } else {
+      // Calculate based on frequency
+      if (frequency === "monthly") paymentsPerYear = 12;
+      else if (frequency === "quarterly") paymentsPerYear = 4;
+      else if (frequency === "semi_annually") paymentsPerYear = 2;
+      else if (frequency === "annually") paymentsPerYear = 1;
+      
+      paymentCount = Math.ceil(durationYears * paymentsPerYear);
+    }
 
     // Calculate payment value per installment
-    const paymentValue = paymentCount > 0 ? totalExpectedReturn / paymentCount : 0;
+    const paymentValue = paymentCount > 0 ? totalExpectedProfit / paymentCount : 0;
 
     // Number of units (assuming 1 SAR = 1 unit for simplicity)
-    const numberOfUnits = amount;
+    const numberOfUnits = faceValue;
 
     return {
-      totalExpectedReturn,
+      totalExpectedReturn: totalExpectedProfit,
       numberOfUnits,
       paymentCount,
       paymentValue,
     };
-  }, [formValues.amount, formValues.expectedIrr, formValues.startDate, formValues.endDate, formValues.distributionFrequency]);
+  }, [formValues.faceValue, formValues.totalExpectedProfit, formValues.startDate, formValues.endDate, formValues.distributionFrequency, formValues.profitPaymentStructure]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // Send date strings directly - server will convert to Date objects
@@ -281,8 +344,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         variant="outline"
                         size="default"
                         onClick={() => {
-                          const currentAmount = parseFloat(field.value || "0");
-                          field.onChange((currentAmount + 1000).toString());
+                          const currentAmount = Number(field.value) || 0;
+                          field.onChange(currentAmount + 1000);
                         }}
                         data-testid="button-add-1000"
                         className="whitespace-nowrap"
@@ -304,6 +367,66 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="12.5" {...field} data-testid="input-irr" />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="faceValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {language === 'ar' ? 'القيمة الاسمية' : 'Face Value'}
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="100000" {...field} data-testid="input-face-value" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="totalExpectedProfit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
+                      {suggestedProfit > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground ml-2">
+                          ({language === 'ar' ? 'مقترح' : 'Suggested'}: {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }).format(suggestedProfit)})
+                        </span>
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="12500" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (!isResettingRef.current) {
+                            setUserEditedProfit(true);
+                          }
+                        }}
+                        data-testid="input-total-expected-profit" 
+                      />
+                    </FormControl>
+                    {suggestedProfit > 0 && !userEditedProfit && (
+                      <FormDescription>
+                        {language === 'ar' 
+                          ? 'محسوب تلقائيًا من معدل العائد الداخلي. يمكنك التعديل يدويًا.' 
+                          : 'Auto-calculated from IRR. You can edit manually.'}
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -371,9 +494,15 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="monthly">
+                          {language === 'ar' ? 'شهري' : 'Monthly'}
+                        </SelectItem>
                         <SelectItem value="quarterly">{t("dialog.quarterly")}</SelectItem>
-                        <SelectItem value="semi-annual">{t("dialog.semiAnnual")}</SelectItem>
-                        <SelectItem value="annual">{t("dialog.annual")}</SelectItem>
+                        <SelectItem value="semi_annually">{t("dialog.semiAnnual")}</SelectItem>
+                        <SelectItem value="annually">{t("dialog.annual")}</SelectItem>
+                        <SelectItem value="at_maturity">
+                          {language === 'ar' ? 'عند الاستحقاق' : 'At Maturity'}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -381,6 +510,36 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="profitPaymentStructure"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {language === 'ar' ? 'هيكل دفع الأرباح' : 'Profit Payment Structure'}
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-profit-structure">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="periodic">
+                          {language === 'ar' ? 'أرباح دورية (Periodic Profits)' : 'Periodic Profits'}
+                        </SelectItem>
+                        <SelectItem value="at_maturity">
+                          {language === 'ar' ? 'أرباح عند الاستحقاق (Profits at Maturity)' : 'Profits at Maturity'}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="status"
