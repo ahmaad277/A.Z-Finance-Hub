@@ -99,16 +99,13 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <PieChart className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">
+              <PieChart className="h-4 w-4 text-primary" />
+              <h3 className="text-lg font-semibold">
                 {t("dashboard.investmentStatus")}
-              </p>
+              </h3>
             </div>
-            <p className="text-2xl font-bold">
+            <p className="text-sm text-muted-foreground">
               {t("dashboard.totalInvestments")}: {total}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("dashboard.clickToToggle")}
             </p>
           </div>
           

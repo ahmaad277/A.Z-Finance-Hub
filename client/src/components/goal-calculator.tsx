@@ -130,8 +130,8 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
     <Card data-testid="card-goal-calculator">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Target className="h-4 w-4 text-primary" />
             {t("calculator.title") || "Investment Goal Calculator"}
           </CardTitle>
           <CardDescription className="mt-1.5">
