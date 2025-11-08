@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Wallet, Target, Download, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
+import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
@@ -17,7 +17,6 @@ import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { GoalCalculator } from "@/components/goal-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
-import { generateComprehensiveReport, downloadCSV } from "@/lib/export-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform, CashTransaction } from "@shared/schema";
@@ -293,13 +292,6 @@ export default function Dashboard() {
     });
   }, [platforms, investments, cashflows]);
 
-  const handleExport = (reportType: 'monthly' | 'quarterly') => {
-    if (stats && investments && cashflows && analytics) {
-      const csv = generateComprehensiveReport(stats, investments, cashflows, analytics, reportType);
-      const date = new Date().toISOString().split('T')[0];
-      downloadCSV(`${reportType}-report-${date}.csv`, csv);
-    }
-  };
 
   // Vision 2040 Target & Progress Calculations
   const target2040 = settings?.targetCapital2040 ? parseFloat(settings.targetCapital2040) : 10000000;
@@ -465,24 +457,6 @@ export default function Dashboard() {
             {/* Cash Transaction Buttons */}
             <CashTransactionDialog type="deposit" />
             <CashTransactionDialog type="withdrawal" />
-            
-            {/* Export Report */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" data-testid="button-export-report" className="h-9 px-2 sm:px-4">
-                  <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t("export.report")}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport('monthly')} data-testid="menu-export-monthly">
-                  {t("export.monthly")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('quarterly')} data-testid="menu-export-quarterly">
-                  {t("export.quarterly")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </div>
