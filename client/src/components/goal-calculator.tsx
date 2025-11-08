@@ -242,7 +242,7 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-chart-2" data-testid="stat-future-value">
+                  <div className="text-lg font-bold text-chart-2" data-testid="stat-future-value">
                     {formatCurrency(result.futureValue)}
                   </div>
                 </CardContent>
@@ -255,7 +255,7 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-primary" data-testid="stat-total-deposits">
+                  <div className="text-lg font-bold text-primary" data-testid="stat-total-deposits">
                     {formatCurrency(result.totalDeposits)}
                   </div>
                 </CardContent>
@@ -268,7 +268,7 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-chart-1" data-testid="stat-total-returns">
+                  <div className="text-lg font-bold text-chart-1" data-testid="stat-total-returns">
                     {formatCurrency(result.totalReturns)}
                   </div>
                 </CardContent>
