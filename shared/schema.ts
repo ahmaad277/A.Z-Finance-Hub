@@ -28,7 +28,7 @@ export const investments = pgTable("investments", {
   actualIrr: numeric("actual_irr", { precision: 5, scale: 2 }),
   status: text("status").notNull().default("active"), // 'active' | 'completed' | 'pending'
   riskScore: integer("risk_score").default(50), // 0-100
-  distributionFrequency: text("distribution_frequency").notNull(), // 'quarterly' | 'semi-annual' | 'annual'
+  distributionFrequency: text("distribution_frequency").notNull(), // 'monthly' | 'quarterly' | 'semi_annually' | 'annually' | 'at_maturity' | 'custom'
   isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
   fundedFromCash: integer("funded_from_cash").notNull().default(0), // 0 = external funding, 1 = funded from cash balance
 });
@@ -63,6 +63,24 @@ export const insertCashflowSchema = createInsertSchema(cashflows).omit({
 });
 export type InsertCashflow = z.infer<typeof insertCashflowSchema>;
 export type Cashflow = typeof cashflows.$inferSelect;
+
+// Custom Distributions - For investments with custom/irregular distribution schedules
+export const customDistributions = pgTable("custom_distributions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  investmentId: varchar("investment_id").notNull(),
+  dueDate: timestamp("due_date").notNull(),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  type: text("type").notNull().default("profit"), // 'profit' | 'principal'
+  notes: text("notes"), // Optional description for this distribution
+});
+
+export const insertCustomDistributionSchema = createInsertSchema(customDistributions).omit({ 
+  id: true
+}).extend({
+  dueDate: z.coerce.date()
+});
+export type InsertCustomDistribution = z.infer<typeof insertCustomDistributionSchema>;
+export type CustomDistribution = typeof customDistributions.$inferSelect;
 
 // Smart alerts and notifications
 export const alerts = pgTable("alerts", {
@@ -329,6 +347,7 @@ export type ImpersonationSession = typeof impersonationSessions.$inferSelect;
 // Extended types for frontend use
 export type InvestmentWithPlatform = Investment & {
   platform: Platform;
+  customDistributions?: CustomDistribution[];
 };
 
 export type CashflowWithInvestment = Cashflow & {
@@ -404,12 +423,20 @@ export const investmentsRelations = relations(investments, ({ one, many }) => ({
     references: [platforms.id],
   }),
   cashflows: many(cashflows),
+  customDistributions: many(customDistributions),
   alerts: many(alerts),
 }));
 
 export const cashflowsRelations = relations(cashflows, ({ one }) => ({
   investment: one(investments, {
     fields: [cashflows.investmentId],
+    references: [investments.id],
+  }),
+}));
+
+export const customDistributionsRelations = relations(customDistributions, ({ one }) => ({
+  investment: one(investments, {
+    fields: [customDistributions.investmentId],
     references: [investments.id],
   }),
 }));
