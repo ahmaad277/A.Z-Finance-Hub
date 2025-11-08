@@ -69,70 +69,77 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
 
   return (
     <Card data-testid="card-status-chart">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">{t("dashboard.investmentStatus")}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.totalInvestments")}: {total}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={200}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderLabel}
-              outerRadius={60}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0];
-                  return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
-                      <div className="grid gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            {data.name}
-                          </span>
-                          <span className="font-bold text-muted-foreground">
-                            {data.value} {t("dashboard.investments")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              height={36}
-              content={({ payload }) => (
-                <div className="flex flex-wrap justify-center gap-4 mt-4">
-                  {payload?.map((entry, index) => (
-                    <div key={`legend-${index}`} className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span className="text-sm text-muted-foreground">{entry.value}</span>
-                    </div>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Left side: Title and total */}
+          <div className="flex-shrink-0">
+            <CardTitle className="text-lg mb-2">{t("dashboard.investmentStatus")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t("dashboard.totalInvestments")}: {total}
+            </p>
+          </div>
+          
+          {/* Right side: Chart */}
+          <div className="flex-1 min-w-0">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderLabel}
+                  outerRadius={55}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                </div>
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0];
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                {data.name}
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {data.value} {t("dashboard.investments")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={30}
+                  content={({ payload }) => (
+                    <div className="flex flex-wrap justify-center gap-3 mt-2">
+                      {payload?.map((entry, index) => (
+                        <div key={`legend-${index}`} className="flex items-center gap-1.5">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="text-xs text-muted-foreground">{entry.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
