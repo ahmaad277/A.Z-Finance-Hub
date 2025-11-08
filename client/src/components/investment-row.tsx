@@ -4,6 +4,7 @@ import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 
 interface InvestmentRowProps {
@@ -12,9 +13,12 @@ interface InvestmentRowProps {
   onEdit: () => void;
   onCompletePayment?: () => void;
   onDelete?: () => void;
+  onAddPayment?: () => void;
+  onRemovePayment?: (cashflowId: string) => void;
+  onMarkPaymentAsReceived?: (cashflowId: string) => void;
 }
 
-export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete }: InvestmentRowProps) {
+export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete, onAddPayment, onRemovePayment, onMarkPaymentAsReceived }: InvestmentRowProps) {
   const { t, language } = useLanguage();
   const isRtl = language === "ar";
   const [isExpanded, setIsExpanded] = useState(false);
@@ -131,16 +135,18 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
       {/* Expanded Mobile View */}
       {isExpanded && (
         <div className="lg:hidden p-3 pt-0 space-y-3 border-t border-border/50">
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <div className="text-muted-foreground">{t("dialog.expectedProfit")}</div>
-              <div className="font-bold text-chart-1">
-                {formatCurrency(expectedProfitOnly)}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
-              </div>
-            </div>
+          {/* Payment Schedule Manager with interactive payment boxes */}
+          <PaymentScheduleManager
+            investmentId={investment.id}
+            cashflows={cashflows}
+            expectedProfit={expectedProfitOnly}
+            onAddPayment={onAddPayment}
+            onRemovePayment={onRemovePayment}
+            onMarkAsReceived={onMarkPaymentAsReceived}
+          />
+          
+          {/* Received Returns & End Date */}
+          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
             <div>
               <div className="text-muted-foreground">{t("dashboard.totalReturns")}</div>
               <div className="font-bold text-chart-2">
@@ -153,40 +159,6 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
             <div>
               <div className="text-muted-foreground">{t("investments.expectedEndDate")}</div>
               <div className="font-medium">{formatDate(investment.endDate)}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">{t("dialog.paymentValue")}</div>
-              <div className="font-medium">{formatCurrency(avgPayment)}</div>
-              <div className="text-[10px] text-muted-foreground">
-                {totalPayments} {language === "ar" ? "دفعات" : "payments"}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="text-xs">
-              <div className="text-muted-foreground mb-1">
-                {language === "ar" ? "تقدم الدفعات" : "Progress"}
-              </div>
-              <div className="flex items-center gap-[2px] flex-wrap">
-                {Array.from({ length: totalPayments }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`
-                      w-[6px] h-[6px] rounded-[1px] transition-all
-                      ${index < receivedPayments
-                        ? 'bg-chart-2'
-                        : 'bg-muted-foreground/30'
-                      }
-                    `}
-                  />
-                ))}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-1">
-                <span className="text-chart-2 font-medium">{receivedPayments}</span>
-                {" / "}
-                <span>{totalPayments}</span>
-              </div>
             </div>
           </div>
 

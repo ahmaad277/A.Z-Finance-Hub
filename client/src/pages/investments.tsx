@@ -50,6 +50,35 @@ export default function Investments() {
     queryKey: ["/api/platforms"],
   });
 
+  // Mutation to mark cashflow as received
+  const updateCashflowMutation = useMutation({
+    mutationFn: async ({ cashflowId, status }: { cashflowId: string; status: string }) => {
+      return apiRequest("PATCH", `/api/cashflows/${cashflowId}`, { 
+        status,
+        receivedDate: status === "received" ? new Date().toISOString() : null
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      
+      toast({
+        title: language === "ar" ? "تم التحديث" : "Updated",
+        description: language === "ar" ? "تم تحديث حالة الدفعة بنجاح" : "Payment status updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل تحديث حالة الدفعة" : "Failed to update payment status"),
+        variant: "destructive",
+      });
+    },
+  });
+  
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       return apiRequest("DELETE", `/api/investments/${id}`);
@@ -145,6 +174,27 @@ export default function Investments() {
     if (deletingInvestment) {
       deleteMutation.mutate(deletingInvestment.id);
     }
+  };
+  
+  // Payment management handlers
+  const handleMarkPaymentAsReceived = (cashflowId: string) => {
+    updateCashflowMutation.mutate({ cashflowId, status: "received" });
+  };
+  
+  const handleAddPayment = () => {
+    // TODO: Open dialog to add new payment
+    toast({
+      title: language === "ar" ? "قريباً" : "Coming Soon",
+      description: language === "ar" ? "ميزة إضافة دفعة جديدة قيد التطوير" : "Add payment feature is under development",
+    });
+  };
+  
+  const handleRemovePayment = (cashflowId: string) => {
+    // TODO: Implement remove payment logic
+    toast({
+      title: language === "ar" ? "قريباً" : "Coming Soon",
+      description: language === "ar" ? "ميزة حذف الدفعة قيد التطوير" : "Remove payment feature is under development",
+    });
   };
 
   // Filter and Sort Logic
@@ -321,6 +371,9 @@ export default function Investments() {
                   onEdit={() => handleEdit(investment)}
                   onCompletePayment={() => handleCompletePayment(investment)}
                   onDelete={() => handleDelete(investment)}
+                  onAddPayment={handleAddPayment}
+                  onRemovePayment={handleRemovePayment}
+                  onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
                 />
               ))}
             </div>
