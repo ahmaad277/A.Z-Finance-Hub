@@ -88,13 +88,27 @@ The application utilizes a modern web stack:
 - **Tested**: Verified with profit (2,500 SAR) and principal (10,000 SAR) cashflows
 
 ### Cash Transaction Buttons (Nov 7, 2025)
-- **Green Deposit Button** (ArrowDown icon): Adds money to cash balance
-  - Uses new variant="success" on Button component
+- **Green Deposit Button** (ArrowDown icon + "إيداع" text): Adds money to cash balance
+  - Uses new variant="success" on Button component with text-[10px] label
   - Semantic color using chart-2 theme token (green)
-- **Red Withdrawal Button** (ArrowUp icon): Removes money from cash balance
-  - Uses variant="destructive" on Button component
+- **Red Withdrawal Button** (ArrowUp icon + "سحب" text): Removes money from cash balance
+  - Uses variant="destructive" on Button component with text-[10px] label
+  - Compact button design: h-9, px-2, gap-1, icon h-3.5 w-3.5
 - **Streamlined UI**: Removed separate Cash Management card from Dashboard
-- **Header Layout**: Filter → Deposit → Withdrawal → Export Report
+- **Header Layout**: Filter → Deposit → Withdrawal (Export Report removed from dashboard)
+
+### Page Header Redesign (Nov 8, 2025)
+- **Blue Header Area**: All page titles moved to highlighted blue background area (`bg-primary/10 rounded-lg`)
+- **Unified Layout**: Title positioned on the left/right (RTL-aware) with action buttons on opposite side
+- **Pages Updated**:
+  - Dashboard: Title + Filter + Deposit + Withdrawal buttons
+  - Investments: Title + Add Investment button (icon only on mobile)
+  - Cashflows: Title only
+  - Analytics: Title + Export Report button (icon only on mobile)
+  - Reports: Title only
+- **Financial Metrics**: Removed "المؤشرات المالية" heading to raise content and maximize screen space
+- **Typography**: Page titles reduced from text-2xl/3xl to text-xl/2xl for consistency
+- **Spacing**: Reduced page spacing from space-y-6 to space-y-3/4 for more compact layout
 
 ## External Dependencies
 - **Charting**: Recharts for data visualization.
