@@ -111,7 +111,7 @@ export default function Reports() {
         ["Expected Returns", formatCurrency(metrics.expectedReturns)],
         ["Actual Returns", formatCurrency(metrics.actualReturns)],
         ["Returns Ratio", formatPercentage(metrics.returnsRatio)],
-        ["Portfolio APR", formatPercentage(metrics.portfolioAPR)],
+        ["Weighted APR", formatPercentage(metrics.weightedAPR)],
         ["Portfolio ROI", formatPercentage(metrics.portfolioROI)],
         [],
         ["Investment Status"],
@@ -122,7 +122,7 @@ export default function Reports() {
         ["Defaulted", metrics.defaultedInvestments],
         [],
         ["Averages"],
-        ["Average Duration (months)", metrics.avgDuration.toFixed(1)],
+        ["Average Duration (months)", metrics.avgDuration?.toFixed(1) || "0"],
         ["Average Amount", formatCurrency(metrics.avgAmount)],
         ["Average Payment", formatCurrency(metrics.avgPaymentAmount)],
       ];
@@ -246,7 +246,7 @@ export default function Reports() {
         ["Cash Ratio", formatPercentage(metrics.cashRatio)],
         ["Expected Returns", formatCurrency(metrics.expectedReturns)],
         ["Actual Returns", formatCurrency(metrics.actualReturns)],
-        ["Portfolio APR", formatPercentage(metrics.portfolioAPR)],
+        ["Weighted APR", formatPercentage(metrics.weightedAPR)],
         ["Portfolio ROI", formatPercentage(metrics.portfolioROI)],
       ];
 
@@ -365,17 +365,12 @@ export default function Reports() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-2" data-testid="heading-reports">
+    <div className="container mx-auto p-4 md:p-6 space-y-4" dir={isRtl ? "rtl" : "ltr"}>
+      {/* Blue Header Area with Title */}
+      <div className="bg-primary/10 rounded-lg px-4 py-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="heading-reports">
           {language === "ar" ? "التقارير المالية" : "Financial Reports"}
         </h1>
-        <p className="text-muted-foreground">
-          {language === "ar" 
-            ? "قم بتخصيص وتصدير تقارير محفظتك الاستثمارية"
-            : "Customize and export your investment portfolio reports"}
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -583,10 +578,10 @@ export default function Reports() {
 
                         <div className="p-4 rounded-lg bg-muted/50">
                           <div className="text-sm text-muted-foreground mb-1">
-                            {language === "ar" ? "APR" : "APR"}
+                            {language === "ar" ? "متوسط APR المرجح" : "Weighted APR"}
                           </div>
                           <div className="text-xl font-bold text-primary">
-                            {formatPercentage(metrics.portfolioAPR)}
+                            {formatPercentage(metrics.weightedAPR)}
                           </div>
                         </div>
 
