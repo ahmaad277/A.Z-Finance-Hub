@@ -38,10 +38,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   const totalExpectedReturn = investmentCashflows
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
   
-  // Calculate expected profit only (excluding principal returns)
-  const expectedProfitOnly = investmentCashflows
-    .filter(cf => cf.distributionType === "profit")
-    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
+  // Use totalExpectedProfit from investment record instead of calculating from cashflows
+  const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
   
   // Calculate total returns received so far
   const totalReturns = investmentCashflows
@@ -139,14 +137,58 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           <PaymentScheduleManager
             investmentId={investment.id}
             cashflows={cashflows}
-            expectedProfit={expectedProfitOnly}
+            expectedProfit={totalExpectedProfit}
             onAddPayment={onAddPayment}
             onRemovePayment={onRemovePayment}
             onMarkAsReceived={onMarkPaymentAsReceived}
           />
           
-          {/* Received Returns & End Date */}
+          {/* Sukuk Structure: Face Value & Expected Profit */}
           <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
+            <div>
+              <div className="text-muted-foreground">
+                {language === "ar" ? "القيمة الاسمية" : "Face Value"}
+              </div>
+              <div className="font-bold">
+                {formatCurrency(parseFloat(investment.faceValue || "0"))}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {language === "ar" ? "رأس المال" : "Principal"}
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">
+                {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
+              </div>
+              <div className="font-bold text-chart-1">
+                {formatCurrency(totalExpectedProfit)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
+              </div>
+            </div>
+          </div>
+          
+          {/* Profit Payment Structure & End Date */}
+          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
+            <div>
+              <div className="text-muted-foreground">
+                {language === "ar" ? "هيكل الدفع" : "Payment Structure"}
+              </div>
+              <div className="font-medium">
+                {investment.profitPaymentStructure === "periodic"
+                  ? language === "ar" ? "دفعات دورية" : "Periodic Payments"
+                  : language === "ar" ? "عند الاستحقاق" : "At Maturity"}
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">{t("investments.expectedEndDate")}</div>
+              <div className="font-medium">{formatDate(investment.endDate)}</div>
+            </div>
+          </div>
+          
+          {/* Received Returns */}
+          <div className="grid grid-cols-1 gap-2 text-xs pt-2 border-t border-border/50">
             <div>
               <div className="text-muted-foreground">{t("dashboard.totalReturns")}</div>
               <div className="font-bold text-chart-2">
@@ -155,10 +197,6 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               <div className="text-[10px] text-muted-foreground">
                 {language === "ar" ? "مستلمة" : "Received"}
               </div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">{t("investments.expectedEndDate")}</div>
-              <div className="font-medium">{formatDate(investment.endDate)}</div>
             </div>
           </div>
 
@@ -239,25 +277,44 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         </div>
         
         {/* Desktop: Expected End Date */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+        <div className="flex flex-col items-center justify-center px-2 min-w-[90px]">
           <div className="text-xs text-muted-foreground">{t("investments.expectedEndDate")}</div>
           <div className="text-sm font-medium">{formatDate(investment.endDate)}</div>
         </div>
         
-        {/* Desktop: Amount (Nominal Value) */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
-          <div className="text-xs text-muted-foreground">{t("investments.amount")}</div>
-          <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
+        {/* Desktop: Face Value */}
+        <div className="flex flex-col items-center justify-center px-2 min-w-[95px]">
+          <div className="text-xs text-muted-foreground">
+            {language === "ar" ? "القيمة الاسمية" : "Face Value"}
+          </div>
+          <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.faceValue || "0"))}</div>
+          <div className="text-[10px] text-muted-foreground">
+            {language === "ar" ? "رأس المال" : "Principal"}
+          </div>
         </div>
         
         {/* Desktop: Expected Profit */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
-          <div className="text-xs text-muted-foreground">{t("dialog.expectedProfit")}</div>
+        <div className="flex flex-col items-center justify-center px-2 min-w-[95px]">
+          <div className="text-xs text-muted-foreground">
+            {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
+          </div>
           <div className="text-sm font-bold text-chart-1">
-            {formatCurrency(expectedProfitOnly)}
+            {formatCurrency(totalExpectedProfit)}
           </div>
           <div className="text-[10px] text-muted-foreground">
             {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
+          </div>
+        </div>
+        
+        {/* Desktop: Profit Payment Structure */}
+        <div className="flex flex-col items-center justify-center px-2 min-w-[85px]">
+          <div className="text-xs text-muted-foreground">
+            {language === "ar" ? "هيكل الدفع" : "Structure"}
+          </div>
+          <div className="text-sm font-medium">
+            {investment.profitPaymentStructure === "periodic"
+              ? language === "ar" ? "دوري" : "Periodic"
+              : language === "ar" ? "استحقاق" : "Maturity"}
           </div>
         </div>
         
