@@ -33,19 +33,21 @@ The application utilizes a modern web stack:
 
 ## Recent Updates
 
-### Collapsible Dashboard Sections (Nov 8, 2025)
-- **UI Enhancement**: Three dashboard sections now support collapse/expand functionality
-- **Sections**:
-  - **Investment Status Chart**: Pie chart showing active/completed/late/defaulted investments
-  - **Vision 2040 Progress**: Financial independence goal tracking widget
-  - **Goal Calculator**: Dynamic investment calculator for Vision 2040 planning
-- **Implementation**:
-  - Toggle buttons (ChevronUp/ChevronDown) in section headers
-  - Framer Motion AnimatePresence for smooth height/opacity transitions (0.3s)
-  - State persisted to backend via UserSettings.collapsedSections (JSON array)
-  - State restored on page load/refresh
-- **Investment Status Layout**: Chart positioned compactly with title always visible
-- **Tested**: E2E validation confirmed all collapse/expand operations and state persistence
+### Dashboard UX Improvements (Nov 8, 2025)
+- **Investment Status Chart Redesign**:
+  - Moved from standalone collapsible card to Financial Metrics section (appears below 8 metric cards)
+  - Rectangular card layout: pie chart (120x120px) positioned beside title/total count
+  - Click-anywhere-to-toggle interaction: click card to switch between percentage (%) and count (#) modes
+  - Removed separate toggle button and collapse/expand functionality
+  - Full keyboard accessibility: role="button", tabIndex, Enter/Space key support, aria-label
+  - Always visible as 9th metric in Financial Metrics section
+- **Typography Unification**:
+  - Goal Calculator result values changed from `text-2xl` to `text-lg`
+  - Consistent font sizes across all dashboard metrics and calculator
+- **Collapsible Sections**: Vision 2040 Progress and Goal Calculator remain collapsible
+  - State persisted via UserSettings.collapsedSections
+  - Framer Motion AnimatePresence for smooth transitions
+- **Tested**: E2E validation confirmed click/keyboard toggle, accessibility, and typography consistency
 
 ### Enhanced Financial Metrics (Nov 8, 2025)
 - **Dashboard Metrics Redesigned**: Replaced generic APR/ROI with more meaningful portfolio-level metrics

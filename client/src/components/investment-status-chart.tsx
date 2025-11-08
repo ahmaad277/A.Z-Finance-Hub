@@ -22,6 +22,14 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
   const handleChartClick = () => {
     setShowPercentage(!showPercentage);
   };
+  
+  // Handle keyboard interaction for accessibility
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleChartClick();
+    }
+  };
 
   const data = [
     {
@@ -79,8 +87,12 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
 
   return (
     <div 
+      role="button"
+      tabIndex={0}
       className="rounded-lg border bg-card hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden"
       onClick={handleChartClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`${t("dashboard.investmentStatus")} - ${t("dashboard.clickToToggle")}`}
       data-testid="card-status-chart"
     >
       <div className="p-6">
@@ -100,7 +112,7 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
             </p>
           </div>
           
-          <div className="w-[120px] h-[120px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <div className="w-[120px] h-[120px] flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -112,7 +124,6 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
                   outerRadius={50}
                   fill="#8884d8"
                   dataKey="value"
-                  onClick={handleChartClick}
                 >
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
