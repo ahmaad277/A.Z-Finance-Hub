@@ -95,10 +95,10 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
       aria-label={`${t("dashboard.investmentStatus")} - ${t("dashboard.clickToToggle")}`}
       data-testid="card-status-chart"
     >
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="py-3 px-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-0.5">
               <PieChart className="h-4 w-4 text-primary" />
               <h3 className="text-lg font-semibold">
                 {t("dashboard.investmentStatus")}
@@ -109,7 +109,7 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
             </p>
           </div>
           
-          <div className="w-[120px] h-[120px] flex-shrink-0">
+          <div className="w-[100px] h-[100px] flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -118,7 +118,7 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
                   cy="50%"
                   labelLine={false}
                   label={renderLabel}
-                  outerRadius={50}
+                  outerRadius={42}
                   fill="#8884d8"
                   dataKey="value"
                 >
