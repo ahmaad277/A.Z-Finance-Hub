@@ -30,7 +30,16 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   const receivedPayments = investmentCashflows.filter(cf => cf.status === "received").length;
   const totalPayments = investmentCashflows.length;
   
-  // Calculate total returns
+  // Calculate total expected return (sum of all cashflows - both received and pending)
+  const totalExpectedReturn = investmentCashflows
+    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
+  
+  // Calculate expected profit only (excluding principal returns)
+  const expectedProfitOnly = investmentCashflows
+    .filter(cf => cf.distributionType === "profit")
+    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
+  
+  // Calculate total returns received so far
   const totalReturns = investmentCashflows
     .filter(cf => cf.status === "received")
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
@@ -124,14 +133,33 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         <div className="lg:hidden p-3 pt-0 space-y-3 border-t border-border/50">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
+              <div className="text-muted-foreground">{t("dialog.totalExpectedReturn")}</div>
+              <div className="font-bold text-primary">
+                {formatCurrency(expectedProfitOnly)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {language === "ar" ? "أرباح فقط" : "Profit only"}
+              </div>
+            </div>
+            <div>
               <div className="text-muted-foreground">{t("dashboard.totalReturns")}</div>
               <div className={`font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
                 {formatCurrency(totalReturns)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {language === "ar" ? "مستلمة" : "Received"}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">{t("investments.expectedEndDate")}</div>
               <div className="font-medium">{formatDate(investment.endDate)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">{t("dialog.paymentValue")}</div>
+              <div className="font-medium">{formatCurrency(avgPayment)}</div>
+              <div className="text-[10px] text-muted-foreground">
+                {totalPayments} {language === "ar" ? "دفعات" : "payments"}
+              </div>
             </div>
           </div>
           
@@ -250,11 +278,25 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
         </div>
         
-        {/* Desktop: Net Profit (Total Returns) */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
+        {/* Desktop: Total Expected Profit */}
+        <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
+          <div className="text-xs text-muted-foreground">{t("dialog.totalExpectedReturn")}</div>
+          <div className="text-sm font-bold text-primary">
+            {formatCurrency(expectedProfitOnly)}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            {language === "ar" ? "أرباح فقط" : "Profit only"}
+          </div>
+        </div>
+        
+        {/* Desktop: Net Profit (Total Returns Received) */}
+        <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
           <div className="text-xs text-muted-foreground">{t("dashboard.totalReturns")}</div>
           <div className={`text-sm font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
             {formatCurrency(totalReturns)}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            {language === "ar" ? "مستلمة" : "Received"}
           </div>
         </div>
         

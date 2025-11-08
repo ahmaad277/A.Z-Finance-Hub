@@ -141,6 +141,24 @@ The application utilizes a modern web stack:
 - **UX Enhancement**: Instant visual feedback helps users understand investment structure before submission
 - **Implementation**: Centralized locale detection (`language === 'ar' ? 'ar-SA' : 'en-US'`) ensures consistency across all calculated fields
 
+### Enhanced Investment Display Metrics (Nov 8, 2025)
+- **Total Expected Profit**: InvestmentRow now prominently displays the total expected profit (distribution type: "profit" only) across all scheduled cashflows
+  - Appears in blue/primary color to differentiate from received returns (green)
+  - Shows "Profit only" label for clarity in both English and Arabic
+- **Improved Mobile & Desktop Layouts**:
+  - Mobile (expanded view): 2×2 grid showing Expected Profit, Received Returns, End Date, and Payment Value
+  - Desktop: Dedicated column for Expected Profit positioned between Amount and Received Returns
+  - Each metric includes descriptive subtitle (e.g., "Profit only", "Received", payment count)
+- **Visual Hierarchy**: Clear distinction between:
+  1. **Expected Profit** (Primary color) - Total profit to be received over investment lifetime
+  2. **Received Returns** (Chart-2 green) - Actual profit already received
+  3. **Payment Value** - Average per payment with total payment count
+- **Translation Support**: Added translation keys for custom distribution features:
+  - `dialog.monthly`, `dialog.atMaturity`, `dialog.custom`
+  - `dialog.customDistributions`, `dialog.totalCustomAmount`
+  - Full bilingual support (English/Arabic) for all new labels
+- **Database Schema Preparation**: Added `custom_distributions` table and extended distribution frequency types (monthly, at_maturity, custom) to support future flexible distribution schedules
+
 ## External Dependencies
 - **Charting**: Recharts for data visualization.
 - **Database**: In-memory storage (MemStorage) currently, with planned migration to PostgreSQL.
