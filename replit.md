@@ -33,6 +33,20 @@ The application utilizes a modern web stack:
 
 ## Recent Updates
 
+### Collapsible Dashboard Sections (Nov 8, 2025)
+- **UI Enhancement**: Three dashboard sections now support collapse/expand functionality
+- **Sections**:
+  - **Investment Status Chart**: Pie chart showing active/completed/late/defaulted investments
+  - **Vision 2040 Progress**: Financial independence goal tracking widget
+  - **Goal Calculator**: Dynamic investment calculator for Vision 2040 planning
+- **Implementation**:
+  - Toggle buttons (ChevronUp/ChevronDown) in section headers
+  - Framer Motion AnimatePresence for smooth height/opacity transitions (0.3s)
+  - State persisted to backend via UserSettings.collapsedSections (JSON array)
+  - State restored on page load/refresh
+- **Investment Status Layout**: Chart positioned compactly with title always visible
+- **Tested**: E2E validation confirmed all collapse/expand operations and state persistence
+
 ### Enhanced Financial Metrics (Nov 8, 2025)
 - **Dashboard Metrics Redesigned**: Replaced generic APR/ROI with more meaningful portfolio-level metrics
 - **Weighted APR (متوسط APR المرجح)**: 
