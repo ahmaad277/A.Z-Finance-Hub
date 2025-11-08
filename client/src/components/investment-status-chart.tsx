@@ -1,12 +1,15 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
 import type { DashboardMetrics } from "@/lib/dashboardMetrics";
 
 interface InvestmentStatusChartProps {
   metrics: DashboardMetrics;
   isCollapsed?: boolean;
+  onToggle?: () => void;
 }
 
 const COLORS = {
@@ -41,7 +44,7 @@ const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent
   );
 };
 
-export function InvestmentStatusChart({ metrics, isCollapsed = false }: InvestmentStatusChartProps) {
+export function InvestmentStatusChart({ metrics, isCollapsed = false, onToggle }: InvestmentStatusChartProps) {
   const { t } = useLanguage();
 
   const data = [
@@ -70,14 +73,30 @@ export function InvestmentStatusChart({ metrics, isCollapsed = false }: Investme
   const total = metrics.totalInvestments;
 
   return (
-    <>
-      {/* Title and total - always visible */}
-      <div className="flex-shrink-0">
-        <CardTitle className="text-lg mb-2">{t("dashboard.investmentStatus")}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.totalInvestments")}: {total}
-        </p>
-      </div>
+    <Card data-testid="card-status-chart">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <div className="flex-shrink-0">
+          <CardTitle className="text-lg mb-2">{t("dashboard.investmentStatus")}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {t("dashboard.totalInvestments")}: {total}
+          </p>
+        </div>
+        {onToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+            data-testid="button-toggle-status-chart"
+            className="h-8 w-8 p-0 flex-shrink-0"
+          >
+            {isCollapsed ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronUp className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+      </CardHeader>
       
       {/* Chart - collapsible */}
       <AnimatePresence initial={false}>
@@ -89,7 +108,7 @@ export function InvestmentStatusChart({ metrics, isCollapsed = false }: Investme
             transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{ overflow: "hidden" }}
           >
-            <CardContent className="pt-4">
+            <CardContent>
               <ResponsiveContainer width="100%" height={180}>
                 <PieChart>
                   <Pie
@@ -151,6 +170,6 @@ export function InvestmentStatusChart({ metrics, isCollapsed = false }: Investme
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </Card>
   );
 }
