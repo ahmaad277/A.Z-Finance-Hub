@@ -157,6 +157,8 @@ const translations = {
     "dashboard.platformsOverview": "Platforms Overview",
     "dashboard.gridView": "Grid View",
     "dashboard.classicView": "Classic View",
+    "dashboard.percentage": "%",
+    "dashboard.count": "#",
     
     // Status labels for charts
     "status.active": "Active",
@@ -864,6 +866,8 @@ const translations = {
     "dashboard.platformsOverview": "نظرة عامة على المنصات",
     "dashboard.gridView": "عرض الشبكة",
     "dashboard.classicView": "العرض التقليدي",
+    "dashboard.percentage": "%",
+    "dashboard.count": "#",
     
     // Status labels for charts
     "status.active": "نشطة",
