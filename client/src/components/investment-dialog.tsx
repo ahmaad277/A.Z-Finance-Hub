@@ -206,12 +206,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     if (isResettingRef.current) return;
     
     if (!userEditedProfit && suggestedProfit > 0) {
-      const currentProfit = form.getValues("totalExpectedProfit");
-      if (!currentProfit || currentProfit === 0) {
-        form.setValue("totalExpectedProfit", Math.round(suggestedProfit * 100) / 100);
-      }
+      form.setValue("totalExpectedProfit", Math.round(suggestedProfit * 100) / 100);
     }
-  }, [suggestedProfit, userEditedProfit, form]);
+  }, [suggestedProfit, userEditedProfit]);
 
   // Calculate investment metrics based on form values
   const calculatedMetrics = useMemo(() => {
