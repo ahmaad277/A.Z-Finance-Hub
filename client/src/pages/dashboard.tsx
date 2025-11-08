@@ -546,63 +546,88 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.vision2040Subtitle")}</p>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleSection('vision-2040')}
+              data-testid="button-toggle-vision-2040"
+              className="h-8 w-8 p-0"
+            >
+              {isSectionCollapsed('vision-2040') ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {/* Current Progress */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{t("dashboard.currentProgress")}</p>
-              <p className="text-2xl font-bold">{formatPercentage(currentProgress)}</p>
-              <p className="text-sm text-muted-foreground">{formatCurrency(currentPortfolioValue)}</p>
-            </div>
-            
-            {/* Expected Progress */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{t("dashboard.expectedProgress")}</p>
-              <p className="text-2xl font-bold">{formatPercentage(expectedProgressPercent)}</p>
-              <p className="text-sm text-muted-foreground">{formatCurrency(expectedValue)}</p>
-            </div>
-            
-            {/* Target */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{t("dashboard.target2040")}</p>
-              <p className="text-2xl font-bold">{formatCurrency(target2040)}</p>
-              <p className="text-sm text-muted-foreground">{t("dashboard.by2040")}</p>
-            </div>
-            
-            {/* Required Annual Return */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{t("dashboard.requiredAnnualReturn")}</p>
-              <p className="text-2xl font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
-              <p className="text-sm text-muted-foreground">{t("dashboard.toReachTarget")}</p>
-            </div>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{formatCurrency(initialPortfolio)}</span>
-              <span className="font-medium">{Math.round(elapsedYears * 10) / 10} / {Math.round(totalYears)} {t("dashboard.years")}</span>
-              <span className="text-muted-foreground">{formatCurrency(target2040)}</span>
-            </div>
-            <div className="relative h-3 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="absolute h-full bg-chart-2 transition-all duration-500"
-                style={{ width: `${Math.min(currentProgress, 100)}%` }}
-              />
-              <div 
-                className="absolute h-full border-r-2 border-chart-1 opacity-50"
-                style={{ left: `${Math.min(expectedProgressPercent, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-center text-muted-foreground">
-              {currentProgress >= expectedProgressPercent 
-                ? t("dashboard.aheadOfSchedule") 
-                : t("dashboard.behindSchedule")}
-            </p>
-          </div>
-        </CardContent>
+        <AnimatePresence initial={false}>
+          {!isSectionCollapsed('vision-2040') && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {/* Current Progress */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("dashboard.currentProgress")}</p>
+                    <p className="text-2xl font-bold">{formatPercentage(currentProgress)}</p>
+                    <p className="text-sm text-muted-foreground">{formatCurrency(currentPortfolioValue)}</p>
+                  </div>
+                  
+                  {/* Expected Progress */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("dashboard.expectedProgress")}</p>
+                    <p className="text-2xl font-bold">{formatPercentage(expectedProgressPercent)}</p>
+                    <p className="text-sm text-muted-foreground">{formatCurrency(expectedValue)}</p>
+                  </div>
+                  
+                  {/* Target */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("dashboard.target2040")}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(target2040)}</p>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.by2040")}</p>
+                  </div>
+                  
+                  {/* Required Annual Return */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("dashboard.requiredAnnualReturn")}</p>
+                    <p className="text-2xl font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.toReachTarget")}</p>
+                  </div>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{formatCurrency(initialPortfolio)}</span>
+                    <span className="font-medium">{Math.round(elapsedYears * 10) / 10} / {Math.round(totalYears)} {t("dashboard.years")}</span>
+                    <span className="text-muted-foreground">{formatCurrency(target2040)}</span>
+                  </div>
+                  <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="absolute h-full bg-chart-2 transition-all duration-500"
+                      style={{ width: `${Math.min(currentProgress, 100)}%` }}
+                    />
+                    <div 
+                      className="absolute h-full border-r-2 border-chart-1 opacity-50"
+                      style={{ left: `${Math.min(expectedProgressPercent, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    {currentProgress >= expectedProgressPercent 
+                      ? t("dashboard.aheadOfSchedule") 
+                      : t("dashboard.behindSchedule")}
+                  </p>
+                </div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Card>
 
 
@@ -672,7 +697,10 @@ export default function Dashboard() {
             key="goal-calculator"
             {...fadeInUp}
           >
-            <GoalCalculator />
+            <GoalCalculator 
+              isCollapsed={isSectionCollapsed('goal-calculator')}
+              onToggle={() => toggleSection('goal-calculator')}
+            />
           </motion.div>
         )}
       </AnimatePresence>

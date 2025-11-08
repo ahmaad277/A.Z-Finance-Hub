@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/language-provider";
-import { Target, TrendingUp, DollarSign, Calendar } from "lucide-react";
+import { Target, TrendingUp, DollarSign, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import type { InvestmentWithPlatform, CashTransaction } from "@shared/schema";
 
@@ -16,7 +17,12 @@ interface CalculationResult {
   projections: Array<{ year: number; value: number; deposits: number }>;
 }
 
-export function GoalCalculator() {
+interface GoalCalculatorProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+}
+
+export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculatorProps = {}) {
   const { t, language } = useLanguage();
   const isRTL = language === "ar";
 
@@ -122,16 +128,42 @@ export function GoalCalculator() {
 
   return (
     <Card data-testid="card-goal-calculator">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          {t("calculator.title") || "Investment Goal Calculator"}
-        </CardTitle>
-        <CardDescription>
-          {t("calculator.description") || "Calculate your future investment value based on deposits and returns"}
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            {t("calculator.title") || "Investment Goal Calculator"}
+          </CardTitle>
+          <CardDescription className="mt-1.5">
+            {t("calculator.description") || "Calculate your future investment value based on deposits and returns"}
+          </CardDescription>
+        </div>
+        {onToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+            data-testid="button-toggle-goal-calculator"
+            className="h-8 w-8 p-0"
+          >
+            {isCollapsed ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronUp className="h-4 w-4" />
+            )}
+          </Button>
+        )}
       </CardHeader>
-      <CardContent className="space-y-6">
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <CardContent className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="initial-amount" className="flex items-center gap-2">
@@ -324,7 +356,10 @@ export function GoalCalculator() {
             </Card>
           </div>
         )}
-      </CardContent>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 }
