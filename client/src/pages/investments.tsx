@@ -56,11 +56,31 @@ export default function Investments() {
     mutationFn: async (id: string) => {
       return apiRequest("DELETE", `/api/investments/${id}`);
     },
+    onMutate: async (id: string) => {
+      // Cancel outgoing refetches so they don't overwrite optimistic update
+      await queryClient.cancelQueries({ queryKey: ["/api/investments"] });
+      await queryClient.cancelQueries({ queryKey: ["/api/cashflows"] });
+      
+      // Snapshot the previous value
+      const previousInvestments = queryClient.getQueryData(["/api/investments"]);
+      
+      // Optimistically update the cache
+      queryClient.setQueryData(["/api/investments"], (old: InvestmentWithPlatform[] | undefined) => {
+        return old ? old.filter(inv => inv.id !== id) : [];
+      });
+      
+      // Return context with snapshot
+      return { previousInvestments };
+    },
     onSuccess: () => {
+      // Invalidate all related queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash-balance"] });
+      
       toast({
         title: language === "ar" ? "تم الحذف" : "Deleted",
         description: language === "ar" ? "تم حذف الاستثمار بنجاح" : "Investment deleted successfully",
@@ -68,12 +88,21 @@ export default function Investments() {
       setDeleteDialogOpen(false);
       setDeletingInvestment(null);
     },
-    onError: (error: any) => {
+    onError: (error: any, id: string, context: any) => {
+      // Rollback to previous state on error
+      if (context?.previousInvestments) {
+        queryClient.setQueryData(["/api/investments"], context.previousInvestments);
+      }
+      
       toast({
         title: language === "ar" ? "خطأ" : "Error",
         description: error.message || (language === "ar" ? "فشل حذف الاستثمار" : "Failed to delete investment"),
         variant: "destructive",
       });
+      
+      // Close dialog even on error to prevent re-attempts
+      setDeleteDialogOpen(false);
+      setDeletingInvestment(null);
     },
   });
 
