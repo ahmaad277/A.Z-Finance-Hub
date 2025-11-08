@@ -14,7 +14,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/lib/language-provider";
-import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
   {

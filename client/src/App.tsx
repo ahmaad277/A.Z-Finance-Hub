@@ -6,14 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
-import { AuthProvider } from "@/hooks/use-auth";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
-import { LogoutButton } from "@/components/logout-button";
-import { UserProfile } from "@/components/user-profile";
-import { ProtectedRoute } from "@/lib/protected-route";
-import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
@@ -34,17 +29,17 @@ const VERSION_KEY = "azfinance-app-version";
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
-      <ProtectedRoute path="/" component={Dashboard} />
-      <ProtectedRoute path="/investments" component={Investments} />
-      <ProtectedRoute path="/cashflows" component={Cashflows} />
-      <ProtectedRoute path="/analytics" component={Analytics} />
-      <ProtectedRoute path="/reports" component={Reports} />
-      <ProtectedRoute path="/alerts" component={Alerts} />
-      <ProtectedRoute path="/reinvestment" component={Reinvestment} />
-      <ProtectedRoute path="/help" component={Help} />
-      <ProtectedRoute path="/settings" component={Settings} />
-      <ProtectedRoute path="/platform/:id" component={PlatformDetails} />
+      <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/investments" component={Investments} />
+      <Route path="/cashflows" component={Cashflows} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/alerts" component={Alerts} />
+      <Route path="/reinvestment" component={Reinvestment} />
+      <Route path="/help" component={Help} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/platform/:id" component={PlatformDetails} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -66,10 +61,8 @@ function AppContent() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
             <div className="flex items-center gap-2">
-              <UserProfile />
               <ThemeToggle />
               <LanguageToggle />
-              <LogoutButton />
             </div>
           </header>
           <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
@@ -95,12 +88,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
         <LanguageProvider defaultLanguage="en">
-          <AuthProvider>
-            <TooltipProvider>
-              <AppContent />
-              <Toaster />
-            </TooltipProvider>
-          </AuthProvider>
+          <TooltipProvider>
+            <AppContent />
+            <Toaster />
+          </TooltipProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

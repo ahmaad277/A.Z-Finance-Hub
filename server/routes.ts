@@ -1,7 +1,6 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
-import crypto from "crypto";
 import { storage } from "./storage";
 import {
   insertPlatformSchema,
@@ -12,42 +11,6 @@ import {
   insertCashTransactionSchema,
 } from "@shared/schema";
 
-// Import new modular routes
-import authRoutes from "./routes/auth";
-
-// Rate limiting for login attempts
-const loginAttempts = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const attempts = loginAttempts.get(ip);
-  
-  if (!attempts || now > attempts.resetTime) {
-    loginAttempts.set(ip, { count: 1, resetTime: now + 60000 }); // 1 minute window
-    return true;
-  }
-  
-  if (attempts.count >= 5) {
-    return false; // Max 5 attempts per minute
-  }
-  
-  attempts.count++;
-  return true;
-}
-
-// Helper to hash PIN for server-side verification
-function hashPIN(pin: string): string {
-  return crypto.createHash('sha256').update(pin).digest('hex');
-}
-
-// Simple auth middleware - require login for all protected routes
-function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (req.session.isAuthenticated) {
-    return next();
-  }
-  res.status(401).json({ error: "Unauthorized" });
-}
-
 // API schema that accepts date strings and coerces to Date objects with validation
 const apiInvestmentSchema = insertInvestmentSchema.extend({
   startDate: z.coerce.date(),
@@ -55,76 +18,9 @@ const apiInvestmentSchema = insertInvestmentSchema.extend({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register authentication routes
-  app.use("/api/v2/auth", authRoutes);
-
-  // Legacy authentication endpoints (kept for backward compatibility)
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const ip = req.ip || req.socket.remoteAddress || 'unknown';
-      
-      if (!checkRateLimit(ip)) {
-        return res.status(429).json({ error: "Too many login attempts. Please try again later." });
-      }
-      
-      const { pin } = req.body;
-      
-      if (!pin || typeof pin !== 'string' || pin.length < 4 || pin.length > 6) {
-        return res.status(400).json({ error: "Invalid PIN format" });
-      }
-      
-      const settings = await storage.getSettings();
-      
-      if (!settings || !settings.pinHash) {
-        return res.status(400).json({ error: "PIN not configured" });
-      }
-      
-      const pinHash = hashPIN(pin);
-      
-      if (pinHash === settings.pinHash) {
-        req.session.isAuthenticated = true;
-        req.session.userId = settings.id;
-        return res.json({ success: true });
-      }
-      
-      res.status(401).json({ error: "Incorrect PIN" });
-    } catch (error) {
-      res.status(500).json({ error: "Login failed" });
-    }
-  });
-
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: "Logout failed" });
-      }
-      res.json({ success: true });
-    });
-  });
-
-  app.get("/api/auth/status", async (req, res) => {
-    try {
-      const settings = await storage.getSettings();
-      
-      // Return security configuration (not sensitive data)
-      // Note: biometricCredentialId is safe to expose (it's like a public key ID)
-      // It's needed for WebAuthn authentication flow, even when locked
-      res.json({
-        isAuthenticated: req.session.isAuthenticated || false,
-        securityEnabled: settings?.securityEnabled === 1,
-        biometricEnabled: settings?.biometricEnabled === 1,
-        hasPIN: !!settings?.pinHash,
-        biometricCredentialId: settings?.biometricEnabled === 1 
-          ? settings?.biometricCredentialId 
-          : undefined,
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get auth status" });
-    }
-  });
 
   // Platforms
-  app.get("/api/platforms", requireAuth, async (_req, res) => {
+  app.get("/api/platforms", async (_req, res) => {
     try {
       const platforms = await storage.getPlatforms();
       res.json(platforms);
@@ -133,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/platforms", requireAuth, async (req, res) => {
+  app.post("/api/platforms", async (req, res) => {
     try {
       const data = insertPlatformSchema.parse(req.body);
       const platform = await storage.createPlatform(data);
@@ -143,7 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/platforms/:id", requireAuth, async (req, res) => {
+  app.delete("/api/platforms/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deletePlatform(id);
@@ -163,7 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Investments
-  app.get("/api/investments", requireAuth, async (_req, res) => {
+  app.get("/api/investments", async (_req, res) => {
     try {
       const investments = await storage.getInvestments();
       res.json(investments);
@@ -172,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/investments", requireAuth, async (req, res) => {
+  app.post("/api/investments", async (req, res) => {
     try {
       const data = apiInvestmentSchema.parse(req.body);
       const investment = await storage.createInvestment(data);
@@ -183,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/investments/:id", requireAuth, async (req, res) => {
+  app.patch("/api/investments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const data = apiInvestmentSchema.partial().parse(req.body);
@@ -200,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/investments/:id", requireAuth, async (req, res) => {
+  app.delete("/api/investments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteInvestment(id);
@@ -217,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cashflows
-  app.get("/api/cashflows", requireAuth, async (_req, res) => {
+  app.get("/api/cashflows", async (_req, res) => {
     try {
       const cashflows = await storage.getCashflows();
       res.json(cashflows);
@@ -226,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cashflows", requireAuth, async (req, res) => {
+  app.post("/api/cashflows", async (req, res) => {
     try {
       const data = insertCashflowSchema.parse(req.body);
       const cashflow = await storage.createCashflow(data);
@@ -236,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/cashflows/:id", requireAuth, async (req, res) => {
+  app.patch("/api/cashflows/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const data = insertCashflowSchema.partial().parse(req.body);
@@ -253,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Alerts
-  app.get("/api/alerts", requireAuth, async (_req, res) => {
+  app.get("/api/alerts", async (_req, res) => {
     try {
       const alerts = await storage.getAlerts();
       res.json(alerts);
@@ -262,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts", requireAuth, async (req, res) => {
+  app.post("/api/alerts", async (req, res) => {
     try {
       const data = insertAlertSchema.parse(req.body);
       const alert = await storage.createAlert(data);
@@ -272,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/alerts/:id/read", requireAuth, async (req, res) => {
+  app.patch("/api/alerts/:id/read", async (req, res) => {
     try {
       const { id } = req.params;
       const alert = await storage.markAlertAsRead(id);
@@ -287,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts/generate", requireAuth, async (_req, res) => {
+  app.post("/api/alerts/generate", async (_req, res) => {
     try {
       const settings = await storage.getSettings();
       
@@ -354,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cash Transactions
-  app.get("/api/cash/transactions", requireAuth, async (_req, res) => {
+  app.get("/api/cash/transactions", async (_req, res) => {
     try {
       const transactions = await storage.getCashTransactions();
       res.json(transactions);
@@ -363,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cash/transactions", requireAuth, async (req, res) => {
+  app.post("/api/cash/transactions", async (req, res) => {
     try {
       const data = insertCashTransactionSchema.parse(req.body);
       const transaction = await storage.createCashTransaction(data);
@@ -373,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/cash/balance", requireAuth, async (_req, res) => {
+  app.get("/api/cash/balance", async (_req, res) => {
     try {
       const balance = await storage.getCashBalance();
       res.json({ balance });
@@ -383,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio Stats
-  app.get("/api/portfolio/stats", requireAuth, async (_req, res) => {
+  app.get("/api/portfolio/stats", async (_req, res) => {
     try {
       const stats = await storage.getPortfolioStats();
       res.json(stats);
@@ -393,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics
-  app.get("/api/analytics", requireAuth, async (_req, res) => {
+  app.get("/api/analytics", async (_req, res) => {
     try {
       const analytics = await storage.getAnalyticsData();
       res.json(analytics);
@@ -403,40 +299,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Settings
-  app.get("/api/settings", requireAuth, async (req, res) => {
+  app.get("/api/settings", async (req, res) => {
     try {
       const settings = await storage.getSettings();
-      if (!settings) {
-        return res.json(null);
-      }
-      
-      // Never expose sensitive security data to client
-      const { pinHash, biometricCredentialId, ...safeSettings } = settings;
-      
-      res.json(safeSettings);
+      res.json(settings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch settings" });
     }
   });
 
-  app.put("/api/settings", requireAuth, async (req, res) => {
+  app.put("/api/settings", async (req, res) => {
     try {
-      let data = insertUserSettingsSchema.partial().parse(req.body);
-      
-      // If setting a new PIN, hash it server-side
-      if (data.pinHash && typeof data.pinHash === 'string') {
-        // Only hash if it looks like a plain PIN (4-6 digits)
-        if (/^\d{4,6}$/.test(data.pinHash)) {
-          data.pinHash = hashPIN(data.pinHash);
-        }
-      }
-      
+      const data = insertUserSettingsSchema.partial().parse(req.body);
       const settings = await storage.updateSettings(data);
-      
-      // Never expose sensitive security data in response
-      const { pinHash, biometricCredentialId, ...safeSettings } = settings;
-      
-      res.json(safeSettings);
+      res.json(settings);
     } catch (error: any) {
       console.error("Settings update error:", error);
       res.status(400).json({ error: error.message || "Invalid settings data" });

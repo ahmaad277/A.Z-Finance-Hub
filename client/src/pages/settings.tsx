@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +34,6 @@ import { checkBiometricSupport, registerBiometric } from "@/lib/biometric-auth";
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { user } = useAuth();
   const { toast } = useToast();
   const [newPlatformName, setNewPlatformName] = useState("");
   const [newPlatformType, setNewPlatformType] = useState<string>("sukuk");
@@ -45,11 +43,6 @@ export default function Settings() {
   const [isRegisteringBiometric, setIsRegisteringBiometric] = useState(false);
   const [platformToDelete, setPlatformToDelete] = useState<Platform | null>(null);
   
-  // Profile update state
-  const [newEmail, setNewEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Local settings state for Save/Cancel/Reset functionality
   const [localSettings, setLocalSettings] = useState<Partial<UserSettings>>({});
@@ -144,29 +137,6 @@ export default function Settings() {
     },
   });
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: { email?: string; currentPassword?: string; newPassword?: string }) => {
-      return apiRequest("PATCH", "/api/v2/auth/update-profile", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/v2/auth/me"] });
-      toast({
-        title: language === "ar" ? "تم التحديث" : "Profile Updated",
-        description: language === "ar" ? "تم تحديث معلوماتك بنجاح" : "Your profile has been updated successfully",
-      });
-      setNewEmail("");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    },
-    onError: (error: any) => {
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: error.message || (language === "ar" ? "فشل تحديث المعلومات" : "Failed to update profile"),
-        variant: "destructive",
-      });
-    },
-  });
 
   const deletePlatformMutation = useMutation({
     mutationFn: async (platformId: string) => {
@@ -414,48 +384,6 @@ export default function Settings() {
     }
   };
 
-  const handleUpdateEmail = () => {
-    if (!newEmail.trim()) {
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: language === "ar" ? "يرجى إدخال البريد الإلكتروني الجديد" : "Please enter a new email",
-        variant: "destructive",
-      });
-      return;
-    }
-    updateProfileMutation.mutate({ email: newEmail });
-  };
-
-  const handleUpdatePassword = () => {
-    if (!currentPassword || !newPassword) {
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: language === "ar" ? "يرجى ملء جميع الحقول" : "Please fill all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: language === "ar" ? "كلمات المرور غير متطابقة" : "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast({
-        title: language === "ar" ? "خطأ" : "Error",
-        description: language === "ar" ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل" : "Password must be at least 6 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateProfileMutation.mutate({ currentPassword, newPassword });
-  };
 
   if (settingsLoading || platformsLoading) {
     return (
@@ -912,103 +840,6 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Account Profile Settings */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Edit className="w-5 h-5 text-primary" />
-              <CardTitle>{language === "ar" ? "الحساب والملف الشخصي" : "Account & Profile"}</CardTitle>
-            </div>
-            <CardDescription>
-              {language === "ar" ? "تعديل بريدك الإلكتروني وكلمة المرور" : "Update your email and password"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Current User Info */}
-            <div className="space-y-2">
-              <Label>{language === "ar" ? "المستخدم الحالي" : "Current User"}</Label>
-              <div className="p-3 rounded-md bg-muted/50 border">
-                <p className="font-medium">{user?.user.name}</p>
-                <p className="text-sm text-muted-foreground">{user?.user.email}</p>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Update Email */}
-            <div className="space-y-4">
-              <div className="space-y-0.5">
-                <Label>{language === "ar" ? "تغيير البريد الإلكتروني" : "Change Email"}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {language === "ar" ? "أدخل بريدك الإلكتروني الجديد" : "Enter your new email address"}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder={language === "ar" ? "البريد الإلكتروني الجديد" : "New email address"}
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  data-testid="input-new-email"
-                />
-                <Button
-                  onClick={handleUpdateEmail}
-                  disabled={updateProfileMutation.isPending || !newEmail.trim()}
-                  data-testid="button-update-email"
-                >
-                  {updateProfileMutation.isPending 
-                    ? (language === "ar" ? "جاري التحديث..." : "Updating...") 
-                    : (language === "ar" ? "تحديث" : "Update")}
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Update Password */}
-            <div className="space-y-4">
-              <div className="space-y-0.5">
-                <Label>{language === "ar" ? "تغيير كلمة المرور" : "Change Password"}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {language === "ar" ? "أدخل كلمة المرور الحالية والجديدة" : "Enter your current and new password"}
-                </p>
-              </div>
-              <div className="space-y-3">
-                <Input
-                  type="password"
-                  placeholder={language === "ar" ? "كلمة المرور الحالية" : "Current password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  data-testid="input-current-password"
-                />
-                <Input
-                  type="password"
-                  placeholder={language === "ar" ? "كلمة المرور الجديدة" : "New password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  data-testid="input-new-password"
-                />
-                <Input
-                  type="password"
-                  placeholder={language === "ar" ? "تأكيد كلمة المرور الجديدة" : "Confirm new password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  data-testid="input-confirm-password"
-                />
-                <Button
-                  onClick={handleUpdatePassword}
-                  disabled={updateProfileMutation.isPending || !currentPassword || !newPassword || !confirmPassword}
-                  className="w-full"
-                  data-testid="button-update-password"
-                >
-                  {updateProfileMutation.isPending 
-                    ? (language === "ar" ? "جاري التحديث..." : "Updating...") 
-                    : (language === "ar" ? "تحديث كلمة المرور" : "Update Password")}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Save/Cancel/Reset Buttons */}
