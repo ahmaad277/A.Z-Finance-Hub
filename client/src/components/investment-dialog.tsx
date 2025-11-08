@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
@@ -47,7 +48,7 @@ interface InvestmentDialogProps {
 }
 
 export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
 
   const { data: platforms } = useQuery<Platform[]>({
@@ -152,6 +153,55 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       });
     },
   });
+
+  // Watch form values for calculations
+  const formValues = form.watch();
+
+  // Calculate investment metrics based on form values
+  const calculatedMetrics = useMemo(() => {
+    const amount = parseFloat(formValues.amount || "0");
+    const expectedIrr = parseFloat(formValues.expectedIrr || "0");
+    const startDate = formValues.startDate;
+    const endDate = formValues.endDate;
+    const frequency = formValues.distributionFrequency;
+
+    if (!amount || !expectedIrr || !startDate || !endDate) {
+      return null;
+    }
+
+    // Calculate duration in years
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const durationMs = end.getTime() - start.getTime();
+    const durationYears = durationMs / (1000 * 60 * 60 * 24 * 365.25);
+
+    if (durationYears <= 0) {
+      return null;
+    }
+
+    // Calculate total expected return (simple interest)
+    const totalExpectedReturn = amount * (expectedIrr / 100) * durationYears;
+
+    // Calculate number of payments based on frequency
+    let paymentsPerYear = 4; // quarterly
+    if (frequency === "semi-annual") paymentsPerYear = 2;
+    if (frequency === "annual") paymentsPerYear = 1;
+    
+    const paymentCount = Math.ceil(durationYears * paymentsPerYear);
+
+    // Calculate payment value per installment
+    const paymentValue = paymentCount > 0 ? totalExpectedReturn / paymentCount : 0;
+
+    // Number of units (assuming 1 SAR = 1 unit for simplicity)
+    const numberOfUnits = amount;
+
+    return {
+      totalExpectedReturn,
+      numberOfUnits,
+      paymentCount,
+      paymentValue,
+    };
+  }, [formValues.amount, formValues.expectedIrr, formValues.startDate, formValues.endDate, formValues.distributionFrequency]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // Send date strings directly - server will convert to Date objects
@@ -377,6 +427,59 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 </FormItem>
               )}
             />
+
+            {/* Calculated Investment Details */}
+            {calculatedMetrics && (
+              <Card className="bg-muted/50" data-testid="card-calculated-fields">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{t("dialog.calculatedFields")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
+                      <p className="text-lg font-semibold" data-testid="text-total-return">
+                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', { 
+                          style: 'currency', 
+                          currency: 'SAR',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(calculatedMetrics.totalExpectedReturn)}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">{t("dialog.numberOfUnits")}</p>
+                      <p className="text-lg font-semibold" data-testid="text-number-units">
+                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0
+                        }).format(calculatedMetrics.numberOfUnits)}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">{t("dialog.paymentCount")}</p>
+                      <p className="text-lg font-semibold" data-testid="text-payment-count">
+                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0
+                        }).format(calculatedMetrics.paymentCount)}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">{t("dialog.paymentValue")}</p>
+                      <p className="text-lg font-semibold" data-testid="text-payment-value">
+                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', { 
+                          style: 'currency', 
+                          currency: 'SAR',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(calculatedMetrics.paymentValue)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex gap-3 justify-end">
               <Button
