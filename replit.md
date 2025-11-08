@@ -33,6 +33,20 @@ The application utilizes a modern web stack:
 
 ## Recent Updates
 
+### Enhanced Financial Metrics (Nov 8, 2025)
+- **Dashboard Metrics Redesigned**: Replaced generic APR/ROI with more meaningful portfolio-level metrics
+- **Weighted APR (متوسط APR المرجح)**: 
+  - Formula: Σ(investment_amount × expectedIRR) / total_active_value
+  - Weight-averages expected returns based on capital allocation across active investments
+  - Shows portfolio-wide annual return expectation
+- **Portfolio ROI (العائد على الاستثمار)**:
+  - Formula: (actual_profit_received / total_invested_capital) × 100
+  - Displays percentage with actual profit amount in SAR as subtitle
+  - Only counts received profit distributions (not expected)
+  - Provides tangible view of realized returns
+- **UI Implementation**: Purple card for Weighted APR, indigo card for Portfolio ROI
+- **Tested**: E2E validation shows 10.00% Weighted APR and 4.17% ROI with SAR 250 profit display
+
 ### Cash Balance Calculation Fix (Nov 8, 2025)
 - **Critical Bug Fixed**: Cash balance was calculated incorrectly using `balanceAfter` from latest transaction by `createdAt`
 - **Problem**: Transactions added out of chronological order caused massive balance discrepancies
