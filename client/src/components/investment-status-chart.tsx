@@ -158,7 +158,7 @@ export function InvestmentStatusChart({ metrics, isCollapsed = false, onToggle }
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0];
-                            const value = data.value ?? 0;
+                            const value = Number(data.value ?? 0);
                             const percentage = ((value / total) * 100).toFixed(1);
                             return (
                               <div className="rounded-lg border bg-background p-2 shadow-sm">
