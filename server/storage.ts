@@ -509,6 +509,27 @@ export class DatabaseStorage implements IStorage {
     return cashflow || undefined;
   }
 
+  async deleteCashflow(id: string): Promise<boolean> {
+    // Check if cashflow exists
+    const [cashflow] = await db
+      .select()
+      .from(cashflows)
+      .where(eq(cashflows.id, id));
+    
+    if (!cashflow) {
+      return false;
+    }
+    
+    // Delete associated cash transaction if exists
+    await db
+      .delete(cashTransactions)
+      .where(eq(cashTransactions.cashflowId, id));
+    
+    // Delete the cashflow
+    const result = await db.delete(cashflows).where(eq(cashflows.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
   // Alerts
   async getAlerts(): Promise<Alert[]> {
     return await db

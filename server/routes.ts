@@ -148,6 +148,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/cashflows/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCashflow(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Cashflow not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Cashflow deletion error:", error);
+      res.status(500).json({ error: "Failed to delete cashflow" });
+    }
+  });
+
   // Alerts
   app.get("/api/alerts", async (_req, res) => {
     try {

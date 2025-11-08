@@ -9,7 +9,7 @@ interface PaymentScheduleManagerProps {
   investmentId: string;
   cashflows: CashflowWithInvestment[];
   expectedProfit: number;
-  onAddPayment?: () => void;
+  onAddPayment?: (investmentId: string) => void;
   onRemovePayment?: (cashflowId: string) => void;
   onMarkAsReceived?: (cashflowId: string) => void;
 }
@@ -120,7 +120,7 @@ export function PaymentScheduleManager({
             <Button
               variant="outline"
               size="sm"
-              onClick={onAddPayment}
+              onClick={() => onAddPayment(investmentId)}
               className="h-6 px-2 text-[10px]"
               data-testid="button-add-payment"
             >

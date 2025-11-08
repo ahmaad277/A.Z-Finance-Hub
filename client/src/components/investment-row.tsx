@@ -13,7 +13,7 @@ interface InvestmentRowProps {
   onEdit: () => void;
   onCompletePayment?: () => void;
   onDelete?: () => void;
-  onAddPayment?: () => void;
+  onAddPayment?: (investmentId: string) => void;
   onRemovePayment?: (cashflowId: string) => void;
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
 }

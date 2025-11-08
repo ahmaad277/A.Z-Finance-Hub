@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/language-provider";
 import { InvestmentRow } from "@/components/investment-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
+import { AddPaymentDialog } from "@/components/add-payment-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
@@ -29,9 +30,11 @@ export default function Investments() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [addPaymentDialogOpen, setAddPaymentDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentWithPlatform | null>(null);
+  const [addingPaymentForInvestment, setAddingPaymentForInvestment] = useState<string | null>(null);
 
   // Filter and Sort States
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
@@ -74,6 +77,56 @@ export default function Investments() {
       toast({
         title: language === "ar" ? "خطأ" : "Error",
         description: error.message || (language === "ar" ? "فشل تحديث حالة الدفعة" : "Failed to update payment status"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation to add new cashflow
+  const addCashflowMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/cashflows", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      
+      toast({
+        title: language === "ar" ? "تمت الإضافة" : "Added",
+        description: language === "ar" ? "تمت إضافة الدفعة بنجاح" : "Payment added successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل إضافة الدفعة" : "Failed to add payment"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation to delete cashflow
+  const deleteCashflowMutation = useMutation({
+    mutationFn: async (cashflowId: string) => {
+      return apiRequest("DELETE", `/api/cashflows/${cashflowId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      
+      toast({
+        title: language === "ar" ? "تم الحذف" : "Deleted",
+        description: language === "ar" ? "تم حذف الدفعة بنجاح" : "Payment deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل حذف الدفعة" : "Failed to delete payment"),
         variant: "destructive",
       });
     },
@@ -181,19 +234,22 @@ export default function Investments() {
     updateCashflowMutation.mutate({ cashflowId, status: "received" });
   };
   
-  const handleAddPayment = () => {
-    // TODO: Open dialog to add new payment
-    toast({
-      title: language === "ar" ? "قريباً" : "Coming Soon",
-      description: language === "ar" ? "ميزة إضافة دفعة جديدة قيد التطوير" : "Add payment feature is under development",
-    });
+  const handleAddPayment = (investmentId: string) => {
+    setAddingPaymentForInvestment(investmentId);
+    setAddPaymentDialogOpen(true);
   };
   
   const handleRemovePayment = (cashflowId: string) => {
-    // TODO: Implement remove payment logic
-    toast({
-      title: language === "ar" ? "قريباً" : "Coming Soon",
-      description: language === "ar" ? "ميزة حذف الدفعة قيد التطوير" : "Remove payment feature is under development",
+    deleteCashflowMutation.mutate(cashflowId);
+  };
+
+  const handleSubmitNewPayment = (data: any) => {
+    addCashflowMutation.mutate({
+      investmentId: data.investmentId,
+      dueDate: data.dueDate.toISOString(),
+      amount: data.amount,
+      type: data.type,
+      status: data.status,
     });
   };
 
@@ -391,6 +447,14 @@ export default function Investments() {
         open={completePaymentDialogOpen}
         onOpenChange={setCompletePaymentDialogOpen}
         investment={completingInvestment}
+      />
+
+      <AddPaymentDialog
+        open={addPaymentDialogOpen}
+        onOpenChange={setAddPaymentDialogOpen}
+        investmentId={addingPaymentForInvestment || ""}
+        onSubmit={handleSubmitNewPayment}
+        isPending={addCashflowMutation.isPending}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
