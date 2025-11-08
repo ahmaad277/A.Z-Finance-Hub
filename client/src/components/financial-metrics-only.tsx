@@ -92,9 +92,6 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-3" data-testid="heading-financial-metrics">
-        {isRTL ? "المؤشرات المالية" : "Financial Metrics"}
-      </h3>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
         {metricCards.map((card) => {
           const Icon = card.icon;

@@ -421,43 +421,42 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6" data-testid="page-dashboard">
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex-shrink min-w-0">{t("dashboard.title")}</h1>
-          <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Platform Filter - Icon Only */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+    <div className="space-y-3 md:space-y-4" data-testid="page-dashboard">
+      {/* Blue Header Area with Title and Buttons */}
+      <div className="bg-primary/10 rounded-lg px-4 py-3 flex flex-row items-center justify-between gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-shrink min-w-0">{t("dashboard.title")}</h1>
+        <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Platform Filter - Icon Only */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
+                <Filter className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => setSelectedPlatform("all")}
+                data-testid="menu-filter-all"
+                className={selectedPlatform === "all" ? "bg-accent" : ""}
+              >
+                {t("dashboard.allPlatforms")}
+              </DropdownMenuItem>
+              {platforms?.map((platform) => (
                 <DropdownMenuItem 
-                  onClick={() => setSelectedPlatform("all")}
-                  data-testid="menu-filter-all"
-                  className={selectedPlatform === "all" ? "bg-accent" : ""}
+                  key={platform.id} 
+                  onClick={() => setSelectedPlatform(platform.id)}
+                  data-testid={`menu-filter-${platform.id}`}
+                  className={selectedPlatform === platform.id ? "bg-accent" : ""}
                 >
-                  {t("dashboard.allPlatforms")}
+                  {platform.name}
                 </DropdownMenuItem>
-                {platforms?.map((platform) => (
-                  <DropdownMenuItem 
-                    key={platform.id} 
-                    onClick={() => setSelectedPlatform(platform.id)}
-                    data-testid={`menu-filter-${platform.id}`}
-                    className={selectedPlatform === platform.id ? "bg-accent" : ""}
-                  >
-                    {platform.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Cash Transaction Buttons */}
-            <CashTransactionDialog type="deposit" />
-            <CashTransactionDialog type="withdrawal" />
-          </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Cash Transaction Buttons */}
+          <CashTransactionDialog type="deposit" />
+          <CashTransactionDialog type="withdrawal" />
         </div>
       </div>
 

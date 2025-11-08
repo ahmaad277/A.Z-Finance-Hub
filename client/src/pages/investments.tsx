@@ -163,21 +163,18 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-6" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("investments.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            {t("investments.subtitle")}
-          </p>
-        </div>
+    <div className="space-y-4" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
+      {/* Blue Header Area with Title and Button */}
+      <div className="bg-primary/10 rounded-lg px-4 py-3 flex flex-row items-center justify-between gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-shrink min-w-0">{t("investments.title")}</h1>
         <Button
           onClick={handleAddNew}
           data-testid="button-add-investment"
-          className="gap-2 w-full sm:w-auto justify-center"
+          className="gap-2 flex-shrink-0 h-9"
+          size="sm"
         >
           <Plus className="h-4 w-4" />
-          {t("investments.addInvestment")}
+          <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
         </Button>
       </div>
 

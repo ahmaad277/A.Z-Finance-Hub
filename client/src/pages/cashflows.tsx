@@ -63,12 +63,10 @@ export default function Cashflows() {
     .reduce((sum, cf) => sum + parseFloat(cf.amount), 0) || 0;
 
   return (
-    <div className="space-y-6" data-testid="page-cashflows">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("cashflows.title")}</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          {t("cashflows.subtitle")}
-        </p>
+    <div className="space-y-4" data-testid="page-cashflows">
+      {/* Blue Header Area with Title */}
+      <div className="bg-primary/10 rounded-lg px-4 py-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("cashflows.title")}</h1>
       </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
