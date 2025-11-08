@@ -66,6 +66,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       status: "active",
       riskScore: 50,
       distributionFrequency: "quarterly",
+      fundedFromCash: 0,
+      isReinvestment: 0,
     },
   });
 
@@ -84,6 +86,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
         status: investment.status,
         riskScore: investment.riskScore || 50,
         distributionFrequency: investment.distributionFrequency,
+        fundedFromCash: investment.fundedFromCash,
+        isReinvestment: investment.isReinvestment,
       });
     } else {
       form.reset({
@@ -96,6 +100,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
         status: "active",
         riskScore: 50,
         distributionFrequency: "quarterly",
+        fundedFromCash: 0,
+        isReinvestment: 0,
       });
     }
   }, [investment, form]);
