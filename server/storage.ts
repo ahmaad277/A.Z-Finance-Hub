@@ -384,25 +384,46 @@ export class DatabaseStorage implements IStorage {
     const investment = await this.getInvestment(id);
     if (!investment) return false;
     
-    // Delete related cashflows first
+    // Get related cashflows to check which have been received
+    const relatedCashflows = await db.query.cashflows.findMany({
+      where: eq(cashflows.investmentId, id),
+    });
+    
+    // Convert received distribution transactions to standalone records
+    // This preserves actual received profits in cash balance while removing the deleted investment reference
+    for (const cashflow of relatedCashflows) {
+      if (cashflow.status === 'received') {
+        // Update transactions to remove foreign key references and mark as orphaned
+        await db.update(cashTransactions)
+          .set({
+            investmentId: null,
+            cashflowId: null,
+            notes: sql`CONCAT(COALESCE(notes, ''), ' [From deleted investment: ', ${investment.name}, ']')`,
+          })
+          .where(eq(cashTransactions.cashflowId, cashflow.id));
+      } else {
+        // Delete transactions for expected/pending cashflows that never materialized
+        await db.delete(cashTransactions).where(eq(cashTransactions.cashflowId, cashflow.id));
+      }
+    }
+    
+    // Delete the original investment principal transaction (type='investment')
+    // This automatically returns the principal to cash balance via SUM aggregation
+    await db.delete(cashTransactions)
+      .where(
+        and(
+          eq(cashTransactions.investmentId, id),
+          eq(cashTransactions.type, 'investment')
+        )
+      );
+    
+    // Delete all related cashflows (both received and expected)
     await db.delete(cashflows).where(eq(cashflows.investmentId, id));
     
     // Delete related alerts
     await db.delete(alerts).where(eq(alerts.investmentId, id));
     
-    // If investment was funded from cash, return amount to cash balance
-    if (investment.fundedFromCash === 1) {
-      await this.createCashTransaction({
-        amount: investment.amount,
-        type: 'deposit',
-        source: 'investment_return',
-        notes: `Investment cancelled: ${investment.name}`,
-        date: new Date(),
-        investmentId: id,
-      });
-    }
-    
-    // Delete the investment
+    // Delete the investment itself
     const result = await db.delete(investments).where(eq(investments.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }
