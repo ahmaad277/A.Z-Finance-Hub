@@ -55,18 +55,19 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       bgColor: "bg-cyan-600/10",
     },
     {
-      id: "apr",
+      id: "weighted-apr",
       icon: Percent,
-      label: isRTL ? "العائد السنوي" : "Portfolio APR",
-      value: formatPercentage(metrics.portfolioAPR),
+      label: isRTL ? "متوسط APR المرجح" : "Weighted APR",
+      value: formatPercentage(metrics.weightedAPR),
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-600/10",
     },
     {
-      id: "roi",
+      id: "portfolio-roi",
       icon: Target,
       label: isRTL ? "العائد على الاستثمار" : "Portfolio ROI",
       value: formatPercentage(metrics.portfolioROI),
+      subtitle: formatCurrency(metrics.totalProfitAmount),
       color: "text-indigo-600 dark:text-indigo-400",
       bgColor: "bg-indigo-600/10",
     },
@@ -114,6 +115,11 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                 <div className="text-lg font-bold" data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>
+                {card.subtitle && (
+                  <div className="text-xs text-muted-foreground mt-0.5" data-testid={`metric-subtitle-${card.id}`}>
+                    {card.subtitle}
+                  </div>
+                )}
               </CardContent>
             </Card>
           );

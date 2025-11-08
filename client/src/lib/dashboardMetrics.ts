@@ -13,8 +13,9 @@ export interface DashboardMetrics {
   cashRatio: number; // totalCash / portfolioValue
   
   // Performance
-  portfolioAPR: number;
-  portfolioROI: number;
+  weightedAPR: number; // متوسط APR المرجح
+  portfolioROI: number; // نسبة العائد على الاستثمار
+  totalProfitAmount: number; // إجمالي الأرباح بالريال
   
   // Averages
   avgDuration: number; // in months
@@ -210,19 +211,26 @@ export function calculateDashboardMetrics(
   // 5. Calculate cash ratio
   const cashRatio = portfolioValue > 0 ? (totalCash / portfolioValue) * 100 : 0;
   
-  // 6. Calculate portfolio APR and ROI
+  // 6. Calculate weighted APR and portfolio ROI
+  // Weighted APR: حساب متوسط APR مرجح حسب قيمة كل استثمار
+  const totalActiveValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const weightedAPR = totalActiveValue > 0
+    ? activeInvestments.reduce((sum, inv) => {
+        const weight = parseFloat(inv.amount) / totalActiveValue;
+        return sum + (parseFloat(inv.expectedIrr) * weight);
+      }, 0)
+    : 0;
+  
+  // Portfolio ROI: حساب العائد الفعلي على الاستثمار
+  const totalInvestedCapital = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const portfolioROI = totalInvestedCapital > 0 ? (actualReturns / totalInvestedCapital) * 100 : 0;
+  const totalProfitAmount = actualReturns;
+  
+  // 7. Calculate averages
   const totalDuration = filteredInvestments.reduce((sum, inv) => {
     return sum + calculateDurationMonths(inv.startDate, inv.endDate);
   }, 0);
-  const avgDurationMonths = filteredInvestments.length > 0 ? totalDuration / filteredInvestments.length : 0;
-  
-  const portfolioROI = totalInvestmentValue > 0 ? calculateROI(totalInvestmentValue, expectedReturns) : 0;
-  const portfolioAPR = avgDurationMonths > 0 && totalInvestmentValue > 0 
-    ? calculateAPR(totalInvestmentValue, expectedReturns, avgDurationMonths) 
-    : 0;
-  
-  // 7. Calculate averages
-  const avgDuration = avgDurationMonths;
+  const avgDuration = filteredInvestments.length > 0 ? totalDuration / filteredInvestments.length : 0;
   const avgAmount = filteredInvestments.length > 0 
     ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0) / filteredInvestments.length 
     : 0;
@@ -277,8 +285,9 @@ export function calculateDashboardMetrics(
     expectedReturns,
     returnsRatio,
     cashRatio,
-    portfolioAPR,
+    weightedAPR,
     portfolioROI,
+    totalProfitAmount,
     avgDuration,
     avgAmount,
     avgPaymentAmount,
