@@ -133,17 +133,17 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         <div className="lg:hidden p-3 pt-0 space-y-3 border-t border-border/50">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <div className="text-muted-foreground">{t("dialog.totalExpectedReturn")}</div>
-              <div className="font-bold text-primary">
+              <div className="text-muted-foreground">{t("dialog.expectedProfit")}</div>
+              <div className="font-bold text-chart-1">
                 {formatCurrency(expectedProfitOnly)}
               </div>
               <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "أرباح فقط" : "Profit only"}
+                {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">{t("dashboard.totalReturns")}</div>
-              <div className={`font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
+              <div className="font-bold text-chart-2">
                 {formatCurrency(totalReturns)}
               </div>
               <div className="text-[10px] text-muted-foreground">
@@ -278,21 +278,21 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
         </div>
         
-        {/* Desktop: Total Expected Profit */}
+        {/* Desktop: Expected Profit */}
         <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
-          <div className="text-xs text-muted-foreground">{t("dialog.totalExpectedReturn")}</div>
-          <div className="text-sm font-bold text-primary">
+          <div className="text-xs text-muted-foreground">{t("dialog.expectedProfit")}</div>
+          <div className="text-sm font-bold text-chart-1">
             {formatCurrency(expectedProfitOnly)}
           </div>
           <div className="text-[10px] text-muted-foreground">
-            {language === "ar" ? "أرباح فقط" : "Profit only"}
+            {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
           </div>
         </div>
         
-        {/* Desktop: Net Profit (Total Returns Received) */}
+        {/* Desktop: Received Returns */}
         <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
           <div className="text-xs text-muted-foreground">{t("dashboard.totalReturns")}</div>
-          <div className={`text-sm font-bold ${totalReturns > 0 ? 'text-chart-2' : 'text-muted-foreground'}`}>
+          <div className="text-sm font-bold text-chart-2">
             {formatCurrency(totalReturns)}
           </div>
           <div className="text-[10px] text-muted-foreground">

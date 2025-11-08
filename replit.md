@@ -142,22 +142,29 @@ The application utilizes a modern web stack:
 - **Implementation**: Centralized locale detection (`language === 'ar' ? 'ar-SA' : 'en-US'`) ensures consistency across all calculated fields
 
 ### Enhanced Investment Display Metrics (Nov 8, 2025)
-- **Total Expected Profit**: InvestmentRow now prominently displays the total expected profit (distribution type: "profit" only) across all scheduled cashflows
-  - Appears in blue/primary color to differentiate from received returns (green)
-  - Shows "Profit only" label for clarity in both English and Arabic
+- **Expected Profit Display**: InvestmentRow now prominently displays the total expected profit (distribution type: "profit" only) across all scheduled cashflows
+  - Uses chart-1 color token for visual distinction
+  - Subtitle "Ex. principal" / "بدون رأس المال" clarifies profit-only calculation
+  - Positioned between Amount and Received Returns columns on desktop
+- **Received Returns Display**: 
+  - Always displayed in chart-2 (green) color for clear visual hierarchy
+  - Subtitle "Received" / "مستلمة" indicates actual payments received
+  - Maintains green color even when value is SAR 0 for consistency
 - **Improved Mobile & Desktop Layouts**:
   - Mobile (expanded view): 2×2 grid showing Expected Profit, Received Returns, End Date, and Payment Value
   - Desktop: Dedicated column for Expected Profit positioned between Amount and Received Returns
-  - Each metric includes descriptive subtitle (e.g., "Profit only", "Received", payment count)
-- **Visual Hierarchy**: Clear distinction between:
-  1. **Expected Profit** (Primary color) - Total profit to be received over investment lifetime
-  2. **Received Returns** (Chart-2 green) - Actual profit already received
+  - Each metric includes descriptive subtitle for clarity
+- **Visual Hierarchy & Color Coding**: Clear distinction between:
+  1. **Expected Profit** (chart-1 color) - Total profit to be received over investment lifetime (excludes principal)
+  2. **Received Returns** (chart-2 green) - Actual profit already received
   3. **Payment Value** - Average per payment with total payment count
-- **Translation Support**: Added translation keys for custom distribution features:
+- **Translation Support**: Added translation keys for enhanced metrics:
+  - `dialog.expectedProfit` - "Expected Profit" / "الأرباح المتوقعة"
   - `dialog.monthly`, `dialog.atMaturity`, `dialog.custom`
   - `dialog.customDistributions`, `dialog.totalCustomAmount`
   - Full bilingual support (English/Arabic) for all new labels
 - **Database Schema Preparation**: Added `custom_distributions` table and extended distribution frequency types (monthly, at_maturity, custom) to support future flexible distribution schedules
+- **Tested**: E2E validation confirmed distinct color coding (chart-1 vs chart-2), proper calculations, and responsive layout across mobile/desktop
 
 ## External Dependencies
 - **Charting**: Recharts for data visualization.
