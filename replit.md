@@ -1,172 +1,45 @@
 # A.Z Finance Hub
 
 ## Overview
-A.Z Finance Hub is a personal investment management platform designed for Sukuk-based portfolios and crowdfunding debt platforms (Sukuk, Manfa'a, Lendo). It provides comprehensive portfolio tracking, cashflow management, and analytics to support Sharia-compliant investments and aid users in achieving financial independence aligned with a Vision 2040 roadmap. The platform has been simplified from a multi-user enterprise system to a single-user tool, significantly reducing API costs and code complexity.
+A.Z Finance Hub is a personal investment management platform focused on Sukuk-based portfolios and crowdfunding debt platforms (Sukuk, Manfa'a, Lendo). Its primary purpose is to provide comprehensive portfolio tracking, cashflow management, and analytics to support Sharia-compliant investments, helping users achieve financial independence aligned with Saudi Arabia's Vision 2040. The platform is designed as a single-user tool to simplify functionality and reduce operational overhead.
 
 ## User Preferences
 - Default theme: Dark mode
 - Default language: English (supports Arabic)
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
-- **Mobile Optimized**: Full responsive design for all screen sizes (mobile, tablet, desktop)
+- Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
 
 ## System Architecture
-The application utilizes a modern web stack:
-- **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Recharts, Wouter, TanStack Query.
-- **Backend**: Express.js and Node.js.
-- **Authentication**: **REMOVED** - Application now operates as a single-user personal tool with no login, sessions, or email/password requirements. Direct access to all features.
-- **Styling**: Tailwind CSS with custom A.Z Finance Hub design tokens, including comprehensive dark/light mode and full bilingual support (English/Arabic) with RTL typography enhancements.
-- **UI/UX Decisions**:
-    - **Dashboard**: Features a "Classic View" with compact stat cards, a mobile-responsive financial metrics grid (13 cards), platform overview, portfolio performance charts, upcoming cashflows, and recent investments. Includes a "Pro mode" toggle for advanced features.
-    - **Investment Management**: Displays investments in a horizontal row-based layout for desktop and a stacked vertical layout for mobile. Features status-based color coding, visual payment progress indicators, platform categorization, risk scoring, and real-time ROI calculations.
-    - **Cashflow Tracking**: Detailed table with status indicators and distribution type tracking.
-    - **Analytics**: Monthly returns trends, platform allocation pie charts, and performance vs. 2040 target comparisons via a tabbed interface.
-    - **Alerts System**: Smart, user-configurable alerts with severity-based classification and in-app management.
-    - **Platform Management**: Dedicated pages for platform details, statistics, and filtered investment lists.
-    - **Cash Management System**: Tracks cash balances and transactions (deposits, withdrawals, transfers, investments, distributions) with real-time balance calculations. Automatic cash distribution for received cashflows.
-    - **Goal Calculator**: Dynamic investment goal calculator for Vision 2040 planning, offering real-time projections and integrating current portfolio value.
-    - **Smart Payment Processing**: Enhanced dialog for investment completion with automatic date confirmation and ROI calculation.
-    - **Reports System**: Comprehensive financial reporting with Excel (XLSX) and PDF export, customizable date ranges, platform filtering, and real-time preview.
-- **Financial Metrics System**: Comprehensive calculation utilities for portfolio value, cash ratio, investment returns (profit-only ROI), APR, statistical analysis, late/defaulted investment tracking, and platform distribution.
-- **Core Entities**: Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings, PortfolioStats, AnalyticsData.
-- **Cache Management**: App-level version tracking to clear localStorage cache on version mismatch, preventing stale data issues.
+The application uses a modern web stack for both frontend and backend. It operates as a single-user personal tool without authentication.
 
-## Recent Updates
+**UI/UX Decisions:**
+-   **Dashboard:** Features a "Classic View" with compact financial metric cards (13), platform overview, portfolio performance charts, upcoming cashflows, and recent investments. A "Pro mode" toggle offers advanced features.
+-   **Investment Management:** Investments are displayed in a horizontal row-based layout for desktop and a stacked vertical layout for mobile, featuring status-based color coding, payment progress indicators, platform categorization, risk scoring, and real-time ROI calculations.
+-   **Cashflow Tracking:** A detailed table with status indicators and distribution type tracking.
+-   **Analytics:** Includes monthly returns trends, platform allocation pie charts, and performance comparisons against Vision 2040 targets via a tabbed interface.
+-   **Alerts System:** Smart, user-configurable alerts with severity classification and in-app management.
+-   **Platform Management:** Dedicated pages for platform details, statistics, and filtered investment lists.
+-   **Cash Management System:** Tracks cash balances and transactions (deposits, withdrawals, transfers, investments, distributions) with real-time balance calculations and automatic cash distribution for received cashflows.
+-   **Goal Calculator:** A dynamic investment goal calculator for Vision 2040 planning, offering real-time projections.
+-   **Smart Payment Processing:** Enhanced dialog for investment completion with automatic date confirmation and ROI calculation.
+-   **Reports System:** Comprehensive financial reporting with Excel (XLSX) and PDF export, customizable date ranges, platform filtering, and real-time preview.
+-   **Investment Display Metrics:** Prominently displays total expected profit and received returns with distinct color coding and clear subtitles, adapting layout for mobile and desktop.
+-   **Interactive Payment Schedule System:** A visual, color-coded payment tracking system with interactive boxes for cashflows. Users can add, remove, and mark payments as received, triggering real-time updates to portfolio metrics and cash balance.
 
-### Authentication System Removal (Nov 8, 2025)
-- **Complete Authentication Removal**: Transformed from multi-user system to single-user personal tool
-- **Changes Made**:
-  - Removed all login/logout pages and authentication flows
-  - Removed AuthProvider, ProtectedRoute, and useAuth dependencies from all components
-  - Removed session management and auth middleware from server
-  - Removed email/password fields from Settings page
-  - App now opens directly to Dashboard without any authentication
-- **Impact**: 
-  - Zero API overhead for authentication
-  - Simplified codebase with reduced complexity
-  - Immediate access to all features
-  - Perfect for personal finance management
-- **Tested**: E2E validation confirmed app loads directly to dashboard, all pages accessible, no authentication errors
-
-### Dashboard UX Improvements (Nov 8, 2025)
-- **Investment Status Chart Redesign**:
-  - Moved from standalone collapsible card to Financial Metrics section (appears below 8 metric cards)
-  - Rectangular card layout: pie chart (120x120px) positioned beside title/total count
-  - Click-anywhere-to-toggle interaction: click card to switch between percentage (%) and count (#) modes
-  - Removed separate toggle button and collapse/expand functionality
-  - Full keyboard accessibility: role="button", tabIndex, Enter/Space key support, aria-label
-  - Always visible as 9th metric in Financial Metrics section
-- **Typography Unification**:
-  - Goal Calculator result values changed from `text-2xl` to `text-lg`
-  - Consistent font sizes across all dashboard metrics and calculator
-- **Collapsible Sections**: Vision 2040 Progress and Goal Calculator remain collapsible
-  - State persisted via UserSettings.collapsedSections
-  - Framer Motion AnimatePresence for smooth transitions
-- **Tested**: E2E validation confirmed click/keyboard toggle, accessibility, and typography consistency
-
-### Enhanced Financial Metrics (Nov 8, 2025)
-- **Dashboard Metrics Redesigned**: Replaced generic APR/ROI with more meaningful portfolio-level metrics
-- **Weighted APR (متوسط APR المرجح)**: 
-  - Formula: Σ(investment_amount × expectedIRR) / total_active_value
-  - Weight-averages expected returns based on capital allocation across active investments
-  - Shows portfolio-wide annual return expectation
-- **Portfolio ROI (العائد على الاستثمار)**:
-  - Formula: (actual_profit_received / total_invested_capital) × 100
-  - Displays percentage with actual profit amount in SAR as subtitle
-  - Only counts received profit distributions (not expected)
-  - Provides tangible view of realized returns
-- **UI Implementation**: Purple card for Weighted APR, indigo card for Portfolio ROI
-- **Tested**: E2E validation shows 10.00% Weighted APR and 4.17% ROI with SAR 250 profit display
-
-### Cash Balance Calculation Fix (Nov 8, 2025)
-- **Critical Bug Fixed**: Cash balance was calculated incorrectly using `balanceAfter` from latest transaction by `createdAt`
-- **Problem**: Transactions added out of chronological order caused massive balance discrepancies
-- **Solution**: 
-  - `getCashBalance()` now uses SUM aggregation across all transactions
-  - Deposits & distributions: +amount
-  - Withdrawals & investments: -amount
-  - No longer relies on `balanceAfter` field (deprecated)
-- **Impact**: Balance is always accurate regardless of transaction creation order
-- **Tested**: Multiple deposits/withdrawals verified with SQL (408,710 SAR ✓)
-- **Performance**: O(n) aggregation query, suitable for current scale
-
-### Auto Cash Distribution (Nov 7, 2025)
-- **Feature**: Automatic cash transaction creation when cashflows are marked as "received"
-- **Implementation**:
-  - `updateCashflow` in server/storage.ts checks status change to "received"
-  - Prevents duplicates by checking for existing cashflow-linked transactions
-  - Smart classification based on cashflow type:
-    - Profit distributions → source: "profit", notes: "Distribution from: {name}"
-    - Principal returns → source: "investment_return", notes: "Principal return from: {name}"
-- **Database**: Added `cashflow_id` column to `cash_transactions` table for full traceability
-- **Impact**: Cash balance automatically increases when distributions/returns are received
-- **Tested**: Verified with profit (2,500 SAR) and principal (10,000 SAR) cashflows
-
-### Cash Transaction Buttons (Nov 7, 2025)
-- **Green Deposit Button** (ArrowDown icon + "إيداع" text): Adds money to cash balance
-  - Uses new variant="success" on Button component with text-[10px] label
-  - Semantic color using chart-2 theme token (green)
-- **Red Withdrawal Button** (ArrowUp icon + "سحب" text): Removes money from cash balance
-  - Uses variant="destructive" on Button component with text-[10px] label
-  - Compact button design: h-9, px-2, gap-1, icon h-3.5 w-3.5
-- **Streamlined UI**: Removed separate Cash Management card from Dashboard
-- **Header Layout**: Filter → Deposit → Withdrawal (Export Report removed from dashboard)
-
-### Page Header Redesign (Nov 8, 2025)
-- **Blue Header Area**: All page titles moved to highlighted blue background area (`bg-primary/10 rounded-lg`)
-- **Unified Layout**: Title positioned on the left/right (RTL-aware) with action buttons on opposite side
-- **Pages Updated**:
-  - Dashboard: Title + Filter + Deposit + Withdrawal buttons
-  - Investments: Title + Add Investment button (icon only on mobile)
-  - Cashflows: Title only
-  - Analytics: Title + Export Report button (icon only on mobile)
-  - Reports: Title only
-- **Financial Metrics**: Removed "المؤشرات المالية" heading to raise content and maximize screen space
-- **Typography**: Page titles reduced from text-2xl/3xl to text-xl/2xl for consistency
-- **Spacing**: Reduced page spacing from space-y-6 to space-y-3/4 for more compact layout
-
-### Investment Dialog Calculated Fields (Nov 8, 2025)
-- **Real-time Calculation Display**: Investment dialog now shows calculated metrics as user fills the form
-- **Calculated Metrics**:
-  - Total Expected Return: Displays total returns over investment lifetime (SAR)
-  - Number of Units/Shares: Shows how many units the investment amount represents (1 SAR = 1 unit)
-  - Payment Count: Calculates total number of payments based on frequency and duration
-  - Payment Value per Installment: Average payment amount per period
-- **Locale-Aware Number Formatting**:
-  - English (en-US): Latin numerals (0-9) with format "SAR 23,983.57"
-  - Arabic (ar-SA): Arabic-Indic numerals (٠-٩) with format "ر.س.‏ ٢٣٬٩٨٣٫٥٧"
-  - Uses `Intl.NumberFormat` with automatic locale detection based on selected language
-  - All numeric values respect the active language setting for proper i18n compliance
-- **Performance Optimization**: Single `form.watch()` subscription to avoid redundant re-renders
-- **UX Enhancement**: Instant visual feedback helps users understand investment structure before submission
-- **Implementation**: Centralized locale detection (`language === 'ar' ? 'ar-SA' : 'en-US'`) ensures consistency across all calculated fields
-
-### Enhanced Investment Display Metrics (Nov 8, 2025)
-- **Expected Profit Display**: InvestmentRow now prominently displays the total expected profit (distribution type: "profit" only) across all scheduled cashflows
-  - Uses chart-1 color token for visual distinction
-  - Subtitle "Ex. principal" / "بدون رأس المال" clarifies profit-only calculation
-  - Positioned between Amount and Received Returns columns on desktop
-- **Received Returns Display**: 
-  - Always displayed in chart-2 (green) color for clear visual hierarchy
-  - Subtitle "Received" / "مستلمة" indicates actual payments received
-  - Maintains green color even when value is SAR 0 for consistency
-- **Improved Mobile & Desktop Layouts**:
-  - Mobile (expanded view): 2×2 grid showing Expected Profit, Received Returns, End Date, and Payment Value
-  - Desktop: Dedicated column for Expected Profit positioned between Amount and Received Returns
-  - Each metric includes descriptive subtitle for clarity
-- **Visual Hierarchy & Color Coding**: Clear distinction between:
-  1. **Expected Profit** (chart-1 color) - Total profit to be received over investment lifetime (excludes principal)
-  2. **Received Returns** (chart-2 green) - Actual profit already received
-  3. **Payment Value** - Average per payment with total payment count
-- **Translation Support**: Added translation keys for enhanced metrics:
-  - `dialog.expectedProfit` - "Expected Profit" / "الأرباح المتوقعة"
-  - `dialog.monthly`, `dialog.atMaturity`, `dialog.custom`
-  - `dialog.customDistributions`, `dialog.totalCustomAmount`
-  - Full bilingual support (English/Arabic) for all new labels
-- **Database Schema Preparation**: Added `custom_distributions` table and extended distribution frequency types (monthly, at_maturity, custom) to support future flexible distribution schedules
-- **Tested**: E2E validation confirmed distinct color coding (chart-1 vs chart-2), proper calculations, and responsive layout across mobile/desktop
+**Technical Implementations & Design Choices:**
+-   **Frontend:** React, TypeScript, Tailwind CSS, Shadcn UI, Recharts, Wouter, TanStack Query.
+-   **Backend:** Express.js and Node.js.
+-   **Authentication:** Removed; the application functions as a direct-access, single-user tool.
+-   **Styling:** Tailwind CSS with custom design tokens, dark/light mode, and full bilingual support (English/Arabic) with RTL typography.
+-   **Financial Metrics System:** Comprehensive utilities for calculating portfolio value, cash ratio, investment returns (profit-only ROI), APR, statistical analysis, and tracking late/defaulted investments. Includes Weighted APR and Portfolio ROI calculations displayed on the dashboard.
+-   **Core Entities:** Platforms, Investments, Cashflows, CashTransactions, Alerts, UserSettings, PortfolioStats, AnalyticsData.
+-   **Cache Management:** App-level version tracking clears localStorage cache on version mismatch to prevent stale data.
+-   **Investment Dialog Calculated Fields:** Real-time calculation and display of total expected return, number of units, payment count, and payment value per installment within the investment dialog, with locale-aware number formatting.
+-   **Cash Balance Calculation:** Implemented sum aggregation across all transactions for accurate cash balance regardless of transaction creation order.
+-   **Page Header Redesign:** Unified blue header area for all page titles with action buttons, improved typography, and reduced spacing for a more compact layout.
 
 ## External Dependencies
-- **Charting**: Recharts for data visualization.
-- **Database**: In-memory storage (MemStorage) currently, with planned migration to PostgreSQL.
-- **Third-Party Integrations**: Future integration with external platform APIs (Sukuk, Manfa'a, Lendo) for automatic data synchronization is planned.
+-   **Charting:** Recharts for data visualization.
+-   **Database:** Currently uses in-memory storage (MemStorage), with future plans for migration to PostgreSQL.
+-   **Third-Party Integrations:** Future integration with external platform APIs (Sukuk, Manfa'a, Lendo) for automatic data synchronization is planned.
