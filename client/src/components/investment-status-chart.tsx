@@ -56,11 +56,11 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
 
   const total = metrics.totalInvestments;
 
-  // Custom label renderer - positioned outside the pie with better spacing and visibility
+  // Custom label renderer - positioned inside the pie chart
   const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent, value }: any) => {
     const RADIAN = Math.PI / 180;
-    // Position labels outside the pie chart with more spacing
-    const radius = outerRadius + 18;
+    // Position labels inside the pie chart (midpoint between inner and outer radius)
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -68,17 +68,18 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
       ? `${(percent * 100).toFixed(0)}%` 
       : `${value}`;
 
-    // Determine text anchor based on position relative to center
-    const anchor = x > cx ? 'start' : x < cx ? 'end' : 'middle';
-
     return (
       <text
         x={x}
         y={y}
-        fill="currentColor"
-        textAnchor={anchor}
+        fill="white"
+        textAnchor="middle"
         dominantBaseline="central"
-        className="fill-foreground font-bold text-[12px]"
+        className="font-bold text-[11px]"
+        style={{ 
+          textShadow: '0 0 3px rgba(0,0,0,0.8)',
+          pointerEvents: 'none'
+        }}
       >
         {displayText}
       </text>
@@ -111,7 +112,6 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
             {/* Legend - Status Labels with Colors */}
             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
               {data.map((item, index) => {
-                const percentage = ((item.value / total) * 100).toFixed(0);
                 return (
                   <div key={index} className="flex items-center gap-1.5" data-testid={`legend-item-${index}`}>
                     <div 
@@ -119,7 +119,7 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="text-xs text-muted-foreground truncate">
-                      {item.name}: <span className="font-semibold text-foreground">{item.value}</span> ({percentage}%)
+                      {item.name}: <span className="font-semibold text-foreground">{item.value}</span>
                     </span>
                   </div>
                 );
@@ -134,9 +134,9 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
                   data={data}
                   cx="50%"
                   cy="50%"
-                  labelLine={true}
+                  labelLine={false}
                   label={renderLabel}
-                  outerRadius={35}
+                  outerRadius={42}
                   fill="#8884d8"
                   dataKey="value"
                   stroke="none"
