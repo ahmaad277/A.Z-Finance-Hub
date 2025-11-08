@@ -125,6 +125,22 @@ The application utilizes a modern web stack:
 - **Typography**: Page titles reduced from text-2xl/3xl to text-xl/2xl for consistency
 - **Spacing**: Reduced page spacing from space-y-6 to space-y-3/4 for more compact layout
 
+### Investment Dialog Calculated Fields (Nov 8, 2025)
+- **Real-time Calculation Display**: Investment dialog now shows calculated metrics as user fills the form
+- **Calculated Metrics**:
+  - Total Expected Return: Displays total returns over investment lifetime (SAR)
+  - Number of Units/Shares: Shows how many units the investment amount represents (1 SAR = 1 unit)
+  - Payment Count: Calculates total number of payments based on frequency and duration
+  - Payment Value per Installment: Average payment amount per period
+- **Locale-Aware Number Formatting**:
+  - English (en-US): Latin numerals (0-9) with format "SAR 23,983.57"
+  - Arabic (ar-SA): Arabic-Indic numerals (٠-٩) with format "ر.س.‏ ٢٣٬٩٨٣٫٥٧"
+  - Uses `Intl.NumberFormat` with automatic locale detection based on selected language
+  - All numeric values respect the active language setting for proper i18n compliance
+- **Performance Optimization**: Single `form.watch()` subscription to avoid redundant re-renders
+- **UX Enhancement**: Instant visual feedback helps users understand investment structure before submission
+- **Implementation**: Centralized locale detection (`language === 'ar' ? 'ar-SA' : 'en-US'`) ensures consistency across all calculated fields
+
 ## External Dependencies
 - **Charting**: Recharts for data visualization.
 - **Database**: In-memory storage (MemStorage) currently, with planned migration to PostgreSQL.
