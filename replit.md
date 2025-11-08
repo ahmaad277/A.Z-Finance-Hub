@@ -33,6 +33,18 @@ The application utilizes a modern web stack:
 
 ## Recent Updates
 
+### Cash Balance Calculation Fix (Nov 8, 2025)
+- **Critical Bug Fixed**: Cash balance was calculated incorrectly using `balanceAfter` from latest transaction by `createdAt`
+- **Problem**: Transactions added out of chronological order caused massive balance discrepancies
+- **Solution**: 
+  - `getCashBalance()` now uses SUM aggregation across all transactions
+  - Deposits & distributions: +amount
+  - Withdrawals & investments: -amount
+  - No longer relies on `balanceAfter` field (deprecated)
+- **Impact**: Balance is always accurate regardless of transaction creation order
+- **Tested**: Multiple deposits/withdrawals verified with SQL (408,710 SAR ✓)
+- **Performance**: O(n) aggregation query, suitable for current scale
+
 ### Auto Cash Distribution (Nov 7, 2025)
 - **Feature**: Automatic cash transaction creation when cashflows are marked as "received"
 - **Implementation**:

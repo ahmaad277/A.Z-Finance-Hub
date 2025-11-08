@@ -59,7 +59,7 @@ import {
   type ViewRequestWithUser,
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, desc, and, or, gte, lte, sum, inArray } from "drizzle-orm";
+import { eq, desc, and, or, gte, lte, sum, inArray, sql } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 
@@ -420,26 +420,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCashTransaction(transaction: InsertCashTransaction): Promise<CashTransaction> {
-    const currentBalance = await this.getCashBalance();
-    
-    // Convert amount to number and apply sign based on transaction type
-    let amountChange = parseFloat(transaction.amount.toString());
-    
-    // Deduct for withdrawals and investments, add for deposits and distributions
-    if (transaction.type === 'withdrawal' || transaction.type === 'investment') {
-      amountChange = -Math.abs(amountChange); // Ensure negative
-    } else {
-      amountChange = Math.abs(amountChange); // Ensure positive
-    }
-    
-    const newBalance = currentBalance + amountChange;
-    
     const [cashTransaction] = await db
       .insert(cashTransactions)
       .values({
         ...transaction,
         amount: Math.abs(parseFloat(transaction.amount.toString())).toString(), // Store absolute value
-        balanceAfter: newBalance.toString(),
+        balanceAfter: '0', // Deprecated field, will calculate from SUM
       })
       .returning();
     
@@ -447,17 +433,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCashBalance(): Promise<number> {
-    const [latestTransaction] = await db
-      .select()
-      .from(cashTransactions)
-      .orderBy(desc(cashTransactions.createdAt))
-      .limit(1);
+    const result = await db
+      .select({
+        balance: sql<string>`
+          SUM(CASE 
+            WHEN type IN ('deposit', 'distribution') THEN CAST(amount AS NUMERIC)
+            WHEN type IN ('withdrawal', 'investment') THEN -CAST(amount AS NUMERIC)
+            ELSE 0
+          END)
+        `
+      })
+      .from(cashTransactions);
     
-    if (!latestTransaction) {
+    if (!result[0] || result[0].balance === null) {
       return 0;
     }
     
-    return parseFloat(latestTransaction.balanceAfter);
+    return parseFloat(result[0].balance);
   }
 
   // Analytics
