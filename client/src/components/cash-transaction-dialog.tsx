@@ -77,13 +77,16 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          size="icon" 
+          size="sm" 
           variant={isDeposit ? "success" : "destructive"}
-          className="h-9 w-9"
+          className="h-9 px-2 gap-1"
           data-testid={`button-${type}-cash`}
           title={isDeposit ? t("cash.addCash") : t("cash.withdrawCash")}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5" />
+          <span className="text-[10px] font-medium leading-none">
+            {isDeposit ? "إيداع" : "سحب"}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]" data-testid={`dialog-${type}-cash`}>
