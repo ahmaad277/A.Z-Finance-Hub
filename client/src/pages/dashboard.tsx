@@ -542,28 +542,28 @@ export default function Dashboard() {
                   {/* Current Progress */}
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("dashboard.currentProgress")}</p>
-                    <p className="text-2xl font-bold">{formatPercentage(currentProgress)}</p>
+                    <p className="text-lg font-bold">{formatPercentage(currentProgress)}</p>
                     <p className="text-sm text-muted-foreground">{formatCurrency(currentPortfolioValue)}</p>
                   </div>
                   
                   {/* Expected Progress */}
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("dashboard.expectedProgress")}</p>
-                    <p className="text-2xl font-bold">{formatPercentage(expectedProgressPercent)}</p>
+                    <p className="text-lg font-bold">{formatPercentage(expectedProgressPercent)}</p>
                     <p className="text-sm text-muted-foreground">{formatCurrency(expectedValue)}</p>
                   </div>
                   
                   {/* Target */}
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("dashboard.target2040")}</p>
-                    <p className="text-2xl font-bold">{formatCurrency(target2040)}</p>
+                    <p className="text-lg font-bold">{formatCurrency(target2040)}</p>
                     <p className="text-sm text-muted-foreground">{t("dashboard.by2040")}</p>
                   </div>
                   
                   {/* Required Annual Return */}
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("dashboard.requiredAnnualReturn")}</p>
-                    <p className="text-2xl font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
+                    <p className="text-lg font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
                     <p className="text-sm text-muted-foreground">{t("dashboard.toReachTarget")}</p>
                   </div>
                 </div>
@@ -616,7 +616,7 @@ export default function Dashboard() {
       {platformStats.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t("dashboard.platformsOverview")}</h2>
+            <h2 className="text-lg font-semibold">{t("dashboard.platformsOverview")}</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {platformStats.map(({ platform, investments, totalReturns, averageIrr, averageDuration }) => (
@@ -645,7 +645,7 @@ export default function Dashboard() {
             <div className="grid gap-6 lg:grid-cols-7">
               <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle>{t("dashboard.portfolioPerformance")}</CardTitle>
+                  <CardTitle className="text-lg">{t("dashboard.portfolioPerformance")}</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -679,7 +679,7 @@ export default function Dashboard() {
 
               <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle>{t("dashboard.upcomingCashflows")}</CardTitle>
+                  <CardTitle className="text-lg">{t("dashboard.upcomingCashflows")}</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -714,7 +714,7 @@ export default function Dashboard() {
 
             <Card data-testid="card-recent-investments">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>{t("dashboard.recentInvestments")}</CardTitle>
+                <CardTitle className="text-lg">{t("dashboard.recentInvestments")}</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
