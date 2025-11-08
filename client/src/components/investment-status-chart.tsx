@@ -56,11 +56,11 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
 
   const total = metrics.totalInvestments;
 
-  // Custom label renderer - positioned outside the pie with better spacing
+  // Custom label renderer - positioned outside the pie with better spacing and visibility
   const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent, value }: any) => {
     const RADIAN = Math.PI / 180;
     // Position labels outside the pie chart with more spacing
-    const radius = outerRadius + 15;
+    const radius = outerRadius + 18;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -78,7 +78,7 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
         fill="currentColor"
         textAnchor={anchor}
         dominantBaseline="central"
-        className="fill-foreground font-semibold text-[11px]"
+        className="fill-foreground font-bold text-[12px]"
       >
         {displayText}
       </text>
@@ -96,17 +96,35 @@ export function InvestmentStatusChart({ metrics }: InvestmentStatusChartProps) {
       data-testid="card-status-chart"
     >
       <div className="py-3 px-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <PieChart className="h-4 w-4 text-primary" />
               <h3 className="text-lg font-semibold">
                 {t("dashboard.investmentStatus")}
               </h3>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-3">
               {t("dashboard.totalInvestments")}: {total}
             </p>
+            
+            {/* Legend - Status Labels with Colors */}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+              {data.map((item, index) => {
+                const percentage = ((item.value / total) * 100).toFixed(0);
+                return (
+                  <div key={index} className="flex items-center gap-1.5" data-testid={`legend-item-${index}`}>
+                    <div 
+                      className="w-2.5 h-2.5 rounded-sm flex-shrink-0" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-xs text-muted-foreground truncate">
+                      {item.name}: <span className="font-semibold text-foreground">{item.value}</span> ({percentage}%)
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           
           <div className="w-[100px] h-[100px] flex-shrink-0">
