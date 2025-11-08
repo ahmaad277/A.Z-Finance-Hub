@@ -198,12 +198,9 @@ export function calculateDashboardMetrics(
     return sum + receivedCashflows.reduce((s, cf) => s + parseFloat(cf.amount), 0);
   }, 0);
   
-  // Calculate expected returns based on IRR
+  // Calculate expected returns from totalExpectedProfit in schema
   const expectedReturns = filteredInvestments.reduce((sum, inv) => {
-    const amount = parseFloat(inv.amount);
-    const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
-    const profit = calculateExpectedProfit(amount, inv.expectedIrr, durationMonths);
-    return sum + profit;
+    return sum + parseFloat(inv.totalExpectedProfit || "0");
   }, 0);
   
   const returnsRatio = expectedReturns > 0 ? (actualReturns / expectedReturns) * 100 : 0;
@@ -216,8 +213,12 @@ export function calculateDashboardMetrics(
   const totalActiveValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
   const weightedAPR = totalActiveValue > 0
     ? activeInvestments.reduce((sum, inv) => {
-        const weight = parseFloat(inv.amount) / totalActiveValue;
-        return sum + (parseFloat(inv.expectedIrr) * weight);
+        const amount = parseFloat(inv.amount);
+        const profit = parseFloat(inv.totalExpectedProfit || "0");
+        const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
+        const apr = calculateAPR(amount, profit, durationMonths);
+        const weight = amount / totalActiveValue;
+        return sum + (apr * weight);
       }, 0)
     : 0;
   
