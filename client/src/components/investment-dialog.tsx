@@ -35,8 +35,17 @@ import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
-import { Wallet, AlertCircle } from "lucide-react";
+import { Wallet, AlertCircle, Plus, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Custom cashflow type for manual entry
+interface CustomCashflow {
+  id: string;
+  dueDate: string;
+  amount: number;
+  type: 'profit' | 'principal';
+  notes?: string;
+}
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
@@ -67,6 +76,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
 
   const [userEditedProfit, setUserEditedProfit] = useState(false);
   const isResettingRef = useRef(false);
+  const [customCashflows, setCustomCashflows] = useState<CustomCashflow[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,9 +115,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
           ? new Date(investment.actualEndDate).toISOString().split("T")[0]
           : undefined,
         expectedIrr: parseFloat(investment.expectedIrr),
-        status: investment.status,
+        status: investment.status as "active" | "late" | "defaulted" | "completed" | "pending",
         riskScore: investment.riskScore || 50,
-        distributionFrequency: investment.distributionFrequency as "monthly" | "quarterly" | "semi_annually" | "annually" | "at_maturity",
+        distributionFrequency: investment.distributionFrequency as "monthly" | "quarterly" | "semi_annually" | "annually" | "at_maturity" | "custom",
         profitPaymentStructure: (investment.profitPaymentStructure || "periodic") as "periodic" | "at_maturity",
         fundedFromCash: investment.fundedFromCash,
         isReinvestment: investment.isReinvestment,
@@ -520,6 +530,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         <SelectItem value="annually">{t("dialog.annual")}</SelectItem>
                         <SelectItem value="at_maturity">
                           {language === 'ar' ? 'عند الاستحقاق' : 'At Maturity'}
+                        </SelectItem>
+                        <SelectItem value="custom">
+                          {language === 'ar' ? 'جدول مخصص' : 'Custom Schedule'}
                         </SelectItem>
                       </SelectContent>
                     </Select>
