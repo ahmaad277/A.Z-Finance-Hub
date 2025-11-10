@@ -162,8 +162,8 @@ export default function Investments() {
       queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cash-transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cash-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
       
       toast({
         title: language === "ar" ? "تم الحذف" : "Deleted",

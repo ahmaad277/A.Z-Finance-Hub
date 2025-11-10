@@ -169,7 +169,7 @@ export default function Cash() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t("cash.availableBalance")}</p>
-                <p className="text-2xl font-bold text-chart-2">{formatCurrency(cashBalance, language)}</p>
+                <p className="text-2xl font-bold text-chart-2">{formatCurrency(cashBalance, "SAR")}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-chart-2/10 flex items-center justify-center">
                 <Wallet className="h-6 w-6 text-chart-2" />
@@ -183,7 +183,7 @@ export default function Cash() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t("cash.totalDeposits")}</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.deposits, language)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(stats.deposits, "SAR")}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-chart-2/10 flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-chart-2" />
@@ -197,7 +197,7 @@ export default function Cash() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t("cash.totalWithdrawals")}</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.withdrawals, language)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(stats.withdrawals, "SAR")}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-destructive/10 flex items-center justify-center">
                 <TrendingDown className="h-6 w-6 text-destructive" />
@@ -211,7 +211,7 @@ export default function Cash() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t("cash.totalInvestments")}</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.investments, language)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(stats.investments, "SAR")}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                 <DollarSign className="h-6 w-6 text-primary" />
@@ -300,7 +300,7 @@ export default function Cash() {
                           : "text-destructive"
                       }`}>
                         {transaction.type === "deposit" || transaction.type === "distribution" ? "+" : "-"}
-                        {formatCurrency(parseFloat(transaction.amount), language)}
+                        {formatCurrency(parseFloat(transaction.amount), "SAR")}
                       </td>
                       <td className="p-4 text-sm text-muted-foreground hidden md:table-cell max-w-xs truncate">
                         {transaction.notes || "-"}
