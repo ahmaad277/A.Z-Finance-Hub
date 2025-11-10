@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Filter, ArrowUpDown } from "lucide-react";
+import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/lib/language-provider";
 import { InvestmentRow } from "@/components/investment-row";
+import { InvestmentCompactRow } from "@/components/investment-compact-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
 import { AddPaymentDialog } from "@/components/add-payment-dialog";
@@ -40,6 +41,8 @@ export default function Investments() {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date-desc");
+  const [compactView, setCompactView] = useState<boolean>(true); // Default to compact view
+  const [selectedInvestment, setSelectedInvestment] = useState<InvestmentWithPlatform | null>(null);
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -314,18 +317,30 @@ export default function Investments() {
 
   return (
     <div className="space-y-4" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Blue Header Area with Title and Button */}
+      {/* Blue Header Area with Title and Buttons */}
       <div className="bg-primary/10 rounded-lg px-4 py-3 flex flex-row items-center justify-between gap-2">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-shrink min-w-0">{t("investments.title")}</h1>
-        <Button
-          onClick={handleAddNew}
-          data-testid="button-add-investment"
-          className="gap-2 flex-shrink-0 h-9"
-          size="sm"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setCompactView(!compactView)}
+            data-testid="button-toggle-view"
+            variant="outline"
+            className="gap-2 flex-shrink-0 h-9"
+            size="sm"
+          >
+            {compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            <span className="hidden md:inline">{compactView ? t("common.expand") : t("common.compact")}</span>
+          </Button>
+          <Button
+            onClick={handleAddNew}
+            data-testid="button-add-investment"
+            className="gap-2 flex-shrink-0 h-9"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filters and Sort */}
@@ -414,6 +429,27 @@ export default function Investments() {
               </Button>
             )}
           </div>
+        </Card>
+      ) : compactView ? (
+        <Card>
+          <CardContent className="p-0">
+            {/* Compact View - Ultra-Dense 40px Rows */}
+            {filteredAndSortedInvestments.map((investment) => {
+              const investmentCashflows = (cashflows || []).filter(cf => cf.investmentId === investment.id);
+              const paymentsReceived = investmentCashflows.filter(cf => cf.status === "received").length;
+              const totalPayments = investmentCashflows.length;
+
+              return (
+                <InvestmentCompactRow
+                  key={investment.id}
+                  investment={investment}
+                  paymentsReceived={paymentsReceived}
+                  totalPayments={totalPayments}
+                  onClick={() => setSelectedInvestment(investment)}
+                />
+              );
+            })}
+          </CardContent>
         </Card>
       ) : (
         <Card>

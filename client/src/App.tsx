@@ -12,6 +12,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import Cashflows from "@/pages/cashflows";
+import Cash from "@/pages/cash";
 import Analytics from "@/pages/analytics";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/investments" component={Investments} />
       <Route path="/cashflows" component={Cashflows} />
+      <Route path="/cash" component={Cash} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />

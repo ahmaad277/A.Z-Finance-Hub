@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -30,6 +30,11 @@ const menuItems = [
     key: "cashflows",
     url: "/cashflows",
     icon: TrendingUp,
+  },
+  {
+    key: "cash",
+    url: "/cash",
+    icon: DollarSign,
   },
   {
     key: "analytics",
