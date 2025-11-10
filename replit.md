@@ -118,11 +118,69 @@ Comprehensive end-to-end testing validating the complete Sukuk investment lifecy
 3. Analytics Platform Allocation: Changed from `amount` to `faceValue` to prevent inflated percentages
 4. Analytics Performance vs Target: Fixed double-counting by using `faceValue + profit` only
 
+## Cash-Funded Investment System (November 2025)
+
+### Feature: Automatic Cash Deduction for Investments
+Investment dialog now supports funding investments directly from cash balance with intelligent validation.
+
+**Investment Dialog Enhancements:**
+- **Fund from Cash Balance** checkbox with real-time balance display
+- Cash balance fetched from `/api/cash/balance` endpoint (returns `{ balance: number }`)
+- Insufficient balance validation using `faceValue` (not `amount`)
+- Destructive alert appears when `faceValue > cashBalance`
+- Toast warning prevents submission when insufficient funds
+- **Critical Fix**: Corrected API response parsing from bare number to `{ balance: number }` object
+
+**Backend Implementation:**
+- `createInvestment()` in `server/storage.ts` deducts `faceValue` from cash when `fundedFromCash = 1`
+- Creates automatic cash transaction with `type='investment'` and `amount = -faceValue`
+- Uses principal invested (face value) for deduction, not total amount including expected profits
+- Proper Sukuk-aware capital tracking
+
+**Cache Invalidation:**
+After creating cash-funded investment, invalidates:
+- `/api/investments`
+- `/api/portfolio/stats`
+- `/api/analytics`
+- `/api/cash/transactions`
+- `/api/cash/balance`
+
+## Enhanced Goal Calculator (November 2025)
+
+### Feature: Portfolio-Linked Vision 2040 Planning
+Goal calculator now integrates with actual portfolio data and provides comprehensive progress tracking.
+
+**Portfolio Integration:**
+- `currentPortfolioValue` auto-calculated from active investments + cash balance
+- Uses `faceValue` for active investments (capital invested, excludes expected profits)
+- Syncs initial investment amount with current portfolio value
+- Real-time updates when investments or cash balance changes
+
+**UI Improvements:**
+- **Current Portfolio Value Card**: Displays total invested capital + cash (blue/primary theme)
+- **Vision 2040 Goal Card**: Shows SAR 10,000,000 target (green/chart-2 theme)
+- **Progress Bar**: Visual indicator of current progress toward 10M goal with percentage
+- **Gap Indicator**: Displays remaining amount needed to reach target
+- **Smart Alerts**:
+  - Red destructive alert when projected future value falls short of 10M target
+  - Green success alert when plan exceeds 10M goal
+  - Dynamic messaging based on calculation results
+
+**Calculations:**
+```typescript
+currentPortfolioValue = sum(faceValue for active investments) + cashBalance
+progressPercentage = (currentPortfolioValue / 10_000_000) * 100
+remainingToGoal = 10_000_000 - currentPortfolioValue
+```
+
 ## Recent Changes (November 2025)
+- **Cash-Funded Investment System**: Complete implementation of automatic cash deduction with validation and balance checking
+- **Enhanced Goal Calculator**: Portfolio-linked planning with progress tracking, smart alerts, and Vision 2040 integration
 - **Complete Sukuk System Integration**: Implemented intelligent cashflow generation understanding Sukuk structure (face value + profits)
 - **Financial Accuracy Improvements**: All metrics now properly separate capital (faceValue) from profit (totalExpectedProfit)
 - **Analytics Enhancements**: Charts filter profit vs principal to prevent double-counting and provide accurate reporting
-- **UI/UX Polish**: Investment cards, payment schedule, and auto-calculation all working seamlessly
+- **UI/UX Polish**: Investment cards, payment schedule, auto-calculation, cash funding validation, and goal tracking all working seamlessly
+- **Bug Fixes**: Cash balance API response parsing corrected to handle `{ balance: number }` structure
 - **Production Ready**: Full end-to-end testing passed with architect approval
 
 ## External Dependencies
