@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/language-provider";
 import { InvestmentRow } from "@/components/investment-row";
 import { InvestmentCompactRow } from "@/components/investment-compact-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
+import { InvestmentDetailsDrawer } from "@/components/investment-details-drawer";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
 import { AddPaymentDialog } from "@/components/add-payment-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -491,6 +492,19 @@ export default function Investments() {
         investmentId={addingPaymentForInvestment || ""}
         onSubmit={handleSubmitNewPayment}
         isPending={addCashflowMutation.isPending}
+      />
+
+      <InvestmentDetailsDrawer
+        open={!!selectedInvestment}
+        onOpenChange={(open) => !open && setSelectedInvestment(null)}
+        investment={selectedInvestment}
+        cashflows={cashflows || []}
+        onEdit={() => selectedInvestment && handleEdit(selectedInvestment)}
+        onDelete={() => selectedInvestment && handleDelete(selectedInvestment)}
+        onCompletePayment={() => selectedInvestment && handleCompletePayment(selectedInvestment)}
+        onAddPayment={handleAddPayment}
+        onRemovePayment={handleRemovePayment}
+        onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
