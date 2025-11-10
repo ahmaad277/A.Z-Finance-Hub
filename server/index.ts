@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
+import { checkAllInvestmentStatuses } from "../shared/status-manager";
 
 const app = express();
 
@@ -79,4 +81,59 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
+
+  // Background task: Periodic investment status checker
+  async function runInvestmentStatusCheck() {
+    try {
+      log('Running investment status check...');
+      
+      // Get all investments and cashflows
+      const investments = await storage.getInvestments();
+      const allCashflows = await storage.getCashflows();
+      
+      // Group cashflows by investment (optimized with Map to avoid O(n²))
+      const cashflowsByInvestment = new Map<string, typeof allCashflows>();
+      for (const cashflow of allCashflows) {
+        const investmentCashflows = cashflowsByInvestment.get(cashflow.investmentId) || [];
+        investmentCashflows.push(cashflow);
+        cashflowsByInvestment.set(cashflow.investmentId, investmentCashflows);
+      }
+      
+      const investmentsWithCashflows = investments.map((investment) => ({
+        investment,
+        cashflows: cashflowsByInvestment.get(investment.id) || [],
+      }));
+
+      // Check for status updates
+      const statusUpdates = checkAllInvestmentStatuses(investmentsWithCashflows);
+      
+      if (statusUpdates.length > 0) {
+        log(`Found ${statusUpdates.length} status updates to apply`);
+        
+        // Apply each status update
+        for (const update of statusUpdates) {
+          await storage.updateInvestmentStatus(
+            update.investmentId,
+            update.newStatus,
+            update.lateDate,
+            update.defaultedDate
+          );
+          log(`Updated investment ${update.investmentId} to status: ${update.newStatus}`);
+        }
+      } else {
+        log('No status updates needed');
+      }
+    } catch (error) {
+      log(`Error in investment status check: ${error}`);
+    }
+  }
+
+  // Run status check immediately on startup
+  runInvestmentStatusCheck();
+
+  // Run status check periodically (configurable via environment variable)
+  const CHECK_INTERVAL_MINUTES = parseInt(process.env.STATUS_CHECK_INTERVAL_MINUTES || '60', 10);
+  const CHECK_INTERVAL_MS = CHECK_INTERVAL_MINUTES * 60 * 1000;
+  setInterval(runInvestmentStatusCheck, CHECK_INTERVAL_MS);
+  log(`Investment status checker scheduled to run every ${CHECK_INTERVAL_MINUTES} minutes`);
 })();
