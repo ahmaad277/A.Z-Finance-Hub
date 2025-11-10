@@ -29,11 +29,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
+import { Wallet, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
@@ -55,6 +58,12 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
   });
+
+  // Fetch cash balance for validation
+  const { data: cashBalanceResponse } = useQuery<{ balance: number }>({
+    queryKey: ["/api/cash/balance"],
+  });
+  const cashBalance = cashBalanceResponse?.balance ?? 0;
 
   const [userEditedProfit, setUserEditedProfit] = useState(false);
   const isResettingRef = useRef(false);
@@ -264,6 +273,18 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   }, [formValues.faceValue, formValues.totalExpectedProfit, formValues.startDate, formValues.endDate, formValues.distributionFrequency, formValues.profitPaymentStructure]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    // Validate cash balance if funding from cash
+    if (data.fundedFromCash === 1 && data.faceValue > cashBalance) {
+      toast({
+        title: language === 'ar' ? 'خطأ' : 'Error',
+        description: language === 'ar' 
+          ? 'رصيدك النقدي غير كافٍ لهذا الاستثمار.' 
+          : 'Insufficient cash balance for this investment.',
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Send date strings directly - server will convert to Date objects
     if (investment) {
       updateMutation.mutate(data);
@@ -583,6 +604,46 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="fundedFromCash"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value === 1}
+                      onCheckedChange={(checked) => field.onChange(checked ? 1 : 0)}
+                      data-testid="checkbox-funded-from-cash"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      {language === 'ar' 
+                        ? 'تمويل من الرصيد النقدي' 
+                        : 'Fund from Cash Balance'}
+                    </FormLabel>
+                    <FormDescription>
+                      {language === 'ar' 
+                        ? `الرصيد المتاح: ${new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(cashBalance)}` 
+                        : `Available: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(cashBalance)}`}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {form.watch("fundedFromCash") === 1 && form.watch("faceValue") > cashBalance && (
+              <Alert variant="destructive" data-testid="alert-insufficient-balance">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {language === 'ar' 
+                    ? 'رصيدك النقدي غير كافٍ لهذا الاستثمار. يرجى تخفيض المبلغ أو إيداع المزيد من النقد.' 
+                    : 'Insufficient cash balance for this investment. Please reduce the amount or deposit more cash.'}
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Calculated Investment Details */}
             {calculatedMetrics && (

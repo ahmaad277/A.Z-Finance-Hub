@@ -256,10 +256,10 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     
-    // If funded from cash, deduct from cash balance
+    // If funded from cash, deduct from cash balance using face value (principal invested)
     if (insertInvestment.fundedFromCash === 1) {
       await this.createCashTransaction({
-        amount: String(insertInvestment.amount),
+        amount: String(insertInvestment.faceValue),
         type: 'investment',
         source: 'investment',
         notes: `Investment: ${insertInvestment.name}`,

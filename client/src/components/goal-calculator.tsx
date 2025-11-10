@@ -2,11 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/language-provider";
-import { Target, TrendingUp, DollarSign, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { Target, TrendingUp, DollarSign, Calendar, ChevronDown, ChevronUp, Wallet, ArrowUp, AlertCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import type { InvestmentWithPlatform, CashTransaction } from "@shared/schema";
 
@@ -35,13 +37,14 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
     queryKey: ["/api/cash/transactions"],
   });
 
-  // Calculate current portfolio value
+  // Calculate current portfolio value using face value (principal invested)
   const currentPortfolioValue = useMemo(() => {
     if (!investments || !cashTransactions) return 10000; // Default fallback
     
+    // Use faceValue for active investments (principal invested, not including expected profits)
     const activeInvestmentsValue = investments
       .filter(inv => inv.status === "active")
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
     
     const cashBalance = cashTransactions.reduce((balance, tx) => {
       const amount = parseFloat(tx.amount);
@@ -223,6 +226,71 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
           </div>
         </div>
 
+        {/* Current Portfolio Summary */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Wallet className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' ? 'قيمة المحفظة الحالية' : 'Current Portfolio Value'}
+                  </p>
+                  <p className="text-2xl font-bold text-primary" data-testid="text-current-portfolio">
+                    {formatCurrency(currentPortfolioValue)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-chart-2/5 border-chart-2/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-chart-2/10 rounded-lg">
+                  <Target className="h-5 w-5 text-chart-2" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' ? 'هدف رؤية 2040' : 'Vision 2040 Goal'}
+                  </p>
+                  <p className="text-2xl font-bold text-chart-2" data-testid="text-vision-goal">
+                    {formatCurrency(10000000)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Progress towards Vision 2040 */}
+        <Card className="border-chart-1/30">
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">
+                  {language === 'ar' ? 'التقدم نحو رؤية 2040' : 'Progress to Vision 2040'}
+                </p>
+                <p className="text-sm font-bold text-chart-1">
+                  {((currentPortfolioValue / 10000000) * 100).toFixed(2)}%
+                </p>
+              </div>
+              <Progress 
+                value={(currentPortfolioValue / 10000000) * 100} 
+                className="h-2"
+                data-testid="progress-vision-2040" 
+              />
+              <p className="text-xs text-muted-foreground">
+                {language === 'ar' 
+                  ? `المتبقي: ${formatCurrency(10000000 - currentPortfolioValue)}` 
+                  : `Remaining: ${formatCurrency(10000000 - currentPortfolioValue)}`}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <Button
           onClick={calculateGoal}
           className="w-full"
@@ -234,6 +302,28 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
 
         {result && (
           <div className="space-y-4">
+            {/* Smart Alert based on results */}
+            {result.futureValue < 10000000 && (
+              <Alert variant="destructive" data-testid="alert-goal-warning">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {language === 'ar' 
+                    ? `تحذير: خطتك الحالية ستوصلك إلى ${formatCurrency(result.futureValue)} بحلول ${new Date().getFullYear() + inputs.durationYears}، وهو أقل من هدف رؤية 2040 (${formatCurrency(10000000)}). حاول زيادة المساهمة الشهرية أو المدة الزمنية.` 
+                    : `Warning: Your current plan will reach ${formatCurrency(result.futureValue)} by ${new Date().getFullYear() + inputs.durationYears}, which is below the Vision 2040 goal (${formatCurrency(10000000)}). Consider increasing your monthly deposit or duration.`}
+                </AlertDescription>
+              </Alert>
+            )}
+            {result.futureValue >= 10000000 && (
+              <Alert className="border-chart-1 bg-chart-1/5" data-testid="alert-goal-success">
+                <ArrowUp className="h-4 w-4 text-chart-1" />
+                <AlertDescription className="text-chart-1">
+                  {language === 'ar' 
+                    ? `ممتاز! خطتك الحالية ستوصلك إلى ${formatCurrency(result.futureValue)} بحلول ${new Date().getFullYear() + inputs.durationYears}، متجاوزة هدف رؤية 2040!` 
+                    : `Excellent! Your current plan will reach ${formatCurrency(result.futureValue)} by ${new Date().getFullYear() + inputs.durationYears}, exceeding the Vision 2040 goal!`}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader className="pb-2">
