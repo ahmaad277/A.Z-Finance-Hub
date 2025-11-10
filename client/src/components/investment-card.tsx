@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign, CheckCircle } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
@@ -47,21 +47,10 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
     return language === "ar" ? `${delayDays}ي` : `${delayDays}d`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-chart-2/10 text-chart-2";
-      case "completed":
-        return "bg-muted text-muted-foreground";
-      case "pending":
-        return "bg-primary/10 text-primary";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
+  const statusConfig = getInvestmentStatusConfig(investment.status);
 
   return (
-    <Card className="hover-elevate transition-all duration-200 border-l-4 border-l-primary" data-testid={`card-investment-${investment.id}`}>
+    <Card className={`hover-elevate transition-all duration-200 border-l-4 ${statusConfig.borderLeft}`} data-testid={`card-investment-${investment.id}`}>
       <CardHeader className="space-y-0 pb-3">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1">
@@ -72,7 +61,7 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
             )}
             <CardTitle className="text-lg line-clamp-2">{investment.name}</CardTitle>
           </div>
-          <Badge className={getStatusColor(investment.status)} variant="outline" data-testid={`badge-status-${investment.status}`}>
+          <Badge className={statusConfig.badge} variant="outline" data-testid={`badge-status-${investment.status}`}>
             {t(`investments.${investment.status}`)}
           </Badge>
         </div>

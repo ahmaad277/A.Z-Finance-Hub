@@ -117,3 +117,48 @@ export function convertArabicToEnglishNumbers(str: string): string {
 export function normalizeNumberInput(value: string): string {
   return convertArabicToEnglishNumbers(value);
 }
+
+export interface InvestmentStatusConfig {
+  badge: string;
+  rowBackground: string;
+  borderLeft: string;
+}
+
+export function getInvestmentStatusConfig(status: string): InvestmentStatusConfig {
+  const configs: Record<string, InvestmentStatusConfig> = {
+    active: {
+      badge: "bg-chart-2/10 text-chart-2 border-chart-2/20",
+      rowBackground: "bg-chart-2/5 hover:bg-chart-2/10",
+      borderLeft: "border-l-chart-2",
+    },
+    completed: {
+      badge: "bg-muted text-muted-foreground",
+      rowBackground: "bg-muted/50 hover:bg-muted/70",
+      borderLeft: "border-l-muted-foreground",
+    },
+    late: {
+      badge: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      rowBackground: "bg-yellow-500/5 hover:bg-yellow-500/10",
+      borderLeft: "border-l-yellow-500",
+    },
+    defaulted: {
+      badge: "bg-destructive/10 text-destructive border-destructive/20",
+      rowBackground: "bg-destructive/5 hover:bg-destructive/10",
+      borderLeft: "border-l-destructive",
+    },
+    pending: {
+      badge: "bg-primary/10 text-primary border-primary/20",
+      rowBackground: "bg-primary/5 hover:bg-primary/10",
+      borderLeft: "border-l-primary",
+    },
+  };
+
+  // Neutral fallback for unknown statuses
+  const neutralFallback: InvestmentStatusConfig = {
+    badge: "bg-muted text-muted-foreground border-muted-foreground/20",
+    rowBackground: "bg-muted/30 hover:bg-muted/50",
+    borderLeft: "border-l-muted-foreground",
+  };
+
+  return configs[status] || neutralFallback;
+}

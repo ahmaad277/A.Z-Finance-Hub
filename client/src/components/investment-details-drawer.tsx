@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatDate, calculateROI } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, Trash2, CheckCircle, X, Calendar, DollarSign, TrendingUp, Target, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,19 +59,7 @@ export function InvestmentDetailsDrawer({
   // Calculate ROI
   const roi = calculateROI(parseFloat(investment.faceValue || investment.amount), totalReturns);
 
-  // Status badge color
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-chart-2/10 text-chart-2 border-chart-2/20";
-      case "completed":
-        return "bg-muted text-muted-foreground border-muted-foreground/20";
-      case "pending":
-        return "bg-primary/10 text-primary border-primary/20";
-      default:
-        return "bg-secondary text-secondary-foreground border-secondary/20";
-    }
-  };
+  const statusConfig = getInvestmentStatusConfig(investment.status);
 
   // Get countdown days
   const getCountdownDays = () => {
@@ -99,8 +87,8 @@ export function InvestmentDetailsDrawer({
               </DrawerTitle>
               <DrawerDescription className="flex items-center gap-2 mt-1" data-testid="text-platform-name">
                 <span className="text-sm font-medium">{investment.platform?.name || ""}</span>
-                <Badge variant="outline" className={getStatusBadgeColor(investment.status)} data-testid={`badge-status-${investment.status}`}>
-                  {investment.status.toUpperCase()}
+                <Badge variant="outline" className={statusConfig.badge} data-testid={`badge-status-${investment.status}`}>
+                  {t(`investments.${investment.status}`)}
                 </Badge>
               </DrawerDescription>
             </div>

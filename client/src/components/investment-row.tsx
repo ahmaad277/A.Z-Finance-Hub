@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatCurrency, formatPercentage, formatDate, calculateROI } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,39 +54,13 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
     ? investmentCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
     : 0;
   
-  // Status colors for row background
-  const getStatusColors = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-chart-2/5 hover:bg-chart-2/10 border-l-chart-2";
-      case "completed":
-        return "bg-muted/50 hover:bg-muted/70 border-l-muted-foreground";
-      case "pending":
-        return "bg-primary/5 hover:bg-primary/10 border-l-primary";
-      default:
-        return "bg-card hover:bg-muted/30 border-l-muted-foreground";
-    }
-  };
-  
-  // Status badge color
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-chart-2/10 text-chart-2 border-chart-2/20";
-      case "completed":
-        return "bg-muted text-muted-foreground";
-      case "pending":
-        return "bg-primary/10 text-primary border-primary/20";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
+  const statusConfig = getInvestmentStatusConfig(investment.status);
   
   return (
     <div
       className={`
         flex flex-col rounded-lg border-l-4 transition-all duration-200
-        ${getStatusColors(investment.status)}
+        ${statusConfig.rowBackground} ${statusConfig.borderLeft}
       `}
       data-testid={`row-investment-${investment.id}`}
       dir={isRtl ? "rtl" : "ltr"}
@@ -104,7 +78,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               </Badge>
             )}
             <Badge 
-              className={`${getStatusBadgeColor(investment.status)} text-[10px] px-1 py-0 h-4 shrink-0`}
+              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4 shrink-0`}
               variant="outline"
               data-testid={`badge-status-${investment.status}`}
             >
@@ -258,7 +232,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               </Badge>
             )}
             <Badge 
-              className={`${getStatusBadgeColor(investment.status)} text-xs shrink-0`}
+              className={`${statusConfig.badge} text-xs shrink-0`}
               variant="outline"
               data-testid={`badge-status-${investment.status}`}
             >
