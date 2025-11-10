@@ -34,12 +34,16 @@ export const investments = pgTable("investments", {
   profitPaymentStructure: text("profit_payment_structure").notNull().default("periodic"), // 'periodic' = profits during term, 'at_maturity' = profits with principal at end
   isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
   fundedFromCash: integer("funded_from_cash").notNull().default(0), // 0 = external funding, 1 = funded from cash balance
+  lateDate: timestamp("late_date"), // Date when investment status became 'late'
+  defaultedDate: timestamp("defaulted_date"), // Date when investment status became 'defaulted'
 });
 
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
   id: true, 
   actualIrr: true,
-  actualEndDate: true
+  actualEndDate: true,
+  lateDate: true,
+  defaultedDate: true
 }).extend({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
@@ -47,8 +51,9 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   faceValue: z.coerce.number().positive(),
   totalExpectedProfit: z.coerce.number().nonnegative(),
   expectedIrr: z.coerce.number().min(0).max(100),
-  distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity']),
+  distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity', 'custom']),
   profitPaymentStructure: z.enum(['periodic', 'at_maturity']),
+  status: z.enum(['active', 'late', 'defaulted', 'completed', 'pending']).optional(),
 });
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 export type Investment = typeof investments.$inferSelect;

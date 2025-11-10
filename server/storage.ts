@@ -80,6 +80,7 @@ export interface IStorage {
   getInvestment(id: string): Promise<Investment | undefined>;
   createInvestment(investment: InsertInvestment): Promise<Investment>;
   updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined>;
+  updateInvestmentStatus(id: string, status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', lateDate?: Date | null, defaultedDate?: Date | null): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
 
   // Cashflows
@@ -321,19 +322,57 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInvestment(id: string, update: Partial<InsertInvestment>): Promise<Investment | undefined> {
-    // Convert numbers to strings for database
-    const dbUpdate: Partial<Investment> = { ...update };
+    // Convert numbers to strings for database - explicit type-safe mapping
+    const dbUpdate: Partial<Investment> = {};
+    
+    // String fields
+    if (update.name !== undefined) dbUpdate.name = update.name;
+    if (update.platformId !== undefined) dbUpdate.platformId = update.platformId;
+    if (update.status !== undefined) dbUpdate.status = update.status;
+    if (update.distributionFrequency !== undefined) dbUpdate.distributionFrequency = update.distributionFrequency;
+    if (update.profitPaymentStructure !== undefined) dbUpdate.profitPaymentStructure = update.profitPaymentStructure;
+    
+    // Numeric fields - convert to string for database
     if (update.amount !== undefined) dbUpdate.amount = String(update.amount);
     if (update.faceValue !== undefined) dbUpdate.faceValue = String(update.faceValue);
     if (update.totalExpectedProfit !== undefined) dbUpdate.totalExpectedProfit = String(update.totalExpectedProfit);
     if (update.expectedIrr !== undefined) dbUpdate.expectedIrr = String(update.expectedIrr);
-    if (update.actualIrr !== undefined) dbUpdate.actualIrr = String(update.actualIrr);
+    
+    // Date fields
+    if (update.startDate !== undefined) dbUpdate.startDate = update.startDate;
+    if (update.endDate !== undefined) dbUpdate.endDate = update.endDate;
+    
+    // Integer fields
+    if (update.riskScore !== undefined) dbUpdate.riskScore = update.riskScore;
+    if (update.isReinvestment !== undefined) dbUpdate.isReinvestment = update.isReinvestment;
+    if (update.fundedFromCash !== undefined) dbUpdate.fundedFromCash = update.fundedFromCash;
     
     const [investment] = await db
       .update(investments)
       .set(dbUpdate)
       .where(eq(investments.id, id))
       .returning();
+    return investment || undefined;
+  }
+
+  async updateInvestmentStatus(
+    id: string, 
+    status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', 
+    lateDate?: Date | null, 
+    defaultedDate?: Date | null
+  ): Promise<Investment | undefined> {
+    const updateData: Partial<Investment> = {
+      status,
+      lateDate: lateDate || null,
+      defaultedDate: defaultedDate || null,
+    };
+    
+    const [investment] = await db
+      .update(investments)
+      .set(updateData)
+      .where(eq(investments.id, id))
+      .returning();
+    
     return investment || undefined;
   }
 
