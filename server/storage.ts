@@ -2,6 +2,7 @@ import {
   platforms,
   investments,
   cashflows,
+  customDistributions,
   alerts,
   userSettings,
   cashTransactions,
@@ -57,6 +58,7 @@ import {
   type AuditLogWithActor,
   type ExportRequestWithUser,
   type ViewRequestWithUser,
+  type ApiCustomDistribution,
 } from "@shared/schema";
 import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
 import { db, pool } from "./db";
@@ -78,10 +80,11 @@ export interface IStorage {
   // Investments
   getInvestments(): Promise<InvestmentWithPlatform[]>;
   getInvestment(id: string): Promise<Investment | undefined>;
-  createInvestment(investment: InsertInvestment): Promise<Investment>;
-  updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined>;
+  createInvestment(investment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment>;
+  updateInvestment(id: string, investment: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment | undefined>;
   updateInvestmentStatus(id: string, status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', lateDate?: Date | null, defaultedDate?: Date | null): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
+  getCustomDistributions(investmentId: string): Promise<ApiCustomDistribution[]>;
 
   // Cashflows
   getCashflows(): Promise<CashflowWithInvestment[]>;
@@ -242,51 +245,96 @@ export class DatabaseStorage implements IStorage {
     return investment || undefined;
   }
 
-  async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
-    // Create the investment (convert numbers to strings for database)
-    const [investment] = await db
-      .insert(investments)
-      .values({
-        ...insertInvestment,
-        amount: String(insertInvestment.amount),
-        faceValue: String(insertInvestment.faceValue),
-        totalExpectedProfit: String(insertInvestment.totalExpectedProfit),
-        expectedIrr: String(insertInvestment.expectedIrr),
-        actualIrr: null,
-        actualEndDate: null,
-      })
-      .returning();
+  async createInvestment(insertInvestment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment> {
+    // Wrap all operations in a transaction for atomicity
+    return await db.transaction(async (tx) => {
+      // Create the investment (convert numbers to strings for database)
+      const [investment] = await tx
+        .insert(investments)
+        .values({
+          ...insertInvestment,
+          amount: String(insertInvestment.amount),
+          faceValue: String(insertInvestment.faceValue),
+          totalExpectedProfit: String(insertInvestment.totalExpectedProfit),
+          expectedIrr: String(insertInvestment.expectedIrr),
+          actualIrr: null,
+          actualEndDate: null,
+        })
+        .returning();
+      
+      // If funded from cash, deduct from cash balance using face value (principal invested)
+      if (insertInvestment.fundedFromCash === 1) {
+        // Calculate new balance
+        const currentBalance = await this.getCashBalance();
+        const newBalance = currentBalance - parseFloat(insertInvestment.faceValue as any);
+        
+        await tx.insert(cashTransactions).values({
+          amount: String(insertInvestment.faceValue),
+          type: 'investment',
+          source: 'investment',
+          notes: `Investment: ${insertInvestment.name}`,
+          date: insertInvestment.startDate,
+          investmentId: investment.id,
+          balanceAfter: String(newBalance.toFixed(2)),
+        });
+      }
+      
+      // Handle cashflow generation based on custom distributions
+      if (customDistributionPayload && customDistributionPayload.length > 0) {
+        // Save custom distributions and create matching cashflows
+        await this.saveCustomDistributions(tx, investment.id, customDistributionPayload);
+      } else {
+        // Auto-generate cashflows based on distribution frequency
+        await this.generateCashflowsForInvestment(tx, investment);
+      }
+      
+      return investment;
+    });
+  }
+  
+  /**
+   * Save custom distributions and create matching cashflows
+   */
+  private async saveCustomDistributions(tx: any, investmentId: string, distributions: ApiCustomDistribution[]): Promise<void> {
+    // Insert custom distributions
+    const customDistributionRecords = distributions.map(dist => ({
+      investmentId,
+      dueDate: dist.dueDate,
+      amount: String(dist.amount),
+      type: dist.type,
+      notes: dist.notes || null,
+    }));
     
-    // If funded from cash, deduct from cash balance using face value (principal invested)
-    if (insertInvestment.fundedFromCash === 1) {
-      await this.createCashTransaction({
-        amount: String(insertInvestment.faceValue),
-        type: 'investment',
-        source: 'investment',
-        notes: `Investment: ${insertInvestment.name}`,
-        date: insertInvestment.startDate,
-        investmentId: investment.id,
-      });
+    if (customDistributionRecords.length > 0) {
+      await tx.insert(customDistributions).values(customDistributionRecords);
     }
     
-    // Auto-generate cashflows based on distribution frequency
-    await this.generateCashflowsForInvestment(investment);
+    // Create matching cashflows
+    const cashflowRecords = distributions.map(dist => ({
+      investmentId,
+      dueDate: dist.dueDate,
+      amount: String(dist.amount),
+      status: 'expected' as const,
+      type: dist.type as 'profit' | 'principal',
+    }));
     
-    return investment;
+    if (cashflowRecords.length > 0) {
+      await tx.insert(cashflows).values(cashflowRecords);
+    }
   }
   
   /**
    * Generate cashflows automatically for an investment using smart Sukuk logic
    * Uses shared/cashflow-generator.ts for intelligent distribution
    */
-  private async generateCashflowsForInvestment(investment: Investment): Promise<void> {
+  private async generateCashflowsForInvestment(tx: any, investment: Investment): Promise<void> {
     const startDate = new Date(investment.startDate);
     const endDate = new Date(investment.endDate);
     
     // Validate dates
     if (endDate <= startDate) {
       console.warn(`Invalid investment dates: end date (${endDate}) must be after start date (${startDate}). Creating single principal cashflow.`);
-      await db.insert(cashflows).values([{
+      await tx.insert(cashflows).values([{
         investmentId: investment.id,
         dueDate: endDate,
         amount: String((parseFloat(investment.faceValue || investment.amount) + parseFloat(investment.totalExpectedProfit || "0")).toFixed(2)),
@@ -317,42 +365,70 @@ export class DatabaseStorage implements IStorage {
     }));
     
     if (cashflowsToCreate.length > 0) {
-      await db.insert(cashflows).values(cashflowsToCreate);
+      await tx.insert(cashflows).values(cashflowsToCreate);
     }
   }
 
-  async updateInvestment(id: string, update: Partial<InsertInvestment>): Promise<Investment | undefined> {
-    // Convert numbers to strings for database - explicit type-safe mapping
-    const dbUpdate: Partial<Investment> = {};
-    
-    // String fields
-    if (update.name !== undefined) dbUpdate.name = update.name;
-    if (update.platformId !== undefined) dbUpdate.platformId = update.platformId;
-    if (update.status !== undefined) dbUpdate.status = update.status;
-    if (update.distributionFrequency !== undefined) dbUpdate.distributionFrequency = update.distributionFrequency;
-    if (update.profitPaymentStructure !== undefined) dbUpdate.profitPaymentStructure = update.profitPaymentStructure;
-    
-    // Numeric fields - convert to string for database
-    if (update.amount !== undefined) dbUpdate.amount = String(update.amount);
-    if (update.faceValue !== undefined) dbUpdate.faceValue = String(update.faceValue);
-    if (update.totalExpectedProfit !== undefined) dbUpdate.totalExpectedProfit = String(update.totalExpectedProfit);
-    if (update.expectedIrr !== undefined) dbUpdate.expectedIrr = String(update.expectedIrr);
-    
-    // Date fields
-    if (update.startDate !== undefined) dbUpdate.startDate = update.startDate;
-    if (update.endDate !== undefined) dbUpdate.endDate = update.endDate;
-    
-    // Integer fields
-    if (update.riskScore !== undefined) dbUpdate.riskScore = update.riskScore;
-    if (update.isReinvestment !== undefined) dbUpdate.isReinvestment = update.isReinvestment;
-    if (update.fundedFromCash !== undefined) dbUpdate.fundedFromCash = update.fundedFromCash;
-    
-    const [investment] = await db
-      .update(investments)
-      .set(dbUpdate)
-      .where(eq(investments.id, id))
-      .returning();
-    return investment || undefined;
+  async updateInvestment(id: string, update: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment | undefined> {
+    return await db.transaction(async (tx) => {
+      // Convert numbers to strings for database - explicit type-safe mapping
+      const dbUpdate: Partial<Investment> = {};
+      
+      // String fields
+      if (update.name !== undefined) dbUpdate.name = update.name;
+      if (update.platformId !== undefined) dbUpdate.platformId = update.platformId;
+      if (update.status !== undefined) dbUpdate.status = update.status;
+      if (update.distributionFrequency !== undefined) dbUpdate.distributionFrequency = update.distributionFrequency;
+      if (update.profitPaymentStructure !== undefined) dbUpdate.profitPaymentStructure = update.profitPaymentStructure;
+      
+      // Numeric fields - convert to string for database
+      if (update.amount !== undefined) dbUpdate.amount = String(update.amount);
+      if (update.faceValue !== undefined) dbUpdate.faceValue = String(update.faceValue);
+      if (update.totalExpectedProfit !== undefined) dbUpdate.totalExpectedProfit = String(update.totalExpectedProfit);
+      if (update.expectedIrr !== undefined) dbUpdate.expectedIrr = String(update.expectedIrr);
+      
+      // Date fields
+      if (update.startDate !== undefined) dbUpdate.startDate = update.startDate;
+      if (update.endDate !== undefined) dbUpdate.endDate = update.endDate;
+      
+      // Integer fields
+      if (update.riskScore !== undefined) dbUpdate.riskScore = update.riskScore;
+      if (update.isReinvestment !== undefined) dbUpdate.isReinvestment = update.isReinvestment;
+      if (update.fundedFromCash !== undefined) dbUpdate.fundedFromCash = update.fundedFromCash;
+      
+      const [investment] = await tx
+        .update(investments)
+        .set(dbUpdate)
+        .where(eq(investments.id, id))
+        .returning();
+      
+      if (!investment) return undefined;
+      
+      // Handle custom distributions ONLY if explicitly provided (not undefined)
+      // undefined = preserve existing, [] = clear & regenerate, non-empty = replace
+      if (customDistributionPayload !== undefined && customDistributionPayload !== null) {
+        // Delete existing custom distributions
+        await tx.delete(customDistributions).where(eq(customDistributions.investmentId, id));
+        
+        // Only delete expected cashflows (preserve received ones for historical records)
+        await tx.delete(cashflows).where(
+          and(
+            eq(cashflows.investmentId, id),
+            eq(cashflows.status, 'expected')
+          )
+        );
+        
+        if (customDistributionPayload.length > 0) {
+          // Save new custom distributions
+          await this.saveCustomDistributions(tx, id, customDistributionPayload);
+        } else {
+          // Regenerate standard cashflows
+          await this.generateCashflowsForInvestment(tx, investment);
+        }
+      }
+      
+      return investment;
+    });
   }
 
   async updateInvestmentStatus(
@@ -423,6 +499,22 @@ export class DatabaseStorage implements IStorage {
     // Delete the investment itself
     const result = await db.delete(investments).where(eq(investments.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+  
+  async getCustomDistributions(investmentId: string): Promise<ApiCustomDistribution[]> {
+    const results = await db
+      .select()
+      .from(customDistributions)
+      .where(eq(customDistributions.investmentId, investmentId))
+      .orderBy(customDistributions.dueDate);
+    
+    // Convert to ApiCustomDistribution format (omit investmentId)
+    return results.map(dist => ({
+      dueDate: dist.dueDate,
+      amount: dist.amount,
+      type: dist.type,
+      notes: dist.notes,
+    }));
   }
 
   // Cashflows

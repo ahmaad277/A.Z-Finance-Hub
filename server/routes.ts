@@ -9,6 +9,8 @@ import {
   insertAlertSchema,
   insertUserSettingsSchema,
   insertCashTransactionSchema,
+  apiCustomDistributionSchema,
+  type ApiCustomDistribution,
 } from "@shared/schema";
 import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
 
@@ -16,6 +18,39 @@ import { generateCashflows, type DistributionFrequency, type ProfitPaymentStruct
 const apiInvestmentSchema = insertInvestmentSchema.extend({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
+  customDistributions: z.array(apiCustomDistributionSchema).optional(),
+}).superRefine((data, ctx) => {
+  // If frequency is custom, require customDistributions array
+  if (data.distributionFrequency === 'custom') {
+    if (!data.customDistributions || data.customDistributions.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Custom distribution schedule is required when frequency is 'custom'",
+        path: ['customDistributions'],
+      });
+    }
+    
+    // Validate each distribution
+    data.customDistributions?.forEach((dist, idx) => {
+      const amount = typeof dist.amount === 'string' ? parseFloat(dist.amount) : dist.amount;
+      if (amount <= 0 || isNaN(amount)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Amount must be positive",
+          path: ['customDistributions', idx, 'amount'],
+        });
+      }
+      
+      // Validate dates within investment window
+      if (dist.dueDate < data.startDate || dist.dueDate > data.endDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Due date must be within investment period",
+          path: ['customDistributions', idx, 'dueDate'],
+        });
+      }
+    });
+  }
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -72,7 +107,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/investments", async (req, res) => {
     try {
       const data = apiInvestmentSchema.parse(req.body);
-      const investment = await storage.createInvestment(data);
+      
+      // Extract customDistributions if provided
+      const { customDistributions, ...investmentData } = data;
+      
+      // Create investment with custom distributions
+      const investment = await storage.createInvestment(investmentData, customDistributions);
       res.status(201).json(investment);
     } catch (error: any) {
       console.error("Investment creation error:", error);
@@ -83,8 +123,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/investments/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const data = apiInvestmentSchema.partial().parse(req.body);
-      const investment = await storage.updateInvestment(id, data);
+      
+      // Create a partial schema with validation
+      const partialInvestmentSchema = insertInvestmentSchema.extend({
+        startDate: z.coerce.date().optional(),
+        endDate: z.coerce.date().optional(),
+        customDistributions: z.array(apiCustomDistributionSchema).optional(),
+      }).partial().superRefine((data, ctx) => {
+        // If changing frequency to custom, require customDistributions
+        if (data.distributionFrequency === 'custom' && (!data.customDistributions || data.customDistributions.length === 0)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Custom distribution schedule is required when changing frequency to 'custom'",
+            path: ['customDistributions'],
+          });
+        }
+        
+        // If customDistributions provided, require dates for validation
+        if (data.customDistributions && data.customDistributions.length > 0) {
+          if (!data.startDate || !data.endDate) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "startDate and endDate are required when updating custom distributions",
+              path: ['customDistributions'],
+            });
+            return; // Skip further validation if dates missing
+          }
+          
+          // Validate each distribution
+          data.customDistributions.forEach((dist, idx) => {
+            const amount = typeof dist.amount === 'string' ? parseFloat(dist.amount) : dist.amount;
+            if (amount <= 0 || isNaN(amount)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Amount must be positive",
+                path: ['customDistributions', idx, 'amount'],
+              });
+            }
+            
+            // Validate dates within investment window
+            if (dist.dueDate < data.startDate! || dist.dueDate > data.endDate!) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Due date must be within investment period",
+                path: ['customDistributions', idx, 'dueDate'],
+              });
+            }
+          });
+        }
+      });
+      
+      const data = partialInvestmentSchema.parse(req.body);
+      
+      // Extract customDistributions if provided
+      const { customDistributions, ...investmentData } = data;
+      
+      const investment = await storage.updateInvestment(id, investmentData, customDistributions);
       
       if (!investment) {
         return res.status(404).json({ error: "Investment not found" });

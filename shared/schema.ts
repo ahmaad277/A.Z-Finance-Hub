@@ -96,6 +96,12 @@ export const insertCustomDistributionSchema = createInsertSchema(customDistribut
 export type InsertCustomDistribution = z.infer<typeof insertCustomDistributionSchema>;
 export type CustomDistribution = typeof customDistributions.$inferSelect;
 
+// Schema for custom distribution in API payload (without investmentId)
+export const apiCustomDistributionSchema = insertCustomDistributionSchema.omit({
+  investmentId: true,
+});
+export type ApiCustomDistribution = z.infer<typeof apiCustomDistributionSchema>;
+
 // Smart alerts and notifications
 export const alerts = pgTable("alerts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

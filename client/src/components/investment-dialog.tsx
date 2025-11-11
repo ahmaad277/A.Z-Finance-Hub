@@ -35,17 +35,9 @@ import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
-import { Wallet, AlertCircle, Plus, Trash2 } from "lucide-react";
+import { Wallet, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Custom cashflow type for manual entry
-interface CustomCashflow {
-  id: string;
-  dueDate: string;
-  amount: number;
-  type: 'profit' | 'principal';
-  notes?: string;
-}
+import { CustomCashflowEditor, type CustomCashflow } from "@/components/custom-cashflow-editor";
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
@@ -295,11 +287,22 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       return;
     }
 
+    // Include customDistributions if frequency is 'custom'
+    const payload = {
+      ...data,
+      customDistributions: data.distributionFrequency === 'custom' ? customCashflows.map(cf => ({
+        dueDate: new Date(cf.dueDate),
+        amount: cf.amount,
+        type: cf.type,
+        notes: cf.notes,
+      })) : undefined,
+    };
+
     // Send date strings directly - server will convert to Date objects
     if (investment) {
-      updateMutation.mutate(data);
+      updateMutation.mutate(payload);
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(payload);
     }
   };
 
@@ -569,6 +572,19 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 )}
               />
             </div>
+
+            {/* Custom Cashflow Editor - Show only when custom frequency selected */}
+            {form.watch("distributionFrequency") === "custom" && (
+              <div className="border rounded-lg p-4 bg-muted/10">
+                <CustomCashflowEditor
+                  cashflows={customCashflows}
+                  onChange={setCustomCashflows}
+                  startDate={form.watch("startDate")}
+                  endDate={form.watch("endDate")}
+                  expectedProfit={form.watch("totalExpectedProfit")}
+                />
+              </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
