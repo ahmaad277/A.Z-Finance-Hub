@@ -677,7 +677,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         </SelectItem>
                         <SelectItem value="quarterly">{t("dialog.quarterly")}</SelectItem>
                         <SelectItem value="semi_annually">{t("dialog.semiAnnually")}</SelectItem>
-                        <SelectItem value="annually">{t("dialog.annual")}</SelectItem>
+                        <SelectItem value="annually">{t("dialog.annually")}</SelectItem>
                         <SelectItem value="at_maturity">
                           {language === 'ar' ? 'عند الاستحقاق' : 'At Maturity'}
                         </SelectItem>
