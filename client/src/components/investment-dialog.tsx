@@ -158,6 +158,19 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     }, 0);
   }, [investment, form]);
 
+  // Auto-derive profitPaymentStructure from distributionFrequency
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'distributionFrequency' && value.distributionFrequency) {
+        const newStructure = value.distributionFrequency === 'at_maturity' 
+          ? 'at_maturity' 
+          : 'periodic';
+        form.setValue('profitPaymentStructure', newStructure);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
       return apiRequest("POST", "/api/investments", data);
@@ -678,33 +691,6 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="profitPaymentStructure"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {language === 'ar' ? 'هيكل دفع الأرباح' : 'Profit Payment Structure'}
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-profit-structure">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="periodic">
-                          {language === 'ar' ? 'أرباح دورية (Periodic Profits)' : 'Periodic Profits'}
-                        </SelectItem>
-                        <SelectItem value="at_maturity">
-                          {language === 'ar' ? 'أرباح عند الاستحقاق (Profits at Maturity)' : 'Profits at Maturity'}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Custom Cashflow Editor - Show only when custom frequency selected */}
@@ -814,30 +800,25 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
               </Alert>
             )}
 
-            {/* Calculated Metrics Summary */}
+            {/* Calculated Metrics Summary - Compact Layout */}
             {calculatedMetrics && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    {t("dialog.calculatedFields")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-2">
+                <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("dialog.numberOfUnits")}</p>
-                    <p className="text-lg font-semibold" data-testid="text-calculated-units">
+                    <p className="text-xs text-muted-foreground">{t("dialog.numberOfUnits")}</p>
+                    <p className="text-base font-semibold" data-testid="text-calculated-units">
                       {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US').format(calculatedMetrics.numberOfUnits)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("dialog.paymentCount")}</p>
-                    <p className="text-lg font-semibold" data-testid="text-calculated-payments">
+                    <p className="text-xs text-muted-foreground">{t("dialog.paymentCount")}</p>
+                    <p className="text-base font-semibold" data-testid="text-calculated-payments">
                       {calculatedMetrics.paymentCount}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("dialog.paymentValue")}</p>
-                    <p className="text-lg font-semibold" data-testid="text-calculated-payment-value">
+                    <p className="text-xs text-muted-foreground">{t("dialog.paymentValue")}</p>
+                    <p className="text-base font-semibold" data-testid="text-calculated-payment-value">
                       {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
@@ -845,8 +826,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
-                    <p className="text-lg font-semibold" data-testid="text-calculated-total-return">
+                    <p className="text-xs text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
+                    <p className="text-base font-semibold" data-testid="text-calculated-total-return">
                       {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
