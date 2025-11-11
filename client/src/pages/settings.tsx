@@ -451,7 +451,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="columns-1 md:columns-2 gap-2 space-y-2 [column-fill:auto]">
+      <div className="grid gap-2 md:grid-cols-2 items-start auto-rows-max">
         {/* Appearance Settings */}
         <Card>
           <CardHeader className="pb-3">
