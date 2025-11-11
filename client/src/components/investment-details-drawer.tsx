@@ -61,8 +61,9 @@ export function InvestmentDetailsDrawer({
     .filter(cf => cf.status === "received")
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
 
-  // Calculate ROI: (Profit Received / Face Value) * 100
-  const roi = calculateROI(parseFloat(investment.faceValue || investment.faceValue), totalProfitReceived);
+  // Calculate Expected ROI: (Expected IRR / 12) * Duration in Months
+  const expectedIrr = parseFloat(investment.expectedIrr || "0");
+  const roi = (expectedIrr / 12) * durationMonths;
 
   const statusConfig = getInvestmentStatusConfig(investment.status);
 
