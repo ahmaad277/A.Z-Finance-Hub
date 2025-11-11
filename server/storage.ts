@@ -6,6 +6,7 @@ import {
   alerts,
   userSettings,
   cashTransactions,
+  savedScenarios,
   users,
   roles,
   permissions,
@@ -28,6 +29,8 @@ import {
   type InsertUserSettings,
   type CashTransaction,
   type InsertCashTransaction,
+  type SavedScenario,
+  type InsertSavedScenario,
   type User,
   type InsertUser,
   type Role,
@@ -108,6 +111,11 @@ export interface IStorage {
   // Settings
   getSettings(userId?: string): Promise<UserSettings>;
   updateSettings(settings: Partial<InsertUserSettings>, userId?: string): Promise<UserSettings>;
+
+  // Saved Scenarios
+  getSavedScenarios(userId?: string): Promise<SavedScenario[]>;
+  createSavedScenario(scenario: InsertSavedScenario, userId?: string): Promise<SavedScenario>;
+  deleteSavedScenario(id: string): Promise<boolean>;
 
   // Users
   getUsers(): Promise<UserWithRole[]>;
@@ -964,6 +972,49 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings;
+  }
+
+  // Saved Scenarios
+  async getSavedScenarios(userId?: string): Promise<SavedScenario[]> {
+    const results = await db
+      .select()
+      .from(savedScenarios)
+      .where(userId ? eq(savedScenarios.userId, userId) : sql`1=1`)
+      .orderBy(desc(savedScenarios.createdAt));
+    
+    return results;
+  }
+
+  async createSavedScenario(scenario: InsertSavedScenario, userId?: string): Promise<SavedScenario> {
+    // Check limit: max 5 scenarios per user
+    const existing = await this.getSavedScenarios(userId);
+    if (existing.length >= 5) {
+      throw new Error("Maximum of 5 saved scenarios reached. Please delete one before creating a new one.");
+    }
+
+    const [newScenario] = await db
+      .insert(savedScenarios)
+      .values({
+        name: scenario.name,
+        initialAmount: scenario.initialAmount.toString(),
+        monthlyDeposit: scenario.monthlyDeposit.toString(),
+        expectedIRR: scenario.expectedIRR.toString(),
+        targetAmount: scenario.targetAmount.toString(),
+        durationYears: scenario.durationYears,
+        userId: userId || null,
+      })
+      .returning();
+    
+    return newScenario;
+  }
+
+  async deleteSavedScenario(id: string): Promise<boolean> {
+    const result = await db
+      .delete(savedScenarios)
+      .where(eq(savedScenarios.id, id))
+      .returning();
+    
+    return result.length > 0;
   }
 
   // Users

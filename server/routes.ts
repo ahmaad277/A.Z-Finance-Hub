@@ -9,6 +9,7 @@ import {
   insertAlertSchema,
   insertUserSettingsSchema,
   insertCashTransactionSchema,
+  insertSavedScenarioSchema,
   apiCustomDistributionSchema,
   type ApiCustomDistribution,
 } from "@shared/schema";
@@ -457,6 +458,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Settings update error:", error);
       res.status(400).json({ error: error.message || "Invalid settings data" });
+    }
+  });
+
+  // Saved Scenarios
+  app.get("/api/saved-scenarios", async (req, res) => {
+    try {
+      const scenarios = await storage.getSavedScenarios();
+      res.json(scenarios);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch saved scenarios" });
+    }
+  });
+
+  app.post("/api/saved-scenarios", async (req, res) => {
+    try {
+      const data = insertSavedScenarioSchema.parse(req.body);
+      const scenario = await storage.createSavedScenario(data);
+      res.json(scenario);
+    } catch (error: any) {
+      console.error("Create scenario error:", error);
+      if (error.message?.includes("Maximum of 5")) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid scenario data" });
+      }
+    }
+  });
+
+  app.delete("/api/saved-scenarios/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteSavedScenario(id);
+      if (!success) {
+        return res.status(404).json({ error: "Scenario not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete scenario error:", error);
+      res.status(500).json({ error: "Failed to delete scenario" });
     }
   });
 

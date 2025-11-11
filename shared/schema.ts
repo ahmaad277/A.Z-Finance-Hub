@@ -145,6 +145,33 @@ export const insertCashTransactionSchema = createInsertSchema(cashTransactions).
 export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
 export type CashTransaction = typeof cashTransactions.$inferSelect;
 
+// Saved Scenarios - Vision 2040 Calculator scenarios
+export const savedScenarios = pgTable("saved_scenarios", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"), // Nullable for single-user mode, future multi-user support
+  name: text("name").notNull(),
+  initialAmount: numeric("initial_amount", { precision: 15, scale: 2 }).notNull(),
+  monthlyDeposit: numeric("monthly_deposit", { precision: 15, scale: 2 }).notNull(),
+  expectedIRR: numeric("expected_irr", { precision: 5, scale: 2 }).notNull(),
+  targetAmount: numeric("target_amount", { precision: 15, scale: 2 }).notNull(),
+  durationYears: integer("duration_years").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertSavedScenarioSchema = createInsertSchema(savedScenarios).omit({ 
+  id: true,
+  createdAt: true,
+  userId: true, // Managed automatically in backend
+}).extend({
+  initialAmount: z.coerce.number().positive(),
+  monthlyDeposit: z.coerce.number().nonnegative(),
+  expectedIRR: z.coerce.number().min(0).max(100),
+  targetAmount: z.coerce.number().positive(),
+  durationYears: z.coerce.number().int().min(1).max(50),
+});
+export type InsertSavedScenario = z.infer<typeof insertSavedScenarioSchema>;
+export type SavedScenario = typeof savedScenarios.$inferSelect;
+
 // Roles - Define user roles (Owner, Admin, Advanced Analyst, etc.)
 export const roles = pgTable("roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -468,6 +495,13 @@ export const alertsRelations = relations(alerts, ({ one }) => ({
   }),
 }));
 
+export const savedScenariosRelations = relations(savedScenarios, ({ one }) => ({
+  user: one(users, {
+    fields: [savedScenarios.userId],
+    references: [users.id],
+  }),
+}));
+
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(users),
   rolePermissions: many(rolePermissions),
@@ -503,6 +537,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   auditLogs: many(auditLog),
   exportRequests: many(exportRequests),
   viewRequests: many(viewRequests),
+  savedScenarios: many(savedScenarios),
 }));
 
 export const userPlatformsRelations = relations(userPlatforms, ({ one }) => ({

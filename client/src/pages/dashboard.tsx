@@ -14,7 +14,7 @@ import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
-import { GoalCalculator } from "@/components/goal-calculator";
+import { Vision2040Calculator } from "@/components/vision-2040-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -470,117 +470,11 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* 2. Vision 2040 Progress Widget */}
-      <Card className="hover-elevate transition-all duration-200" data-testid="card-vision-2040">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="bg-chart-2/10 text-chart-2 rounded-md p-2">
-                <Target className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">{t("dashboard.vision2040Progress")}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.vision2040Subtitle")}</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleSection('vision-2040')}
-              data-testid="button-toggle-vision-2040"
-              className="h-8 w-8 p-0"
-            >
-              {isSectionCollapsed('vision-2040') ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronUp className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        </CardHeader>
-        <AnimatePresence initial={false}>
-          {!isSectionCollapsed('vision-2040') && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{ overflow: "hidden" }}
-            >
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {/* Current Progress */}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("dashboard.currentProgress")}</p>
-                    <p className="text-lg font-bold">{formatPercentage(currentProgress)}</p>
-                    <p className="text-sm text-muted-foreground">{formatCurrency(currentPortfolioValue)}</p>
-                  </div>
-                  
-                  {/* Expected Progress */}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("dashboard.expectedProgress")}</p>
-                    <p className="text-lg font-bold">{formatPercentage(expectedProgressPercent)}</p>
-                    <p className="text-sm text-muted-foreground">{formatCurrency(expectedValue)}</p>
-                  </div>
-                  
-                  {/* Target */}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("dashboard.target2040")}</p>
-                    <p className="text-lg font-bold">{formatCurrency(target2040)}</p>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.by2040")}</p>
-                  </div>
-                  
-                  {/* Required Annual Return */}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("dashboard.requiredAnnualReturn")}</p>
-                    <p className="text-lg font-bold text-chart-1">{formatPercentage(requiredAnnualReturn)}</p>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.toReachTarget")}</p>
-                  </div>
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{formatCurrency(initialPortfolio)}</span>
-                    <span className="font-medium">{Math.round(elapsedYears * 10) / 10} / {Math.round(totalYears)} {t("dashboard.years")}</span>
-                    <span className="text-muted-foreground">{formatCurrency(target2040)}</span>
-                  </div>
-                  <div className="relative h-3 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="absolute h-full bg-chart-2 transition-all duration-500"
-                      style={{ width: `${Math.min(currentProgress, 100)}%` }}
-                    />
-                    <div 
-                      className="absolute h-full border-r-2 border-chart-1 opacity-50"
-                      style={{ left: `${Math.min(expectedProgressPercent, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    {currentProgress >= expectedProgressPercent 
-                      ? t("dashboard.aheadOfSchedule") 
-                      : t("dashboard.behindSchedule")}
-                  </p>
-                </div>
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
-
-      {/* Goal Calculator - Pro Mode Only */}
-      <AnimatePresence mode="wait">
-        {(!settings || settings.viewMode === "pro") && (
-          <motion.div
-            key="goal-calculator"
-            {...fadeInUp}
-          >
-            <GoalCalculator 
-              isCollapsed={isSectionCollapsed('goal-calculator')}
-              onToggle={() => toggleSection('goal-calculator')}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 2. Vision 2040 Progress Calculator - Unified Component */}
+      <Vision2040Calculator 
+        isCollapsed={isSectionCollapsed('vision-2040')}
+        onToggle={() => toggleSection('vision-2040')}
+      />
 
       {/* Platforms Overview */}
       {platformStats.length > 0 && (
