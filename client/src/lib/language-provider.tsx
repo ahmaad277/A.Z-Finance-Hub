@@ -176,6 +176,7 @@ const translations = {
     // Common
     "common.back": "Back",
     "common.edit": "Edit",
+    "common.delete": "Delete",
     
     // Investments
     "investments.title": "Investments",
@@ -1005,6 +1006,7 @@ const translations = {
     // Common
     "common.back": "رجوع",
     "common.edit": "تعديل",
+    "common.delete": "حذف",
     
     // Investments
     "investments.title": "الاستثمارات",
