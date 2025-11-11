@@ -440,30 +440,29 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Settings2 className="w-8 h-8 text-primary" />
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Settings2 className="w-6 h-6 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-settings-title">
+          <h1 className="text-2xl font-bold" data-testid="text-settings-title">
             {t("settings.title")}
           </h1>
-          <p className="text-muted-foreground">{t("settings.description")}</p>
+          <p className="text-sm text-muted-foreground">{t("settings.description")}</p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="columns-1 md:columns-2 gap-2 space-y-2 [column-fill:auto]">
         {/* Appearance Settings */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Palette className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.appearance")}</CardTitle>
+              <Palette className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.appearance")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.appearanceDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Theme Toggle */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label>{t("settings.theme")}</Label>
               <Select value={localTheme} onValueChange={handleThemeChange}>
                 <SelectTrigger data-testid="select-theme">
@@ -477,8 +476,8 @@ export default function Settings() {
             </div>
 
             {/* Font Size */}
-            <div className="space-y-2">
-              <Label>{t("settings.fontSize")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.fontSize")}</Label>
               <Select value={localSettings.fontSize || "medium"} onValueChange={handleFontSizeChange}>
                 <SelectTrigger data-testid="select-font-size">
                   <SelectValue />
@@ -492,8 +491,8 @@ export default function Settings() {
             </div>
 
             {/* View Mode */}
-            <div className="space-y-2">
-              <Label>{t("settings.viewMode")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.viewMode")}</Label>
               <Select value={localSettings.viewMode || "pro"} onValueChange={handleViewModeChange}>
                 <SelectTrigger data-testid="select-view-mode">
                   <SelectValue />
@@ -503,26 +502,22 @@ export default function Settings() {
                   <SelectItem value="lite">{t("settings.liteMode")}</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                {localSettings.viewMode === "pro" ? t("settings.proModeDesc") : t("settings.liteModeDesc")}
-              </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Language & Region */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.languageRegion")}</CardTitle>
+              <Globe className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.languageRegion")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.languageRegionDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Language */}
-            <div className="space-y-2">
-              <Label>{t("settings.language")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.language")}</Label>
               <Select value={localLanguage} onValueChange={handleLanguageChange}>
                 <SelectTrigger data-testid="select-language">
                   <SelectValue />
@@ -535,31 +530,29 @@ export default function Settings() {
             </div>
 
             {/* Currency */}
-            <div className="space-y-2">
-              <Label>{t("settings.currency")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.currency")}</Label>
               <Input
                 value={settings?.currency || "SAR"}
                 disabled
                 data-testid="input-currency"
               />
-              <p className="text-sm text-muted-foreground">{t("settings.currencyNote")}</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Investment Goals */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.investmentGoals")}</CardTitle>
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.investmentGoals")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.investmentGoalsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Target Capital 2040 */}
-            <div className="space-y-2">
-              <Label>{t("settings.targetCapital2040")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.targetCapital2040")}</Label>
               <Input
                 type="number"
                 step="1000"
@@ -569,15 +562,11 @@ export default function Settings() {
                 placeholder="1000000"
                 data-testid="input-target-capital"
               />
-              <p className="text-sm text-muted-foreground">{t("settings.targetCapitalDesc")}</p>
             </div>
 
             {/* Auto Reinvest */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>{t("settings.autoReinvest")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.autoReinvestDesc")}</p>
-              </div>
+              <Label className="text-sm">{t("settings.autoReinvest")}</Label>
               <Switch
                 checked={localSettings.autoReinvest === 1}
                 onCheckedChange={handleAutoReinvestChange}
@@ -589,20 +578,16 @@ export default function Settings() {
 
         {/* Alert Settings */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.alertSettings")}</CardTitle>
+              <Bell className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.alertSettings")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.alertSettingsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Enable Alerts */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>{t("settings.enableAlerts")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.enableAlertsDesc")}</p>
-              </div>
+              <Label className="text-sm">{t("settings.enableAlerts")}</Label>
               <Switch
                 checked={localSettings.alertsEnabled === 1}
                 onCheckedChange={handleAlertsEnabledChange}
@@ -610,11 +595,9 @@ export default function Settings() {
               />
             </div>
 
-            <Separator />
-
             {/* Days Before Alert */}
-            <div className="space-y-2">
-              <Label>{t("settings.alertDaysBefore")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.alertDaysBefore")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -624,17 +607,11 @@ export default function Settings() {
                 disabled={localSettings.alertsEnabled === 0}
                 data-testid="input-alert-days-before"
               />
-              <p className="text-sm text-muted-foreground">{t("settings.alertDaysBeforeDesc")}</p>
             </div>
-
-            <Separator />
 
             {/* Late Payment Alerts */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>{t("settings.latePaymentAlerts")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.latePaymentAlertsDesc")}</p>
-              </div>
+              <Label className="text-sm">{t("settings.latePaymentAlerts")}</Label>
               <Switch
                 checked={localSettings.latePaymentAlertsEnabled === 1}
                 onCheckedChange={handleLatePaymentAlertsChange}
@@ -642,8 +619,6 @@ export default function Settings() {
                 data-testid="switch-late-payment-alerts"
               />
             </div>
-
-            <Separator />
 
             {/* Generate Alerts Button */}
             <Button
@@ -662,26 +637,25 @@ export default function Settings() {
 
         {/* Platform Management */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.platforms")}</CardTitle>
+              <Plus className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.platforms")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.platformsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Existing Platforms */}
-            <div className="space-y-2">
-              <Label>{t("settings.existingPlatforms")}</Label>
-              <div className="space-y-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.existingPlatforms")}</Label>
+              <div className="space-y-1.5">
                 {platforms?.map((platform) => (
                   <div
                     key={platform.id}
-                    className="flex items-center justify-between p-3 rounded-md bg-muted/50 border hover-elevate"
+                    className="flex items-center justify-between p-2 rounded-md bg-muted/50 border hover-elevate"
                     data-testid={`platform-${platform.id}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
                         {platform.logoUrl ? (
                           <img src={platform.logoUrl} alt={platform.name} className="h-full w-full object-cover rounded-md" />
                         ) : (
@@ -689,15 +663,15 @@ export default function Settings() {
                         )}
                       </div>
                       <div>
-                        <p className="font-medium">{platform.name}</p>
+                        <p className="text-sm font-medium">{platform.name}</p>
                         <p className="text-xs text-muted-foreground capitalize">{platform.type}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                         data-testid={`button-edit-platform-${platform.id}`}
                         onClick={() => {
                           // Edit platform functionality will be added
@@ -712,7 +686,7 @@ export default function Settings() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        className="h-7 w-7 text-destructive hover:text-destructive"
                         data-testid={`button-delete-platform-${platform.id}`}
                         onClick={() => setPlatformToDelete(platform)}
                       >
@@ -724,12 +698,10 @@ export default function Settings() {
               </div>
             </div>
 
-            <Separator />
-
             {/* Add New Platform */}
-            <div className="space-y-3">
-              <Label>{t("settings.addNewPlatform")}</Label>
-              <div className="space-y-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.addNewPlatform")}</Label>
+              <div className="space-y-1.5">
                 <Input
                   value={newPlatformName}
                   onChange={(e) => setNewPlatformName(e.target.value)}
@@ -763,20 +735,16 @@ export default function Settings() {
 
         {/* Security & Privacy */}
         <Card className="md:col-span-2">
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <CardTitle>{t("settings.security")}</CardTitle>
+              <Shield className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">{t("settings.security")}</CardTitle>
             </div>
-            <CardDescription>{t("settings.securityDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {/* Enable Security */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>{t("settings.enableSecurity")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.enableSecurityDesc")}</p>
-              </div>
+              <Label className="text-sm">{t("settings.enableSecurity")}</Label>
               <Switch
                 checked={localSettings.securityEnabled === 1}
                 onCheckedChange={handleSecurityEnabledChange}
@@ -784,17 +752,12 @@ export default function Settings() {
               />
             </div>
 
-            <Separator />
-
             {/* PIN Setup */}
-            <div className="space-y-3">
-              <div className="space-y-0.5">
-                <Label>{t("settings.setupPIN")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.setupPINDesc")}</p>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-pin">{t("settings.enterPIN")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.setupPIN")}</Label>
+              <div className="grid md:grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-pin" className="text-sm">{t("settings.enterPIN")}</Label>
                   <Input
                     id="new-pin"
                     type="password"
@@ -807,8 +770,8 @@ export default function Settings() {
                     data-testid="input-new-pin"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-pin">{t("settings.confirmPIN")}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirm-pin" className="text-sm">{t("settings.confirmPIN")}</Label>
                   <Input
                     id="confirm-pin"
                     type="password"
@@ -836,23 +799,16 @@ export default function Settings() {
               )}
             </div>
 
-            <Separator />
-
             {/* Biometric Authentication */}
-            <div className="space-y-3">
-              <div className="space-y-0.5">
-                <Label>{t("settings.biometric")}</Label>
-                <p className="text-sm text-muted-foreground">{t("settings.biometricDesc")}</p>
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{t("settings.biometric")}</Label>
               
               {!biometricAvailable ? (
                 <p className="text-sm text-muted-foreground">{t("settings.biometricNotSupported")}</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>{t("settings.enableBiometric")}</Label>
-                    </div>
+                    <Label className="text-sm">{t("settings.enableBiometric")}</Label>
                     <Switch
                       checked={settings?.biometricEnabled === 1}
                       onCheckedChange={(checked) => 
@@ -890,8 +846,8 @@ export default function Settings() {
 
       {/* Save/Cancel/Reset Buttons */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-3 justify-end">
+        <CardContent className="p-3">
+          <div className="flex flex-col sm:flex-row gap-2 justify-end">
             <Button
               variant="outline"
               onClick={handleResetToDefaults}
@@ -918,7 +874,7 @@ export default function Settings() {
             </Button>
           </div>
           {hasChanges && (
-            <p className="text-sm text-muted-foreground text-center mt-3">
+            <p className="text-xs text-muted-foreground text-center mt-2">
               {language === "ar" 
                 ? "لديك تغييرات غير محفوظة" 
                 : "You have unsaved changes"}
@@ -929,27 +885,22 @@ export default function Settings() {
 
       {/* Danger Zone - Reset Portfolio */}
       <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base text-destructive flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
             {language === "ar" ? "منطقة الخطر" : "Danger Zone"}
           </CardTitle>
-          <CardDescription>
-            {language === "ar" 
-              ? "إجراءات خطيرة لا يمكن التراجع عنها" 
-              : "Irreversible actions that permanently delete data"}
-          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border border-destructive/30 rounded-lg bg-destructive/5">
-            <div className="space-y-1">
-              <p className="font-semibold text-foreground">
+        <CardContent className="pt-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 border border-destructive/30 rounded-lg bg-destructive/5">
+            <div className="space-y-0.5">
+              <p className="text-sm font-semibold text-foreground">
                 {language === "ar" ? "تنظيف المحفظة بالكامل" : "Reset All Portfolio Data"}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {language === "ar" 
-                  ? "حذف جميع الاستثمارات، التدفقات النقدية، المعاملات، والتنبيهات بشكل دائم" 
-                  : "Permanently delete all investments, cashflows, cash transactions, and alerts"}
+                  ? "حذف جميع الاستثمارات والتدفقات النقدية والمعاملات بشكل دائم" 
+                  : "Permanently delete all investments, cashflows, and transactions"}
               </p>
             </div>
             <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
