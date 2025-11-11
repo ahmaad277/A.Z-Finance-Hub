@@ -68,6 +68,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
 
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
+    refetchOnMount: true, // Ensure fresh platforms on dialog open
   });
 
   // Fetch cash balance for validation

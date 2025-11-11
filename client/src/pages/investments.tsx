@@ -282,9 +282,9 @@ export default function Investments() {
         case "date-asc":
           return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         case "amount-desc":
-          return parseFloat(b.amount) - parseFloat(a.amount);
+          return parseFloat(b.faceValue) - parseFloat(a.faceValue);
         case "amount-asc":
-          return parseFloat(a.amount) - parseFloat(b.amount);
+          return parseFloat(a.faceValue) - parseFloat(b.faceValue);
         case "end-date-asc":
           return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
         case "end-date-desc":
