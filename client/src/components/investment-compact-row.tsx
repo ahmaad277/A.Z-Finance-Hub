@@ -28,13 +28,12 @@ export function InvestmentCompactRow({
   const endDate = new Date(investment.endDate);
   const months = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
 
-  // Calculate APR
-  const faceValue = parseFloat(investment.faceValue);
-  const totalExpectedProfit = parseFloat(investment.totalExpectedProfit);
-  const durationYears = months / 12;
-  const apr = durationYears > 0 ? (totalExpectedProfit / faceValue / durationYears) * 100 : 0;
+  // Use the expectedIrr (APR) entered during investment creation
+  const apr = parseFloat(investment.expectedIrr) || 0;
 
   // Calculate ROI (profit only)
+  const faceValue = parseFloat(investment.faceValue);
+  const totalExpectedProfit = parseFloat(investment.totalExpectedProfit);
   const roi = faceValue > 0 ? (totalExpectedProfit / faceValue) * 100 : 0;
 
   // Calculate payment progress percentage
@@ -108,18 +107,18 @@ export function InvestmentCompactRow({
       </div>
 
       {/* APR - Always Visible */}
-      <div className="flex items-center justify-center w-14 shrink-0">
+      <div className="flex items-center justify-center w-16 shrink-0">
         <div className="flex items-center gap-0.5">
-          <Percent className="h-3 w-3 text-chart-1 shrink-0" />
-          <span className="font-semibold text-chart-1">{apr.toFixed(1)}</span>
+          <Percent className="h-3 w-3 text-chart-2 shrink-0" />
+          <span className="font-semibold text-chart-2">{apr.toFixed(1)}%</span>
         </div>
       </div>
 
-      {/* ROI - Mobile Hidden */}
-      <div className="hidden lg:flex items-center justify-center w-14 shrink-0">
+      {/* ROI - Always Visible */}
+      <div className="flex items-center justify-center w-16 shrink-0">
         <div className="flex items-center gap-0.5">
-          <TrendingUp className="h-3 w-3 text-primary shrink-0" />
-          <span className="font-semibold text-primary">{roi.toFixed(1)}</span>
+          <TrendingUp className="h-3 w-3 text-chart-1 shrink-0" />
+          <span className="font-semibold text-chart-1">{roi.toFixed(1)}%</span>
         </div>
       </div>
 
