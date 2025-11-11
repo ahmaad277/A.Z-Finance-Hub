@@ -11,8 +11,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
-import Cashflows from "@/pages/cashflows";
-import Cash from "@/pages/cash";
+import CashflowsUnified from "@/pages/cashflows-unified";
 import Analytics from "@/pages/analytics";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
@@ -24,7 +23,7 @@ import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
 // App version - increment to force cache clear
-const APP_VERSION = "4";
+const APP_VERSION = "5";
 const VERSION_KEY = "azfinance-app-version";
 
 function Router() {
@@ -33,8 +32,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/investments" component={Investments} />
-      <Route path="/cashflows" component={Cashflows} />
-      <Route path="/cash" component={Cash} />
+      <Route path="/cashflows" component={CashflowsUnified} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />

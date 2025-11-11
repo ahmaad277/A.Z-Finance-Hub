@@ -32,11 +32,6 @@ const menuItems = [
     icon: TrendingUp,
   },
   {
-    key: "cash",
-    url: "/cash",
-    icon: DollarSign,
-  },
-  {
     key: "analytics",
     url: "/analytics",
     icon: BarChart3,

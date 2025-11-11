@@ -219,6 +219,10 @@ const translations = {
     "cashflows.totalReceived": "Total Received",
     "cashflows.expectedThisQuarter": "Expected This Quarter",
     "cashflows.allCashflows": "All Cashflows",
+    "cashflows.allTransactions": "All Transactions",
+    "cashflows.investmentCashflows": "Investment Cashflows",
+    "cashflows.investmentDistribution": "Investment Distribution",
+    "cashflows.noTransactions": "No transactions recorded yet",
     "cashflows.date": "Date",
     "cashflows.investment": "Investment",
     "cashflows.platform": "Platform",
@@ -361,6 +365,7 @@ const translations = {
     "cash.transactionAddedDesc": "Cash transaction has been recorded successfully",
     "cash.failedToAdd": "Failed to add transaction",
     "cash.title": "Cash Management",
+    "cash.cashTransactions": "Cash Transactions",
     "cash.availableBalance": "Available Balance",
     "cash.totalDeposits": "Total Deposits",
     "cash.totalWithdrawals": "Total Withdrawals",
@@ -372,6 +377,7 @@ const translations = {
     "cash.type": "Type",
     
     // Common
+    "common.type": "Type",
     "common.filters": "Filters",
     "common.all": "All",
     "common.allTime": "All Time",
@@ -969,6 +975,10 @@ const translations = {
     "cashflows.totalReceived": "إجمالي المستلم",
     "cashflows.expectedThisQuarter": "المتوقع هذا الربع",
     "cashflows.allCashflows": "جميع التدفقات",
+    "cashflows.allTransactions": "جميع المعاملات",
+    "cashflows.investmentCashflows": "تدفقات الاستثمارات",
+    "cashflows.investmentDistribution": "توزيعات استثمارية",
+    "cashflows.noTransactions": "لا توجد معاملات مسجلة بعد",
     "cashflows.date": "التاريخ",
     "cashflows.investment": "الاستثمار",
     "cashflows.platform": "المنصة",
@@ -1112,6 +1122,7 @@ const translations = {
     "cash.transactionAddedDesc": "تم تسجيل المعاملة النقدية بنجاح",
     "cash.failedToAdd": "فشل إضافة المعاملة",
     "cash.title": "إدارة النقدية",
+    "cash.cashTransactions": "المعاملات النقدية",
     "cash.availableBalance": "الرصيد المتاح",
     "cash.totalDeposits": "إجمالي الإيداعات",
     "cash.totalWithdrawals": "إجمالي السحوبات",
@@ -1123,6 +1134,7 @@ const translations = {
     "cash.type": "النوع",
     
     // Common
+    "common.type": "النوع",
     "common.filters": "الفلاتر",
     "common.all": "الكل",
     "common.allTime": "كل الأوقات",
