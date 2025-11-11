@@ -26,7 +26,7 @@ export function PlatformCard({
   
   const totalCapital = investments
     .filter(inv => inv.status === "active")
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   
   const activeCount = investments.filter(inv => inv.status === "active").length;
 

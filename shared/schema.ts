@@ -20,11 +20,11 @@ export const investments = pgTable("investments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   platformId: varchar("platform_id").notNull(),
   name: text("name").notNull(),
-  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(), // Total investment amount
-  faceValue: numeric("face_value", { precision: 15, scale: 2 }).notNull(), // القيمة الاسمية - Principal to be returned
+  faceValue: numeric("face_value", { precision: 15, scale: 2 }).notNull(), // القيمة الاسمية - Principal amount (merged from 'amount')
   totalExpectedProfit: numeric("total_expected_profit", { precision: 15, scale: 2 }).notNull(), // إجمالي الأرباح المتوقعة
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(), // Expected end date
+  durationMonths: integer("duration_months").notNull(), // Duration in months for validation & quick reference
   actualEndDate: timestamp("actual_end_date"), // Actual completion date
   expectedIrr: numeric("expected_irr", { precision: 5, scale: 2 }).notNull(), // percentage
   actualIrr: numeric("actual_irr", { precision: 5, scale: 2 }),
@@ -43,11 +43,11 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   actualIrr: true,
   actualEndDate: true,
   lateDate: true,
-  defaultedDate: true
+  defaultedDate: true,
 }).extend({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
-  amount: z.coerce.number().positive(),
+  durationMonths: z.number().int().positive(),
   faceValue: z.coerce.number().positive(),
   totalExpectedProfit: z.coerce.number().nonnegative(),
   expectedIrr: z.coerce.number().min(0).max(100),

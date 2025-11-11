@@ -263,11 +263,20 @@ export class DatabaseStorage implements IStorage {
       const [investment] = await tx
         .insert(investments)
         .values({
-          ...insertInvestment,
-          amount: String(insertInvestment.amount),
+          platformId: insertInvestment.platformId,
+          name: insertInvestment.name,
           faceValue: String(insertInvestment.faceValue),
           totalExpectedProfit: String(insertInvestment.totalExpectedProfit),
+          startDate: insertInvestment.startDate,
+          endDate: insertInvestment.endDate,
+          durationMonths: insertInvestment.durationMonths,
           expectedIrr: String(insertInvestment.expectedIrr),
+          distributionFrequency: insertInvestment.distributionFrequency,
+          profitPaymentStructure: insertInvestment.profitPaymentStructure || 'periodic',
+          status: insertInvestment.status || 'active',
+          riskScore: insertInvestment.riskScore || 50,
+          isReinvestment: insertInvestment.isReinvestment || 0,
+          fundedFromCash: insertInvestment.fundedFromCash || 0,
           actualIrr: null,
           actualEndDate: null,
         })
@@ -363,14 +372,14 @@ export class DatabaseStorage implements IStorage {
       await tx.insert(cashflows).values([{
         investmentId: investment.id,
         dueDate: endDate,
-        amount: String((parseFloat(investment.faceValue || investment.amount) + parseFloat(investment.totalExpectedProfit || "0")).toFixed(2)),
+        amount: String((parseFloat(investment.faceValue) + parseFloat(investment.totalExpectedProfit || "0")).toFixed(2)),
         status: 'expected' as const,
         type: 'principal' as const,
       }]);
       return;
     }
     
-    const faceValue = parseFloat(investment.faceValue || investment.amount);
+    const faceValue = parseFloat(investment.faceValue);
     const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
     
     const generatedCashflows = generateCashflows({
@@ -408,7 +417,6 @@ export class DatabaseStorage implements IStorage {
       if (update.profitPaymentStructure !== undefined) dbUpdate.profitPaymentStructure = update.profitPaymentStructure;
       
       // Numeric fields - convert to string for database
-      if (update.amount !== undefined) dbUpdate.amount = String(update.amount);
       if (update.faceValue !== undefined) dbUpdate.faceValue = String(update.faceValue);
       if (update.totalExpectedProfit !== undefined) dbUpdate.totalExpectedProfit = String(update.totalExpectedProfit);
       if (update.expectedIrr !== undefined) dbUpdate.expectedIrr = String(update.expectedIrr);
@@ -741,7 +749,7 @@ export class DatabaseStorage implements IStorage {
 
     const totalCapital = allInvestments
       .filter((inv) => inv.status === "active")
-      .reduce((sum, inv) => sum + safeParseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + safeParseFloat(inv.faceValue), 0);
 
     const totalReturns = allCashflows
       .filter((cf) => cf.status === "received" && cf.type === "profit")

@@ -18,7 +18,8 @@ import { generateCashflows, type DistributionFrequency, type ProfitPaymentStruct
 // API schema that accepts date strings and coerces to Date objects with validation
 const apiInvestmentSchema = insertInvestmentSchema.extend({
   startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(), // Optional if durationMonths provided
+  durationMonths: z.number().int().positive().optional(), // Optional if endDate provided
   customDistributions: z.array(apiCustomDistributionSchema).optional(),
 }).superRefine((data, ctx) => {
   // If frequency is custom, require customDistributions array
@@ -42,8 +43,8 @@ const apiInvestmentSchema = insertInvestmentSchema.extend({
         });
       }
       
-      // Validate dates within investment window
-      if (dist.dueDate < data.startDate || dist.dueDate > data.endDate) {
+      // Validate dates within investment window (if endDate provided)
+      if (data.endDate && (dist.dueDate < data.startDate || dist.dueDate > data.endDate)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Due date must be within investment period",
@@ -110,7 +111,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = apiInvestmentSchema.parse(req.body);
       
       // Extract customDistributions if provided
-      const { customDistributions, ...investmentData } = data;
+      const { customDistributions, durationMonths: clientDurationMonths, ...rawInvestmentData } = data;
+      
+      // Auto-calculate financial fields (durationMonths, totalExpectedProfit)
+      const { validateInvestmentFinancials } = await import("@shared/profit-calculator");
+      const validatedFinancials = validateInvestmentFinancials({
+        faceValue: rawInvestmentData.faceValue,
+        expectedIrr: rawInvestmentData.expectedIrr,
+        startDate: rawInvestmentData.startDate,
+        endDate: rawInvestmentData.endDate,
+        durationMonths: clientDurationMonths,
+        totalExpectedProfit: rawInvestmentData.totalExpectedProfit,
+      });
+      
+      // Merge validated fields with rest of investment data
+      const investmentData = {
+        ...rawInvestmentData,
+        ...validatedFinancials,
+      };
       
       // Create investment with custom distributions
       const investment = await storage.createInvestment(investmentData, customDistributions);
@@ -129,6 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const partialInvestmentSchema = insertInvestmentSchema.extend({
         startDate: z.coerce.date().optional(),
         endDate: z.coerce.date().optional(),
+        durationMonths: z.number().int().positive().optional(),
         customDistributions: z.array(apiCustomDistributionSchema).optional(),
       }).partial().superRefine((data, ctx) => {
         // If changing frequency to custom, require customDistributions
@@ -177,7 +196,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = partialInvestmentSchema.parse(req.body);
       
       // Extract customDistributions if provided
-      const { customDistributions, ...investmentData } = data;
+      const { customDistributions, durationMonths: clientDurationMonths, ...rawInvestmentData } = data;
+      
+      // If financial fields are being updated, recalculate them
+      let investmentData = rawInvestmentData;
+      if (rawInvestmentData.faceValue || rawInvestmentData.expectedIrr || rawInvestmentData.startDate || rawInvestmentData.endDate || clientDurationMonths) {
+        const { validateInvestmentFinancials } = await import("@shared/profit-calculator");
+        
+        // Fetch current investment for defaults
+        const currentInvestment = await storage.getInvestment(id);
+        if (!currentInvestment) {
+          return res.status(404).json({ error: "Investment not found" });
+        }
+        
+        const validatedFinancials = validateInvestmentFinancials({
+          faceValue: rawInvestmentData.faceValue ?? parseFloat(currentInvestment.faceValue),
+          expectedIrr: rawInvestmentData.expectedIrr ?? parseFloat(currentInvestment.expectedIrr),
+          startDate: rawInvestmentData.startDate ?? new Date(currentInvestment.startDate),
+          endDate: rawInvestmentData.endDate,
+          durationMonths: clientDurationMonths ?? currentInvestment.durationMonths,
+          totalExpectedProfit: rawInvestmentData.totalExpectedProfit,
+        });
+        
+        investmentData = {
+          ...rawInvestmentData,
+          ...validatedFinancials,
+        };
+      }
       
       const investment = await storage.updateInvestment(id, investmentData, customDistributions);
       

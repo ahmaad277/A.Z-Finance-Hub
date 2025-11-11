@@ -107,11 +107,11 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
     const activeInvs = investments?.filter(inv => inv.status === "active") || [];
     if (activeInvs.length === 0) return 10; // default 10%
     
-    const totalValue = activeInvs.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    const totalValue = activeInvs.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
     if (totalValue === 0) return 10;
     
     const weightedSum = activeInvs.reduce((sum, inv) => {
-      const weight = parseFloat(inv.amount) / totalValue;
+      const weight = parseFloat(inv.faceValue) / totalValue;
       return sum + (parseFloat(inv.expectedIrr) * weight);
     }, 0);
     

@@ -47,7 +47,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
   
   // Calculate ROI
-  const roi = calculateROI(parseFloat(investment.amount), totalReturns);
+  const roi = calculateROI(parseFloat(investment.faceValue), totalReturns);
   
   // Calculate average payment amount
   const avgPayment = totalPayments > 0 
@@ -91,7 +91,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="text-right">
-            <div className="text-xs font-bold">{formatCurrency(parseFloat(investment.amount))}</div>
+            <div className="text-xs font-bold">{formatCurrency(parseFloat(investment.faceValue))}</div>
             <div className={`text-[10px] ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
               {formatPercentage(roi)}
             </div>

@@ -57,7 +57,7 @@ export function InvestmentDetailsDrawer({
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
 
   // Calculate ROI
-  const roi = calculateROI(parseFloat(investment.faceValue || investment.amount), totalReturns);
+  const roi = calculateROI(parseFloat(investment.faceValue || investment.faceValue), totalReturns);
 
   const statusConfig = getInvestmentStatusConfig(investment.status);
 
@@ -110,7 +110,7 @@ export function InvestmentDetailsDrawer({
                 <span className="text-xs text-muted-foreground">{t("investments.faceValue")}</span>
               </div>
               <p className="text-lg font-bold text-primary" data-testid="text-face-value">
-                {formatCurrency(parseFloat(investment.faceValue || investment.amount), "SAR")}
+                {formatCurrency(parseFloat(investment.faceValue || investment.faceValue), "SAR")}
               </p>
             </div>
 

@@ -187,7 +187,7 @@ export function calculateDashboardMetrics(
   
   // 3. Calculate portfolio value (active investments amount + cash)
   const activeInvestments = filteredInvestments.filter(inv => inv.status === 'active');
-  const totalInvestmentValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const totalInvestmentValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const portfolioValue = totalInvestmentValue + totalCash;
   
   // 4. Calculate returns
@@ -210,10 +210,10 @@ export function calculateDashboardMetrics(
   
   // 6. Calculate weighted APR and portfolio ROI
   // Weighted APR: حساب متوسط APR مرجح حسب قيمة كل استثمار
-  const totalActiveValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const totalActiveValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const weightedAPR = totalActiveValue > 0
     ? activeInvestments.reduce((sum, inv) => {
-        const amount = parseFloat(inv.amount);
+        const amount = parseFloat(inv.faceValue);
         const profit = parseFloat(inv.totalExpectedProfit || "0");
         const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
         const apr = calculateAPR(amount, profit, durationMonths);
@@ -223,7 +223,7 @@ export function calculateDashboardMetrics(
     : 0;
   
   // Portfolio ROI: حساب العائد الفعلي على الاستثمار
-  const totalInvestedCapital = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const totalInvestedCapital = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const portfolioROI = totalInvestedCapital > 0 ? (actualReturns / totalInvestedCapital) * 100 : 0;
   const totalProfitAmount = actualReturns;
   
@@ -235,7 +235,7 @@ export function calculateDashboardMetrics(
     ? Math.round((totalDuration / filteredInvestments.length) * 100) / 100 
     : 0;
   const avgAmount = filteredInvestments.length > 0 
-    ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0) / filteredInvestments.length 
+    ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0) / filteredInvestments.length 
     : 0;
   
   // Calculate average payment amount from cashflows
@@ -264,7 +264,7 @@ export function calculateDashboardMetrics(
   
   filteredInvestments.forEach(inv => {
     const current = platformStats.get(inv.platformId) || { value: 0, count: 0 };
-    current.value += parseFloat(inv.amount);
+    current.value += parseFloat(inv.faceValue);
     current.count += 1;
     platformStats.set(inv.platformId, current);
   });

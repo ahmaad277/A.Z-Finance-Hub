@@ -46,7 +46,7 @@ export default function PlatformDetails() {
 
     const totalCapital = platformInvestments
       .filter(inv => inv.status === "active")
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
 
     const totalReturns = platformCashflows
       .filter(cf => cf.status === "received")

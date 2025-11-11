@@ -141,7 +141,7 @@ export default function Dashboard() {
 
     const totalCapital = platformInvestments
       .filter((inv) => inv.status === "active")
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
 
     const totalReturns = platformCashflows
       .filter((cf) => cf.status === "received")
@@ -166,7 +166,7 @@ export default function Dashboard() {
 
     const reinvestedAmount = platformInvestments
       .filter((inv) => inv.isReinvestment === 1 && (inv.status === "active" || inv.status === "pending"))
-      .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+      .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
 
     const availableCash = totalCashBalance - reinvestedAmount;
 
@@ -340,9 +340,9 @@ export default function Dashboard() {
     
     if (activeInvestments.length === 0) return 0;
     
-    const totalValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    const totalValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
     const weightedSum = activeInvestments.reduce((sum, inv) => {
-      const weight = parseFloat(inv.amount) / totalValue;
+      const weight = parseFloat(inv.faceValue) / totalValue;
       return sum + (parseFloat(inv.expectedIrr) * weight);
     }, 0);
     

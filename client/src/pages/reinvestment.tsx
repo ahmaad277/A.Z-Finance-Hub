@@ -47,7 +47,7 @@ export default function Reinvestment() {
   // Calculate total reinvested amount (investments with "(Reinvestment" in the name)
   const reinvestedAmount = (investments || [])
     .filter(inv => inv.name.includes("(Reinvestment"))
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   
   // Get currently invested total capital
   const totalInvested = stats?.totalCapital || 0;

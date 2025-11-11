@@ -145,7 +145,7 @@ export default function Reports() {
         investmentData.push([
           inv.platform?.name || "N/A",
           inv.name,
-          parseFloat(inv.amount).toString(),
+          parseFloat(inv.faceValue).toString(),
           new Date(inv.startDate).toLocaleDateString(),
           new Date(inv.endDate).toLocaleDateString(),
           parseFloat(inv.expectedIrr).toString(),
@@ -332,7 +332,7 @@ export default function Reports() {
       const invData = filteredInvs.slice(0, 20).map(inv => [
         inv.platform?.name || "N/A",
         inv.name,
-        formatCurrency(parseFloat(inv.amount)),
+        formatCurrency(parseFloat(inv.faceValue)),
         new Date(inv.startDate).toLocaleDateString(),
         formatPercentage(parseFloat(inv.expectedIrr)),
         inv.status

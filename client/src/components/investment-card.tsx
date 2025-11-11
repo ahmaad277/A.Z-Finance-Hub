@@ -26,9 +26,9 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
     (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
     (endDate.getMonth() - startDate.getMonth())
   );
-  const expectedProfit = parseFloat(investment.amount) * (parseFloat(investment.expectedIrr) / 100) * (durationMonths / 12);
+  const expectedProfit = parseFloat(investment.faceValue) * (parseFloat(investment.expectedIrr) / 100) * (durationMonths / 12);
   
-  const roi = calculateROI(investment.amount, totalReturns);
+  const roi = calculateROI(investment.faceValue, totalReturns);
   const hasReturns = totalReturns > 0;
   
   // Calculate delay duration for completed investments
@@ -71,7 +71,7 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-muted-foreground mb-1">{t("investments.amount")}</div>
-            <div className="text-lg font-bold">{formatCurrency(investment.amount)}</div>
+            <div className="text-lg font-bold">{formatCurrency(investment.faceValue)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">

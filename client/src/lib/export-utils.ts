@@ -47,7 +47,7 @@ export function generateInvestmentsCSV(investments: InvestmentWithPlatform[]): s
   const rows = investments.map(inv => [
     inv.platform.name,
     inv.name,
-    parseFloat(inv.amount).toFixed(2),
+    parseFloat(inv.faceValue).toFixed(2),
     new Date(inv.startDate).toLocaleDateString(),
     new Date(inv.endDate).toLocaleDateString(),
     parseFloat(inv.expectedIrr).toFixed(2),
@@ -135,7 +135,7 @@ export function generateComprehensiveReport(
       'INVESTMENT',
       inv.platform.name,
       inv.name,
-      parseFloat(inv.amount).toFixed(2),
+      parseFloat(inv.faceValue).toFixed(2),
       new Date(inv.startDate).toLocaleDateString(),
       new Date(inv.endDate).toLocaleDateString(),
       parseFloat(inv.expectedIrr).toFixed(2),

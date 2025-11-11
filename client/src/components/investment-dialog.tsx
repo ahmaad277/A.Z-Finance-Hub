@@ -26,25 +26,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/language-provider";
 import { insertInvestmentSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, Platform } from "@shared/schema";
-import { Wallet, AlertCircle } from "lucide-react";
+import { Wallet, AlertCircle, Calculator } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CustomCashflowEditor, type CustomCashflow } from "@/components/custom-cashflow-editor";
+import { 
+  calculateExpectedProfit, 
+  calculateDurationMonths, 
+  calculateEndDate 
+} from "@shared/profit-calculator";
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
   startDate: z.string(),
   endDate: z.string(),
   actualEndDate: z.string().optional(),
+  durationMonths: z.number().int().positive().optional(),
 });
+
+type DurationMode = 'months' | 'dates';
 
 interface InvestmentDialogProps {
   open: boolean;
@@ -67,6 +77,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   const cashBalance = cashBalanceResponse?.balance ?? 0;
 
   const [userEditedProfit, setUserEditedProfit] = useState(false);
+  const [durationMode, setDurationMode] = useState<DurationMode>('dates');
+  const [durationMonthsInput, setDurationMonthsInput] = useState<number>(0);
   const isResettingRef = useRef(false);
   const [customCashflows, setCustomCashflows] = useState<CustomCashflow[]>([]);
 
@@ -75,11 +87,11 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     defaultValues: {
       platformId: "",
       name: "",
-      amount: 0,
       faceValue: 0,
       totalExpectedProfit: 0,
       startDate: new Date().toISOString().split("T")[0],
       endDate: "",
+      durationMonths: 0,
       expectedIrr: 0,
       status: "active",
       riskScore: 50,
@@ -95,14 +107,19 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
     setUserEditedProfit(false);
     
     if (investment) {
+      const startDate = new Date(investment.startDate);
+      const endDate = new Date(investment.endDate);
+      const months = calculateDurationMonths(startDate, endDate);
+      setDurationMonthsInput(months);
+      
       form.reset({
         platformId: investment.platformId,
         name: investment.name,
-        amount: parseFloat(investment.amount),
         faceValue: parseFloat(investment.faceValue),
         totalExpectedProfit: parseFloat(investment.totalExpectedProfit),
-        startDate: new Date(investment.startDate).toISOString().split("T")[0],
-        endDate: new Date(investment.endDate).toISOString().split("T")[0],
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
+        durationMonths: months,
         actualEndDate: investment.actualEndDate 
           ? new Date(investment.actualEndDate).toISOString().split("T")[0]
           : undefined,
@@ -119,11 +136,11 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       form.reset({
         platformId: "",
         name: "",
-        amount: 0,
         faceValue: 0,
         totalExpectedProfit: 0,
         startDate: new Date().toISOString().split("T")[0],
         endDate: "",
+        durationMonths: 0,
         expectedIrr: 0,
         status: "active",
         riskScore: 50,
@@ -132,6 +149,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
         fundedFromCash: 0,
         isReinvestment: 0,
       });
+      setDurationMonthsInput(0);
     }
     
     setTimeout(() => {
@@ -191,37 +209,79 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   // Watch form values for calculations
   const formValues = form.watch();
 
-  // Calculate suggested totalExpectedProfit from IRR
-  const suggestedProfit = useMemo(() => {
-    const faceValue = formValues.faceValue || 0;
-    const expectedIrr = formValues.expectedIrr || 0;
+  // Calculate duration in months when in dates mode
+  const calculatedDurationMonths = useMemo(() => {
+    if (durationMode !== 'dates') return 0;
+    
     const startDate = formValues.startDate;
     const endDate = formValues.endDate;
-
-    if (!faceValue || !expectedIrr || !startDate || !endDate) {
-      return 0;
-    }
-
+    
+    if (!startDate || !endDate) return 0;
+    
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const durationMs = end.getTime() - start.getTime();
-    const durationYears = durationMs / (1000 * 60 * 60 * 24 * 365.25);
+    
+    return calculateDurationMonths(start, end);
+  }, [formValues.startDate, formValues.endDate, durationMode]);
 
-    if (durationYears <= 0) {
+  // Update endDate when in months mode
+  useEffect(() => {
+    if (durationMode === 'months' && !isResettingRef.current) {
+      const startDate = formValues.startDate;
+      
+      if (startDate && durationMonthsInput > 0) {
+        const start = new Date(startDate);
+        const calculatedEnd = calculateEndDate(start, durationMonthsInput);
+        form.setValue("endDate", calculatedEnd.toISOString().split("T")[0]);
+      }
+    }
+  }, [durationMode, durationMonthsInput, formValues.startDate]);
+
+  // Calculate expected profit automatically
+  const autoCalculatedProfit = useMemo(() => {
+    const faceValue = formValues.faceValue || 0;
+    const expectedIrr = formValues.expectedIrr || 0;
+    const months = durationMode === 'dates' ? calculatedDurationMonths : durationMonthsInput;
+
+    if (!faceValue || !expectedIrr || !months) {
       return 0;
     }
 
-    return faceValue * (expectedIrr / 100) * durationYears;
-  }, [formValues.faceValue, formValues.expectedIrr, formValues.startDate, formValues.endDate]);
+    return calculateExpectedProfit(faceValue, expectedIrr, months);
+  }, [formValues.faceValue, formValues.expectedIrr, calculatedDurationMonths, durationMonthsInput, durationMode]);
 
   // Auto-fill totalExpectedProfit when inputs change (if user hasn't manually edited it)
   useEffect(() => {
     if (isResettingRef.current) return;
     
-    if (!userEditedProfit && suggestedProfit > 0) {
-      form.setValue("totalExpectedProfit", Math.round(suggestedProfit * 100) / 100);
+    if (!userEditedProfit && autoCalculatedProfit > 0) {
+      form.setValue("totalExpectedProfit", autoCalculatedProfit);
     }
-  }, [suggestedProfit, userEditedProfit]);
+  }, [autoCalculatedProfit, userEditedProfit]);
+
+  // Calculate ROI percentage
+  const roiPercentage = useMemo(() => {
+    const faceValue = formValues.faceValue || 0;
+    const totalExpectedProfit = formValues.totalExpectedProfit || 0;
+    
+    if (!faceValue) return 0;
+    
+    return (totalExpectedProfit / faceValue) * 100;
+  }, [formValues.faceValue, formValues.totalExpectedProfit]);
+
+  // Handle Calculate button click
+  const handleCalculateProfit = () => {
+    if (autoCalculatedProfit > 0) {
+      form.setValue("totalExpectedProfit", autoCalculatedProfit);
+      setUserEditedProfit(false);
+      toast({
+        title: language === 'ar' ? 'تم الحساب' : 'Calculated',
+        description: language === 'ar' 
+          ? `إجمالي الأرباح المتوقعة: ${autoCalculatedProfit.toFixed(2)} ريال` 
+          : `Total Expected Profit: ${autoCalculatedProfit.toFixed(2)} SAR`,
+      });
+    }
+  };
 
   // Calculate investment metrics based on form values
   const calculatedMetrics = useMemo(() => {
@@ -277,6 +337,13 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   }, [formValues.faceValue, formValues.totalExpectedProfit, formValues.startDate, formValues.endDate, formValues.distributionFrequency, formValues.profitPaymentStructure]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    // Set durationMonths based on mode
+    if (durationMode === 'months') {
+      data.durationMonths = durationMonthsInput;
+    } else {
+      data.durationMonths = calculatedDurationMonths;
+    }
+    
     // Validate cash balance if funding from cash
     if (data.fundedFromCash === 1 && data.faceValue > cashBalance) {
       toast({
@@ -307,6 +374,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       createMutation.mutate(payload);
     }
   };
+
+  const displayDurationMonths = durationMode === 'dates' ? calculatedDurationMonths : durationMonthsInput;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -364,28 +433,23 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="amount"
+                name="faceValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("dialog.amountSAR")}</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input type="number" placeholder="100000" {...field} data-testid="input-amount" />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="default"
-                        onClick={() => {
-                          const currentAmount = Number(field.value) || 0;
-                          field.onChange(currentAmount + 1000);
-                        }}
-                        data-testid="button-add-1000"
-                        className="whitespace-nowrap"
-                      >
-                        +1000
-                      </Button>
-                    </div>
+                    <FormLabel>
+                      {t("dialog.faceValue")}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="100000" 
+                        {...field} 
+                        data-testid="input-face-value" 
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t("dialog.faceValueDesc")}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -406,23 +470,110 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
               />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="faceValue"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {language === 'ar' ? 'القيمة الاسمية' : 'Face Value'}
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="100000" {...field} data-testid="input-face-value" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Duration Mode Toggle */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <FormLabel>{t("dialog.durationMode")}</FormLabel>
+                <Tabs value={durationMode} onValueChange={(value) => setDurationMode(value as DurationMode)}>
+                  <TabsList data-testid="tabs-duration-mode">
+                    <TabsTrigger value="months" data-testid="tab-months">
+                      {t("dialog.monthsMode")}
+                    </TabsTrigger>
+                    <TabsTrigger value="dates" data-testid="tab-dates">
+                      {t("dialog.datesMode")}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
 
+              {durationMode === 'months' ? (
+                // Months Mode
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("investments.startDate")}</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} data-testid="input-start-date" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div>
+                    <FormLabel>{t("dialog.durationMonths")}</FormLabel>
+                    <Input 
+                      type="number" 
+                      placeholder={t("dialog.enterMonths")}
+                      value={durationMonthsInput || ''}
+                      onChange={(e) => setDurationMonthsInput(parseInt(e.target.value) || 0)}
+                      data-testid="input-duration-months"
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
+                    <div className="mt-2 p-3 bg-muted rounded-md">
+                      <p className="text-sm text-muted-foreground">
+                        {formValues.endDate || language === 'ar' ? 'لم يتم الحساب بعد' : 'Not calculated yet'}
+                      </p>
+                    </div>
+                    <FormDescription>
+                      {t("dialog.calculatedAutomatically")}
+                    </FormDescription>
+                  </div>
+                </div>
+              ) : (
+                // Dates Mode
+                <div className="space-y-4">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("investments.startDate")}</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} data-testid="input-start-date" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} data-testid="input-end-date" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {calculatedDurationMonths > 0 && (
+                    <div className="flex items-center gap-2">
+                      <FormLabel>{t("dialog.durationMonths")}:</FormLabel>
+                      <Badge variant="secondary" data-testid="badge-duration-months">
+                        {calculatedDurationMonths} {t("dialog.months")}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Total Expected Profit with Calculate Button */}
+            <div className="space-y-2">
               <FormField
                 control={form.control}
                 name="totalExpectedProfit"
@@ -430,66 +581,46 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                   <FormItem>
                     <FormLabel>
                       {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
-                      {suggestedProfit > 0 && (
-                        <span className="text-sm font-normal text-muted-foreground ml-2">
-                          ({language === 'ar' ? 'مقترح' : 'Suggested'}: {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }).format(suggestedProfit)})
-                        </span>
-                      )}
                     </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="12500" 
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          if (!isResettingRef.current) {
-                            setUserEditedProfit(true);
-                          }
-                        }}
-                        data-testid="input-total-expected-profit" 
-                      />
-                    </FormControl>
-                    {suggestedProfit > 0 && !userEditedProfit && (
-                      <FormDescription>
-                        {language === 'ar' 
-                          ? 'محسوب تلقائيًا من معدل العائد الداخلي. يمكنك التعديل يدويًا.' 
-                          : 'Auto-calculated from IRR. You can edit manually.'}
-                      </FormDescription>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="12500" 
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            if (!isResettingRef.current) {
+                              setUserEditedProfit(true);
+                            }
+                          }}
+                          data-testid="input-total-expected-profit" 
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        onClick={handleCalculateProfit}
+                        data-testid="button-calculate-profit"
+                        className="whitespace-nowrap"
+                      >
+                        <Calculator className="w-4 h-4 mr-2" />
+                        {t("dialog.calculateProfit")}
+                      </Button>
+                    </div>
+                    {roiPercentage > 0 && displayDurationMonths > 0 && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="default" data-testid="badge-roi">
+                          {t("dialog.roi")}: {roiPercentage.toFixed(2)}% {t("dialog.over")} {displayDurationMonths} {t("dialog.months")}
+                        </Badge>
+                      </div>
                     )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("investments.startDate")}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} data-testid="input-start-date" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} data-testid="input-end-date" />
-                    </FormControl>
+                    <FormDescription>
+                      {userEditedProfit 
+                        ? t("dialog.manuallyEdited")
+                        : t("dialog.calculatedAutomatically")}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -531,7 +662,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                           {language === 'ar' ? 'شهري' : 'Monthly'}
                         </SelectItem>
                         <SelectItem value="quarterly">{t("dialog.quarterly")}</SelectItem>
-                        <SelectItem value="semi_annually">{t("dialog.semiAnnual")}</SelectItem>
+                        <SelectItem value="semi_annually">{t("dialog.semiAnnually")}</SelectItem>
                         <SelectItem value="annually">{t("dialog.annual")}</SelectItem>
                         <SelectItem value="at_maturity">
                           {language === 'ar' ? 'عند الاستحقاق' : 'At Maturity'}
@@ -603,39 +734,44 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="active">{t("investments.active")}</SelectItem>
-                        <SelectItem value="pending">{t("investments.pending")}</SelectItem>
                         <SelectItem value="completed">{t("investments.completed")}</SelectItem>
+                        <SelectItem value="late">{t("investments.late")}</SelectItem>
+                        <SelectItem value="defaulted">{t("investments.defaulted")}</SelectItem>
+                        <SelectItem value="pending">{t("investments.pending")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="riskScore"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("investments.riskScore")}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        max="100" 
+                        placeholder="50" 
+                        {...field}
+                        value={field.value ?? ""}
+                        data-testid="input-risk-score"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {language === 'ar' ? '0-100 (0 = آمن، 100 = عالي المخاطر)' : '0-100 (0 = Safe, 100 = High Risk)'}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <FormField
-              control={form.control}
-              name="riskScore"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("investments.riskScore")} (0-100)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="100" 
-                      value={field.value ?? 50}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      data-testid="input-risk-score"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {/* Funding from Cash */}
             <FormField
               control={form.control}
               name="fundedFromCash"
@@ -649,104 +785,95 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className="flex items-center gap-2">
-                      <Wallet className="h-4 w-4" />
-                      {language === 'ar' 
-                        ? 'تمويل من الرصيد النقدي' 
-                        : 'Fund from Cash Balance'}
+                    <FormLabel>
+                      {language === 'ar' ? 'تمويل من الرصيد النقدي' : 'Fund from Cash Balance'}
                     </FormLabel>
                     <FormDescription>
-                      {language === 'ar' 
-                        ? `الرصيد المتاح: ${new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(cashBalance)}` 
-                        : `Available: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(cashBalance)}`}
+                      <div className="flex items-center gap-2 mt-1">
+                        <Wallet className="w-4 h-4" />
+                        <span>
+                          {language === 'ar' ? 'الرصيد المتاح' : 'Available'}: {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US').format(cashBalance)} {t("common.sar")}
+                        </span>
+                      </div>
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
 
+            {/* Cash Balance Warning */}
             {form.watch("fundedFromCash") === 1 && form.watch("faceValue") > cashBalance && (
-              <Alert variant="destructive" data-testid="alert-insufficient-balance">
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   {language === 'ar' 
-                    ? 'رصيدك النقدي غير كافٍ لهذا الاستثمار. يرجى تخفيض المبلغ أو إيداع المزيد من النقد.' 
-                    : 'Insufficient cash balance for this investment. Please reduce the amount or deposit more cash.'}
+                    ? 'رصيدك النقدي غير كافٍ لهذا الاستثمار.' 
+                    : 'Insufficient cash balance for this investment.'}
                 </AlertDescription>
               </Alert>
             )}
 
-            {/* Calculated Investment Details */}
+            {/* Calculated Metrics Summary */}
             {calculatedMetrics && (
-              <Card className="bg-muted/50" data-testid="card-calculated-fields">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{t("dialog.calculatedFields")}</CardTitle>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {t("dialog.calculatedFields")}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
-                      <p className="text-lg font-semibold" data-testid="text-total-return">
-                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', { 
-                          style: 'currency', 
-                          currency: 'SAR',
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        }).format(calculatedMetrics.totalExpectedReturn)}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t("dialog.numberOfUnits")}</p>
-                      <p className="text-lg font-semibold" data-testid="text-number-units">
-                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0
-                        }).format(calculatedMetrics.numberOfUnits)}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t("dialog.paymentCount")}</p>
-                      <p className="text-lg font-semibold" data-testid="text-payment-count">
-                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0
-                        }).format(calculatedMetrics.paymentCount)}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t("dialog.paymentValue")}</p>
-                      <p className="text-lg font-semibold" data-testid="text-payment-value">
-                        {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', { 
-                          style: 'currency', 
-                          currency: 'SAR',
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        }).format(calculatedMetrics.paymentValue)}
-                      </p>
-                    </div>
+                <CardContent className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("dialog.numberOfUnits")}</p>
+                    <p className="text-lg font-semibold" data-testid="text-calculated-units">
+                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US').format(calculatedMetrics.numberOfUnits)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("dialog.paymentCount")}</p>
+                    <p className="text-lg font-semibold" data-testid="text-calculated-payments">
+                      {calculatedMetrics.paymentCount}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("dialog.paymentValue")}</p>
+                    <p className="text-lg font-semibold" data-testid="text-calculated-payment-value">
+                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }).format(calculatedMetrics.paymentValue)} {t("common.sar")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
+                    <p className="text-lg font-semibold" data-testid="text-calculated-total-return">
+                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }).format(calculatedMetrics.totalExpectedReturn)} {t("common.sar")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <div className="flex gap-3 justify-end">
-              <Button
-                type="button"
-                variant="outline"
+            <div className="flex justify-end gap-4 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
                 onClick={() => onOpenChange(false)}
                 data-testid="button-cancel"
               >
                 {t("dialog.cancel")}
               </Button>
-              <Button
-                type="submit"
+              <Button 
+                type="submit" 
                 disabled={createMutation.isPending || updateMutation.isPending}
-                data-testid="button-save-investment"
+                data-testid="button-save"
               >
                 {createMutation.isPending || updateMutation.isPending
                   ? t("dialog.saving")
                   : investment
-                  ? t("dialog.update")
+                  ? t("dialog.save")
                   : t("dialog.add")}
               </Button>
             </div>

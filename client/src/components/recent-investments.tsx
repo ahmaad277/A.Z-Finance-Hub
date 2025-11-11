@@ -55,7 +55,7 @@ export function RecentInvestments() {
                 </Badge>
               </td>
               <td className="py-3 font-semibold">
-                {formatCurrency(investment.amount)}
+                {formatCurrency(investment.faceValue)}
               </td>
               <td className="py-3 text-chart-1 font-medium">
                 {formatPercentage(investment.expectedIrr)}
