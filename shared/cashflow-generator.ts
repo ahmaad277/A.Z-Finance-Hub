@@ -57,7 +57,7 @@ export function generateCashflows(params: GenerateCashflowsParams): GeneratedCas
   const profitPayments: Date[] = [];
   let currentDate = addMonths(startDate, monthsInterval);
 
-  while (currentDate < endDate) {
+  while (currentDate <= endDate) {
     profitPayments.push(new Date(currentDate));
     currentDate = addMonths(currentDate, monthsInterval);
   }
