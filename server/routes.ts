@@ -545,6 +545,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Investment Status Check Trigger
+  app.post("/api/investments/check-status", async (_req, res) => {
+    try {
+      const { checkAllInvestmentStatuses } = await import("@shared/status-manager");
+      
+      // Get all investments and cashflows
+      const investments = await storage.getInvestments();
+      const allCashflows = await storage.getCashflows();
+      
+      // Group cashflows by investment
+      const cashflowsByInvestment = new Map<string, typeof allCashflows>();
+      for (const cashflow of allCashflows) {
+        const investmentCashflows = cashflowsByInvestment.get(cashflow.investmentId) || [];
+        investmentCashflows.push(cashflow);
+        cashflowsByInvestment.set(cashflow.investmentId, investmentCashflows);
+      }
+      
+      const investmentsWithCashflows = investments.map((investment) => ({
+        investment,
+        cashflows: cashflowsByInvestment.get(investment.id) || [],
+      }));
+
+      // Check for status updates
+      const statusUpdates = checkAllInvestmentStatuses(investmentsWithCashflows);
+      
+      if (statusUpdates.length > 0) {
+        // Apply each status update
+        for (const update of statusUpdates) {
+          await storage.updateInvestmentStatus(
+            update.investmentId,
+            update.newStatus,
+            update.lateDate,
+            update.defaultedDate
+          );
+        }
+      }
+      
+      res.json({ 
+        message: "Status check completed", 
+        updatesApplied: statusUpdates.length,
+        updates: statusUpdates 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to check investment statuses" });
+    }
+  });
+
   // Portfolio Data Reset (Destructive Operation)
   // Note: This is a single-user application with no authentication system.
   // Security relies on server-side confirmation validation only.

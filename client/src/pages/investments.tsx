@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,6 +110,25 @@ export default function Investments() {
       });
     },
   });
+
+  // Mutation to check investment statuses
+  const checkStatusMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/investments/check-status", {});
+    },
+    onSuccess: (data: any) => {
+      if (data.updatesApplied > 0) {
+        queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      }
+    },
+  });
+
+  // Auto-check investment statuses on page load
+  useEffect(() => {
+    checkStatusMutation.mutate();
+  }, []);
 
   // Mutation to delete cashflow
   const deleteCashflowMutation = useMutation({

@@ -75,6 +75,27 @@ export default function Dashboard() {
     }
   }, [settings?.collapsedSections]);
 
+  // Mutation to check investment statuses
+  const checkStatusMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/investments/check-status", {});
+    },
+    onSuccess: (data: any) => {
+      if (data.updatesApplied > 0) {
+        queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      }
+    },
+  });
+
+  // Auto-check investment statuses and generate alerts on page load
+  useEffect(() => {
+    checkStatusMutation.mutate();
+    // Also trigger alert generation
+    apiRequest("POST", "/api/alerts/generate", {}).catch(() => {});
+  }, []);
+
   // Mutation to save collapsed sections
   const updateCollapsedSections = useMutation({
     mutationFn: async (sections: string[]) => {

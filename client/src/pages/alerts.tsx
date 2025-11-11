@@ -4,15 +4,55 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Bell, CheckCircle2, AlertTriangle, Info, TrendingUp, Check } from "lucide-react";
+import { Bell, CheckCircle2, AlertTriangle, Info, TrendingUp, Check, RefreshCw } from "lucide-react";
 import type { Alert } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function Alerts() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { toast } = useToast();
   const { data: alerts, isLoading } = useQuery<Alert[]>({
     queryKey: ["/api/alerts"],
   });
+
+  const generateAlertsMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/alerts/generate", {});
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
+      
+      if (data.generatedCount > 0) {
+        toast({
+          title: language === "ar" ? "تم توليد التنبيهات" : "Alerts Generated",
+          description: language === "ar" 
+            ? `تم توليد ${data.generatedCount} تنبيه جديد`
+            : `${data.generatedCount} new alert${data.generatedCount > 1 ? 's' : ''} generated`,
+        });
+      } else {
+        toast({
+          title: language === "ar" ? "لا توجد تنبيهات جديدة" : "No New Alerts",
+          description: language === "ar" 
+            ? "جميع التنبيهات محدثة"
+            : "All alerts are up to date",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل توليد التنبيهات" : "Failed to generate alerts"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Auto-generate alerts on page load
+  useEffect(() => {
+    generateAlertsMutation.mutate();
+  }, []);
 
   const markAsReadMutation = useMutation({
     mutationFn: async (alertId: string) => {
@@ -74,7 +114,7 @@ export default function Alerts() {
     );
   }
 
-  const unreadCount = alerts?.filter(a => !a.read).length || 0;
+  const unreadCount = alerts?.filter((a: Alert) => !a.read).length || 0;
 
   return (
     <div className="space-y-6" data-testid="page-alerts">
@@ -85,11 +125,22 @@ export default function Alerts() {
             {t("alerts.subtitle")}
           </p>
         </div>
-        {unreadCount > 0 && (
-          <Badge className="bg-destructive/10 text-destructive text-base px-3 py-1" data-testid="badge-unread-count">
-            {t("alerts.unread").replace("{0}", unreadCount.toString())}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => generateAlertsMutation.mutate()}
+            disabled={generateAlertsMutation.isPending}
+            variant="outline"
+            data-testid="button-generate-alerts"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${generateAlertsMutation.isPending ? 'animate-spin' : ''}`} />
+            {language === "ar" ? "تحديث التنبيهات" : "Refresh Alerts"}
+          </Button>
+          {unreadCount > 0 && (
+            <Badge className="bg-destructive/10 text-destructive text-base px-3 py-1" data-testid="badge-unread-count">
+              {t("alerts.unread").replace("{0}", unreadCount.toString())}
+            </Badge>
+          )}
+        </div>
       </div>
 
       <Card data-testid="card-alerts">
@@ -106,7 +157,7 @@ export default function Alerts() {
             </div>
           ) : (
             <div className="divide-y">
-              {alerts?.map((alert) => {
+              {alerts?.map((alert: Alert) => {
                 const Icon = getAlertIcon(alert.type, alert.severity);
                 const colorClass = getAlertColor(alert.severity);
 
