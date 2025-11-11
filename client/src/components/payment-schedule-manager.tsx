@@ -31,8 +31,11 @@ export function PaymentScheduleManager({
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   
   const totalPayments = investmentCashflows.length;
-  const avgPaymentValue = totalPayments > 0 
-    ? investmentCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
+  
+  // Calculate payment value: expectedProfit / number of profit payments (exclude principal)
+  const profitPayments = investmentCashflows.filter(cf => cf.type === "profit");
+  const avgPaymentValue = profitPayments.length > 0 
+    ? expectedProfit / profitPayments.length
     : 0;
   
   // Get payment box color based on status and due date
