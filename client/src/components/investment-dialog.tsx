@@ -532,8 +532,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                   <div>
                     <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
                     <div className="mt-2 p-3 bg-muted rounded-md">
-                      <p className="text-sm text-muted-foreground">
-                        {formValues.endDate || language === 'ar' ? 'لم يتم الحساب بعد' : 'Not calculated yet'}
+                      <p className="text-sm">
+                        {formValues.endDate ? formValues.endDate : (language === 'ar' ? 'لم يتم الحساب بعد' : 'Not calculated yet')}
                       </p>
                     </div>
                     <FormDescription>
