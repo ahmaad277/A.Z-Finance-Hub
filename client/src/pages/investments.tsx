@@ -47,6 +47,7 @@ export default function Investments() {
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
+    refetchOnMount: true, // Always refetch on mount to ensure fresh data
   });
 
   const { data: cashflows, isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
