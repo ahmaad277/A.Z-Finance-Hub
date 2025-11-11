@@ -80,8 +80,8 @@ export interface IStorage {
   // Investments
   getInvestments(): Promise<InvestmentWithPlatform[]>;
   getInvestment(id: string): Promise<Investment | undefined>;
-  createInvestment(investment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment>;
-  updateInvestment(id: string, investment: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment | undefined>;
+  createInvestment(investment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<InvestmentWithPlatform>;
+  updateInvestment(id: string, investment: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<InvestmentWithPlatform | undefined>;
   updateInvestmentStatus(id: string, status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', lateDate?: Date | null, defaultedDate?: Date | null): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
   getCustomDistributions(investmentId: string): Promise<ApiCustomDistribution[]>;
@@ -248,9 +248,9 @@ export class DatabaseStorage implements IStorage {
     return investment || undefined;
   }
 
-  async createInvestment(insertInvestment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment> {
+  async createInvestment(insertInvestment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<InvestmentWithPlatform> {
     // Wrap all operations in a transaction for atomicity
-    return await db.transaction(async (tx) => {
+    const investmentId = await db.transaction(async (tx) => {
       // Create the investment (convert numbers to strings for database)
       const [investment] = await tx
         .insert(investments)
@@ -291,8 +291,23 @@ export class DatabaseStorage implements IStorage {
         await this.generateCashflowsForInvestment(tx, investment);
       }
       
-      return investment;
+      return investment.id;
     });
+
+    // Fetch and return the investment with enriched platform data
+    const enrichedInvestment = await db.query.investments.findFirst({
+      where: eq(investments.id, investmentId),
+      with: {
+        platform: true,
+        customDistributions: true,
+      },
+    });
+
+    if (!enrichedInvestment) {
+      throw new Error('Failed to retrieve created investment');
+    }
+
+    return enrichedInvestment;
   }
   
   /**
@@ -372,8 +387,8 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateInvestment(id: string, update: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<Investment | undefined> {
-    return await db.transaction(async (tx) => {
+  async updateInvestment(id: string, update: Partial<InsertInvestment>, customDistributionPayload?: ApiCustomDistribution[]): Promise<InvestmentWithPlatform | undefined> {
+    const updated = await db.transaction(async (tx) => {
       // Convert numbers to strings for database - explicit type-safe mapping
       const dbUpdate: Partial<Investment> = {};
       
@@ -430,8 +445,21 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      return investment;
+      return investment.id;
     });
+
+    if (!updated) return undefined;
+
+    // Fetch and return enriched investment with platform data
+    const enrichedInvestment = await db.query.investments.findFirst({
+      where: eq(investments.id, updated),
+      with: {
+        platform: true,
+        customDistributions: true,
+      },
+    });
+
+    return enrichedInvestment || undefined;
   }
 
   async updateInvestmentStatus(
