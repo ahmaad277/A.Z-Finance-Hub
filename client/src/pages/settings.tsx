@@ -22,6 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2, Bell, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
@@ -42,7 +43,8 @@ export default function Settings() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [isRegisteringBiometric, setIsRegisteringBiometric] = useState(false);
   const [platformToDelete, setPlatformToDelete] = useState<Platform | null>(null);
-  
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetConfirmation, setResetConfirmation] = useState("");
 
   // Local settings state for Save/Cancel/Reset functionality
   const [localSettings, setLocalSettings] = useState<Partial<UserSettings>>({});
@@ -163,6 +165,50 @@ export default function Settings() {
       });
     },
   });
+
+  // Reset Portfolio Mutation
+  const resetPortfolioMutation = useMutation({
+    mutationFn: async (confirmation: string) => {
+      // Send user-provided confirmation to backend for validation
+      return apiRequest("POST", "/api/portfolio/reset", {
+        confirm: confirmation
+      });
+    },
+    onSuccess: () => {
+      // Invalidate all portfolio-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      
+      setShowResetDialog(false);
+      setResetConfirmation("");
+      
+      toast({
+        title: language === "ar" ? "تم تنظيف المحفظة" : "Portfolio Reset",
+        description: language === "ar" 
+          ? "تم حذف جميع بيانات المحفظة بنجاح" 
+          : "All portfolio data has been successfully deleted",
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.message || error.error || "Failed to reset portfolio";
+      toast({
+        title: t("dialog.error"),
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleResetPortfolio = () => {
+    if (resetConfirmation === "DELETE_ALL_DATA") {
+      resetPortfolioMutation.mutate(resetConfirmation);
+    }
+  };
 
   const generateAlertsMutation = useMutation({
     mutationFn: async () => {
@@ -878,6 +924,112 @@ export default function Settings() {
                 : "You have unsaved changes"}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone - Reset Portfolio */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            {language === "ar" ? "منطقة الخطر" : "Danger Zone"}
+          </CardTitle>
+          <CardDescription>
+            {language === "ar" 
+              ? "إجراءات خطيرة لا يمكن التراجع عنها" 
+              : "Irreversible actions that permanently delete data"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border border-destructive/30 rounded-lg bg-destructive/5">
+            <div className="space-y-1">
+              <p className="font-semibold text-foreground">
+                {language === "ar" ? "تنظيف المحفظة بالكامل" : "Reset All Portfolio Data"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {language === "ar" 
+                  ? "حذف جميع الاستثمارات، التدفقات النقدية، المعاملات، والتنبيهات بشكل دائم" 
+                  : "Permanently delete all investments, cashflows, cash transactions, and alerts"}
+              </p>
+            </div>
+            <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="destructive"
+                  data-testid="button-reset-portfolio"
+                >
+                  {language === "ar" ? "تنظيف المحفظة" : "Reset Portfolio"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <AlertDialogTitle>
+                      {language === "ar" ? "تأكيد تنظيف المحفظة" : "Confirm Portfolio Reset"}
+                    </AlertDialogTitle>
+                  </div>
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-4">
+                      <p className="text-destructive font-semibold">
+                        {language === "ar" 
+                          ? "⚠️ تحذير: هذا الإجراء لا يمكن التراجع عنه!" 
+                          : "⚠️ WARNING: This action cannot be undone!"}
+                      </p>
+                      <p>
+                        {language === "ar" 
+                          ? "سيتم حذف جميع البيانات التالية بشكل دائم:" 
+                          : "The following data will be permanently deleted:"}
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-sm">
+                        <li>{language === "ar" ? "جميع الاستثمارات" : "All investments"}</li>
+                        <li>{language === "ar" ? "جميع التدفقات النقدية" : "All cashflows"}</li>
+                        <li>{language === "ar" ? "جميع المعاملات النقدية" : "All cash transactions"}</li>
+                        <li>{language === "ar" ? "جميع التنبيهات" : "All alerts"}</li>
+                        <li>{language === "ar" ? "جميع الجداول المخصصة" : "All custom distributions"}</li>
+                      </ul>
+                      <p className="text-sm text-muted-foreground">
+                        {language === "ar" 
+                          ? "سيتم الاحتفاظ بالمنصات والإعدادات" 
+                          : "Platforms and settings will be preserved"}
+                      </p>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          {language === "ar" 
+                            ? 'اكتب "DELETE_ALL_DATA" للتأكيد:' 
+                            : 'Type "DELETE_ALL_DATA" to confirm:'}
+                        </label>
+                        <Input
+                          value={resetConfirmation}
+                          onChange={(e) => setResetConfirmation(e.target.value)}
+                          placeholder="DELETE_ALL_DATA"
+                          data-testid="input-reset-confirmation"
+                        />
+                      </div>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel 
+                    onClick={() => setResetConfirmation("")}
+                    data-testid="button-cancel-reset"
+                  >
+                    {language === "ar" ? "إلغاء" : "Cancel"}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleResetPortfolio}
+                    disabled={resetConfirmation !== "DELETE_ALL_DATA" || resetPortfolioMutation.isPending}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    data-testid="button-confirm-reset"
+                  >
+                    {resetPortfolioMutation.isPending 
+                      ? (language === "ar" ? "جاري الحذف..." : "Deleting...") 
+                      : (language === "ar" ? "تنظيف المحفظة نهائياً" : "Reset Portfolio")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardContent>
       </Card>
 

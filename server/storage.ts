@@ -182,6 +182,9 @@ export interface IStorage {
   startImpersonation(session: InsertImpersonationSession): Promise<ImpersonationSession>;
   endImpersonation(sessionId: string): Promise<ImpersonationSession | undefined>;
   getActiveImpersonation(ownerId: string): Promise<ImpersonationSession | undefined>;
+  
+  // Data Management
+  resetAllData(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1592,6 +1595,29 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(impersonationSessions.startedAt))
       .limit(1);
     return impSession || undefined;
+  }
+  
+  // Data Management
+  async resetAllData(): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Delete in correct order to avoid foreign key violations
+      // 1. Custom distributions (depends on investments)
+      await tx.delete(customDistributions);
+      
+      // 2. Cashflows (depends on investments)
+      await tx.delete(cashflows);
+      
+      // 3. Cash transactions (may reference investments)
+      await tx.delete(cashTransactions);
+      
+      // 4. Alerts (independent but portfolio-related)
+      await tx.delete(alerts);
+      
+      // 5. Investments (depends on platforms)
+      await tx.delete(investments);
+      
+      // Preserve: platforms, user settings, multi-user tables
+    });
   }
 }
 

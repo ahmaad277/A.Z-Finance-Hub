@@ -460,6 +460,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Portfolio Data Reset (Destructive Operation)
+  // Note: This is a single-user application with no authentication system.
+  // Security relies on server-side confirmation validation only.
+  app.post("/api/portfolio/reset", async (req, res) => {
+    try {
+      // Validate confirmation string from user input
+      const { confirm } = req.body;
+      if (!confirm || confirm !== 'DELETE_ALL_DATA') {
+        return res.status(400).json({ 
+          error: 'Invalid confirmation. Please type DELETE_ALL_DATA exactly as shown.' 
+        });
+      }
+      
+      // Log the reset action
+      await storage.logAudit({
+        actorId: 'system',
+        actionType: 'data_reset',
+        targetType: 'portfolio',
+        targetId: null,
+        details: 'All portfolio data reset (investments, cashflows, cash transactions, alerts, custom distributions)',
+        ipAddress: req.ip || 'unknown',
+        userAgent: req.get('user-agent') || 'unknown',
+      });
+      
+      // Execute reset
+      await storage.resetAllData();
+      
+      res.json({ 
+        success: true, 
+        message: 'Portfolio data reset successfully. All investments, cashflows, cash transactions, alerts, and custom distributions have been deleted.' 
+      });
+    } catch (error: any) {
+      console.error('Portfolio reset failed:', error);
+      res.status(500).json({ error: 'Failed to reset portfolio data. Transaction rolled back.' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

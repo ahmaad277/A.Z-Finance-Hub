@@ -4,3 +4,34 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Build & Cache
+.vite
+.turbo
+.eslintcache
+*.tsbuildinfo
+coverage/
+playwright-report/
+
+# Logs
+*.log
+logs/
+tmp/
+*.pid
+
+# Database files
+*.sqlite
+*.db
+*.db-journal
+*.sqlite-shm
+*.sqlite-wal
+
+# Editor
+*.swp
+*.swo
+*.orig
+Thumbs.db
+
+# Environment
+.env.local
+.env.*.local
