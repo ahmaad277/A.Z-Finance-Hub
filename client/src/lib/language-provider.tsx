@@ -212,6 +212,12 @@ const translations = {
     "investments.deleteInvestment": "Delete Investment",
     "investments.deleteConfirm": "Are you sure you want to delete this investment?",
     "investments.deleteWarning": "This will permanently delete the investment and all related cashflows and alerts. This action cannot be undone.",
+    "investments.expectedIRR": "Expected IRR",
+    "investments.faceValue": "Face Value",
+    "investments.totalReturns": "Total Returns",
+    "investments.expectedProfit": "Expected Profit",
+    "investments.months": "months",
+    "investments.completePayment": "Complete Payment",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -968,6 +974,12 @@ const translations = {
     "investments.deleteInvestment": "حذف الاستثمار",
     "investments.deleteConfirm": "هل أنت متأكد من حذف هذا الاستثمار؟",
     "investments.deleteWarning": "سيتم حذف الاستثمار ونهائياً وجميع التدفقات النقدية والتنبيهات المرتبطة به. لا يمكن التراجع عن هذا الإجراء.",
+    "investments.expectedIRR": "معدل العائد المتوقع",
+    "investments.faceValue": "القيمة الاسمية",
+    "investments.totalReturns": "إجمالي العوائد",
+    "investments.expectedProfit": "الأرباح المتوقعة",
+    "investments.months": "شهر",
+    "investments.completePayment": "إتمام الدفعة",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",

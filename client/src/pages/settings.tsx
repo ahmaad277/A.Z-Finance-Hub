@@ -440,7 +440,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Settings2 className="w-8 h-8 text-primary" />
         <div>
@@ -451,7 +451,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Appearance Settings */}
         <Card>
           <CardHeader>
@@ -461,7 +461,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.appearanceDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Theme Toggle */}
             <div className="space-y-2">
               <Label>{t("settings.theme")}</Label>
@@ -519,7 +519,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.languageRegionDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Language */}
             <div className="space-y-2">
               <Label>{t("settings.language")}</Label>
@@ -556,7 +556,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.investmentGoalsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Target Capital 2040 */}
             <div className="space-y-2">
               <Label>{t("settings.targetCapital2040")}</Label>
@@ -596,7 +596,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.alertSettingsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Enable Alerts */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -669,7 +669,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.platformsDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Existing Platforms */}
             <div className="space-y-2">
               <Label>{t("settings.existingPlatforms")}</Label>
@@ -727,7 +727,7 @@ export default function Settings() {
             <Separator />
 
             {/* Add New Platform */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Label>{t("settings.addNewPlatform")}</Label>
               <div className="space-y-2">
                 <Input
@@ -770,7 +770,7 @@ export default function Settings() {
             </div>
             <CardDescription>{t("settings.securityDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {/* Enable Security */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -787,7 +787,7 @@ export default function Settings() {
             <Separator />
 
             {/* PIN Setup */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="space-y-0.5">
                 <Label>{t("settings.setupPIN")}</Label>
                 <p className="text-sm text-muted-foreground">{t("settings.setupPINDesc")}</p>
@@ -839,7 +839,7 @@ export default function Settings() {
             <Separator />
 
             {/* Biometric Authentication */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="space-y-0.5">
                 <Label>{t("settings.biometric")}</Label>
                 <p className="text-sm text-muted-foreground">{t("settings.biometricDesc")}</p>
@@ -848,7 +848,7 @@ export default function Settings() {
               {!biometricAvailable ? (
                 <p className="text-sm text-muted-foreground">{t("settings.biometricNotSupported")}</p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>{t("settings.enableBiometric")}</Label>
@@ -970,7 +970,7 @@ export default function Settings() {
                     </AlertDialogTitle>
                   </div>
                   <AlertDialogDescription asChild>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <p className="text-destructive font-semibold">
                         {language === "ar" 
                           ? "⚠️ تحذير: هذا الإجراء لا يمكن التراجع عنه!" 
