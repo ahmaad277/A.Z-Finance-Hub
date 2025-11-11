@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -159,17 +159,26 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
   }, [investment, form]);
 
   // Auto-derive profitPaymentStructure from distributionFrequency
+  const distributionFrequency = useWatch({
+    control: form.control,
+    name: "distributionFrequency",
+  });
+
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'distributionFrequency' && value.distributionFrequency) {
-        const newStructure = value.distributionFrequency === 'at_maturity' 
-          ? 'at_maturity' 
-          : 'periodic';
+    if (isResettingRef.current) return;
+    
+    if (distributionFrequency) {
+      const newStructure = distributionFrequency === 'at_maturity' 
+        ? 'at_maturity' 
+        : 'periodic';
+      
+      const currentStructure = form.getValues('profitPaymentStructure');
+      
+      if (currentStructure !== newStructure) {
         form.setValue('profitPaymentStructure', newStructure);
       }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
+    }
+  }, [distributionFrequency, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
@@ -672,18 +681,12 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="monthly">
-                          {language === 'ar' ? 'شهري' : 'Monthly'}
-                        </SelectItem>
-                        <SelectItem value="quarterly">{t("dialog.quarterly")}</SelectItem>
-                        <SelectItem value="semi_annually">{t("dialog.semiAnnually")}</SelectItem>
-                        <SelectItem value="annually">{t("dialog.annually")}</SelectItem>
-                        <SelectItem value="at_maturity">
-                          {language === 'ar' ? 'عند الاستحقاق' : 'At Maturity'}
-                        </SelectItem>
-                        <SelectItem value="custom">
-                          {language === 'ar' ? 'جدول مخصص' : 'Custom Schedule'}
-                        </SelectItem>
+                        <SelectItem value="monthly">شهري</SelectItem>
+                        <SelectItem value="quarterly">ربع سنوي</SelectItem>
+                        <SelectItem value="semi_annually">نصف سنوي</SelectItem>
+                        <SelectItem value="annually">سنوي</SelectItem>
+                        <SelectItem value="at_maturity">عند الاستحقاق</SelectItem>
+                        <SelectItem value="custom">جدول مخصص</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
