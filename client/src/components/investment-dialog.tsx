@@ -51,7 +51,7 @@ const formSchema = insertInvestmentSchema.extend({
   startDate: z.string(),
   endDate: z.string(),
   actualEndDate: z.string().optional(),
-  durationMonths: z.number().int().positive().optional(),
+  durationMonths: z.number().int().nonnegative().optional(),
 });
 
 type DurationMode = 'months' | 'dates';
@@ -255,7 +255,8 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       if (startDate && durationMonthsInput > 0) {
         const start = new Date(startDate);
         const calculatedEnd = calculateEndDate(start, durationMonthsInput);
-        form.setValue("endDate", calculatedEnd.toISOString().split("T")[0]);
+        const endDateString = calculatedEnd.toISOString().split("T")[0];
+        form.setValue("endDate", endDateString);
       }
     }
   }, [durationMode, durationMonthsInput, formValues.startDate]);
@@ -413,7 +414,9 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={(e) => {
+            form.handleSubmit(onSubmit)(e);
+          }} className="space-y-6">
             <FormField
               control={form.control}
               name="platformId"
@@ -694,6 +697,18 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                 )}
               />
 
+              {/* Hidden field for profitPaymentStructure - auto-derived from distributionFrequency */}
+              <FormField
+                control={form.control}
+                name="profitPaymentStructure"
+                render={({ field }) => (
+                  <FormItem className="hidden">
+                    <FormControl>
+                      <Input type="hidden" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Custom Cashflow Editor - Show only when custom frequency selected */}
