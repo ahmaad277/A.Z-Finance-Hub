@@ -513,14 +513,23 @@ export class DatabaseStorage implements IStorage {
     // This preserves actual received profits in cash balance while removing the deleted investment reference
     for (const cashflow of relatedCashflows) {
       if (cashflow.status === 'received') {
-        // Update transactions to remove foreign key references and mark as orphaned
-        await db.update(cashTransactions)
-          .set({
-            investmentId: null,
-            cashflowId: null,
-            notes: sql`CONCAT(COALESCE(notes, ''), ' [From deleted investment: ', ${investment.name}, ']')`,
-          })
+        // Get existing transaction to preserve notes
+        const existingTransactions = await db
+          .select()
+          .from(cashTransactions)
           .where(eq(cashTransactions.cashflowId, cashflow.id));
+        
+        // Update transactions to remove foreign key references and mark as orphaned
+        for (const transaction of existingTransactions) {
+          const updatedNotes = `${transaction.notes || ''} [From deleted investment: ${investment.name}]`.trim();
+          await db.update(cashTransactions)
+            .set({
+              investmentId: null,
+              cashflowId: null,
+              notes: updatedNotes,
+            })
+            .where(eq(cashTransactions.id, transaction.id));
+        }
       } else {
         // Delete transactions for expected/pending cashflows that never materialized
         await db.delete(cashTransactions).where(eq(cashTransactions.cashflowId, cashflow.id));
