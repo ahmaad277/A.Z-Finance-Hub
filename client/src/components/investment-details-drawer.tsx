@@ -51,13 +51,18 @@ export function InvestmentDetailsDrawer({
   // Calculate total expected profit
   const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
 
-  // Calculate total returns received so far
+  // Calculate total profit received so far (exclude principal)
+  const totalProfitReceived = investmentCashflows
+    .filter(cf => cf.status === "received" && cf.type === "profit")
+    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
+
+  // Calculate total returns received (including principal for display purposes)
   const totalReturns = investmentCashflows
     .filter(cf => cf.status === "received")
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
 
-  // Calculate ROI
-  const roi = calculateROI(parseFloat(investment.faceValue || investment.faceValue), totalReturns);
+  // Calculate ROI: (Profit Received / Face Value) * 100
+  const roi = calculateROI(parseFloat(investment.faceValue || investment.faceValue), totalProfitReceived);
 
   const statusConfig = getInvestmentStatusConfig(investment.status);
 
