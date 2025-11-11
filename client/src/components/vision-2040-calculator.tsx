@@ -275,7 +275,7 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/saved-scenarios"] });
+      queryClient.refetchQueries({ queryKey: ["/api/saved-scenarios"], type: 'all' });
       setScenarioName("");
       toast({
         title: t("vision2040.scenarioSaved"),
@@ -298,7 +298,7 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/saved-scenarios"] });
+      queryClient.refetchQueries({ queryKey: ["/api/saved-scenarios"], type: 'all' });
       toast({
         title: t("vision2040.scenarioDeleted"),
         description: t("vision2040.scenarioDeleted"),
