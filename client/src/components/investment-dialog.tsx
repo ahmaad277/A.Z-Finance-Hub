@@ -803,13 +803,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
             {/* Calculated Metrics Summary - Compact Layout */}
             {calculatedMetrics && (
               <Card>
-                <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t("dialog.numberOfUnits")}</p>
-                    <p className="text-base font-semibold" data-testid="text-calculated-units">
-                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US').format(calculatedMetrics.numberOfUnits)}
-                    </p>
-                  </div>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
                   <div>
                     <p className="text-xs text-muted-foreground">{t("dialog.paymentCount")}</p>
                     <p className="text-base font-semibold" data-testid="text-calculated-payments">
