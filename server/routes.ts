@@ -306,11 +306,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/cashflows/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const data = insertCashflowSchema.partial().parse(req.body);
-      const cashflow = await storage.updateCashflow(id, data);
+      
+      // Extended schema to support late status management and receivedDate
+      const extendedCashflowSchema = insertCashflowSchema.partial().extend({
+        receivedDate: z.string().or(z.null()).optional(),
+        clearLateStatus: z.boolean().optional(),
+        updateLateInfo: z.object({
+          lateDays: z.number().int().min(1).optional(),
+        }).optional(),
+      });
+      
+      const { clearLateStatus, updateLateInfo, ...cashflowData } = extendedCashflowSchema.parse(req.body);
+      
+      // Update the cashflow
+      const cashflow = await storage.updateCashflow(id, cashflowData);
       
       if (!cashflow) {
         return res.status(404).json({ error: "Cashflow not found" });
+      }
+      
+      // Handle late status management if payment is being marked as received
+      if (cashflowData.status === "received" && cashflowData.receivedDate) {
+        // Get the investment to check its status
+        const investment = await storage.getInvestment(cashflow.investmentId);
+        
+        if (investment && (investment.status === "late" || investment.status === "defaulted")) {
+          // Check if user wants to clear late status
+          if (clearLateStatus === true) {
+            // Clear late/defaulted dates
+            await storage.updateInvestmentStatus(
+              cashflow.investmentId,
+              "active", // Will be recalculated by status checker
+              null,
+              null
+            );
+          } else if (updateLateInfo?.lateDays) {
+            // Update late date to reflect custom late days
+            const now = new Date();
+            const customLateDate = new Date(now.getTime() - (updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
+            
+            // Keep defaultedDate if it exists, just update lateDate
+            await storage.updateInvestmentStatus(
+              cashflow.investmentId,
+              investment.status,
+              customLateDate,
+              investment.defaultedDate ? new Date(investment.defaultedDate) : null
+            );
+          }
+          // If neither option is specified, keep existing late/defaulted status
+        }
       }
 
       res.json(cashflow);
