@@ -865,7 +865,7 @@ export class DatabaseStorage implements IStorage {
     // Create platform ID map
     const platformMap = new Map(allPlatforms.map(p => [p.id, p.name]));
     
-    // Calculate balance by platform
+    // Calculate balance by platform (keyed by platformId, not name)
     const byPlatform: Record<string, number> = {};
     
     for (const txn of allTransactions) {
@@ -880,13 +880,12 @@ export class DatabaseStorage implements IStorage {
       // Skip if still no platform
       if (!platformId) continue;
       
-      const platformName = platformMap.get(platformId) || platformId;
-      
+      // Use platformId as key (not platformName)
       // Calculate transaction effect
       const amount = parseFloat(txn.amount);
       const effect = ['deposit', 'distribution'].includes(txn.type) ? amount : -amount;
       
-      byPlatform[platformName] = (byPlatform[platformName] || 0) + effect;
+      byPlatform[platformId] = (byPlatform[platformId] || 0) + effect;
     }
     
     return {
