@@ -1,16 +1,9 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { getPlatformChartColor } from "@/lib/platform-colors";
 
 interface PlatformAllocationChartProps {
   data: Array<{ platform: string; amount: number; percentage: number }>;
 }
-
-const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-];
 
 export function PlatformAllocationChart({ data }: PlatformAllocationChartProps) {
   if (data.length === 0) {
@@ -34,9 +27,16 @@ export function PlatformAllocationChart({ data }: PlatformAllocationChartProps) 
           fill="#8884d8"
           dataKey="amount"
         >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
+          {data.map((entry, index) => {
+            const color = getPlatformChartColor(entry.platform);
+            return (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={color}
+                data-testid={`pie-segment-${entry.platform.toLowerCase()}`}
+              />
+            );
+          })}
         </Pie>
         <Tooltip
           contentStyle={{
