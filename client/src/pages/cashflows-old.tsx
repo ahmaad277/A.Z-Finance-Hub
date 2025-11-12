@@ -56,10 +56,10 @@ export default function Cashflows() {
     );
   }
 
-  const totalReceived = cashflows?.filter(cf => cf.status === "received")
+  const totalReceived = cashflows?.filter(cf => cf.status === "received" && cf.type === "profit")
     .reduce((sum, cf) => sum + parseFloat(cf.amount), 0) || 0;
   
-  const totalExpected = cashflows?.filter(cf => cf.status === "expected")
+  const totalExpected = cashflows?.filter(cf => cf.status === "expected" && cf.type === "profit")
     .reduce((sum, cf) => sum + parseFloat(cf.amount), 0) || 0;
 
   return (

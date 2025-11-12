@@ -41,8 +41,8 @@ export default function Reinvestment() {
     );
   }
 
-  // Calculate available cash balance
-  const receivedCashflows = cashflows?.filter(cf => cf.status === "received") || [];
+  // Calculate available cash balance (profits only)
+  const receivedCashflows = cashflows?.filter(cf => cf.status === "received" && cf.type === "profit") || [];
   const totalReceived = receivedCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
   
   // Calculate total reinvested amount (investments with "(Reinvestment" in the name)

@@ -45,14 +45,14 @@ export default function CashflowsUnified() {
   });
   const cashBalance = cashBalanceResponse?.balance ?? 0;
 
-  // Calculate investment cashflow statistics
+  // Calculate investment cashflow statistics (profits only)
   const cashflowStats = useMemo(() => {
     const totalReceived = cashflows
-      .filter(cf => cf.status === "received")
+      .filter(cf => cf.status === "received" && cf.type === "profit")
       .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
     
     const totalExpected = cashflows
-      .filter(cf => cf.status === "expected")
+      .filter(cf => cf.status === "expected" && cf.type === "profit")
       .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
 
     return { totalReceived, totalExpected };

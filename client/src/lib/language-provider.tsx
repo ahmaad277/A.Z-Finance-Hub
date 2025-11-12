@@ -254,7 +254,7 @@ const translations = {
     // Cashflows
     "cashflows.title": "Cashflows",
     "cashflows.subtitle": "Track all profit distributions and returns from your investments",
-    "cashflows.totalReceived": "Total Received",
+    "cashflows.totalReceived": "Profits Received",
     "cashflows.expectedThisQuarter": "Expected This Quarter",
     "cashflows.allCashflows": "All Cashflows",
     "cashflows.allTransactions": "All Transactions",
@@ -1146,7 +1146,7 @@ const translations = {
     // Cashflows
     "cashflows.title": "التدفقات النقدية",
     "cashflows.subtitle": "تتبع جميع توزيعات الأرباح والعوائد من استثماراتك",
-    "cashflows.totalReceived": "إجمالي المستلم",
+    "cashflows.totalReceived": "الأرباح المُستلمة",
     "cashflows.expectedThisQuarter": "المتوقع هذا الربع",
     "cashflows.allCashflows": "جميع التدفقات",
     "cashflows.allTransactions": "جميع المعاملات",
