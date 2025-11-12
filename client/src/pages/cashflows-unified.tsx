@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCurrency, formatDate, calculateDaysUntil } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { AddCashDialog } from "@/components/add-cash-dialog";
+import { CashflowForecastChart } from "@/components/cashflow-forecast-chart";
+import { ForecastSummaryCards } from "@/components/forecast-summary-cards";
+import { calculateMonthlyForecast, calculateForecastSummaries } from "@shared/cashflow-forecast";
 import { 
   CheckCircle2, 
   Clock, 
@@ -75,6 +78,16 @@ export default function CashflowsUnified() {
 
     return { deposits, withdrawals, investments, distributions };
   }, [cashTransactions]);
+
+  // Calculate forecast data (memoized for performance)
+  const forecastData = useMemo(() => {
+    return calculateMonthlyForecast(cashflows, 40);
+  }, [cashflows]);
+
+  // Calculate forecast summaries
+  const forecastSummaries = useMemo(() => {
+    return calculateForecastSummaries(forecastData);
+  }, [forecastData]);
 
   // Filter cash transactions
   const filteredTransactions = useMemo(() => {
@@ -303,6 +316,34 @@ export default function CashflowsUnified() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cashflow Forecast Section */}
+      {forecastData.some(month => month.total > 0) ? (
+        <div className="space-y-4">
+          <CashflowForecastChart data={forecastData} months={40} />
+          <ForecastSummaryCards
+            month1={forecastSummaries.month1}
+            months3={forecastSummaries.months3}
+            months6={forecastSummaries.months6}
+            months12={forecastSummaries.months12}
+            months24={forecastSummaries.months24}
+          />
+        </div>
+      ) : cashflows.length > 0 ? (
+        <Card data-testid="card-forecast-no-data">
+          <CardContent className="p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-1">{t("forecast.noData")}</h3>
+                <p className="text-sm text-muted-foreground">{t("forecast.noDataDesc")}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Tabs */}
       <Tabs defaultValue="all" className="w-full" data-testid="tabs-cashflows">

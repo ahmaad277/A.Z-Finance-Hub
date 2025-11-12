@@ -33,6 +33,26 @@ const translations = {
     "app.copyright": "© 2025 A.Z Finance",
     "common.sar": "SAR",
     
+    // Forecast
+    "forecast.title": "Cashflow Forecast",
+    "forecast.next": "Next",
+    "forecast.months": "Months",
+    "forecast.principal": "Principal",
+    "forecast.profit": "Profit",
+    "forecast.total": "Total",
+    "forecast.period.month1": "1 Month",
+    "forecast.period.month1Desc": "Next 30 days",
+    "forecast.period.months3": "3 Months",
+    "forecast.period.months3Desc": "Next Quarter",
+    "forecast.period.months6": "6 Months",
+    "forecast.period.months6Desc": "Next Half Year",
+    "forecast.period.year1": "1 Year",
+    "forecast.period.year1Desc": "Next 12 Months",
+    "forecast.period.years2": "2 Years",
+    "forecast.period.years2Desc": "Next 24 Months",
+    "forecast.noData": "No forecast data available",
+    "forecast.noDataDesc": "Add active investments to see cashflow projections",
+    
     // Navigation
     "nav.dashboard": "Dashboard",
     "nav.investments": "Investments",
@@ -904,6 +924,26 @@ const translations = {
     "app.subtitle": "رؤية 2040",
     "app.copyright": "© 2025 A.Z المالية",
     "common.sar": "ريال",
+    
+    // Forecast
+    "forecast.title": "توقعات التدفقات النقدية",
+    "forecast.next": "الـ",
+    "forecast.months": "شهر القادمة",
+    "forecast.principal": "رأس المال",
+    "forecast.profit": "الأرباح",
+    "forecast.total": "الإجمالي",
+    "forecast.period.month1": "شهر واحد",
+    "forecast.period.month1Desc": "الـ 30 يوم القادمة",
+    "forecast.period.months3": "3 أشهر",
+    "forecast.period.months3Desc": "الربع القادم",
+    "forecast.period.months6": "6 أشهر",
+    "forecast.period.months6Desc": "نصف السنة القادمة",
+    "forecast.period.year1": "سنة واحدة",
+    "forecast.period.year1Desc": "الـ 12 شهر القادمة",
+    "forecast.period.years2": "سنتين",
+    "forecast.period.years2Desc": "الـ 24 شهر القادمة",
+    "forecast.noData": "لا توجد بيانات توقعات",
+    "forecast.noDataDesc": "أضف استثمارات نشطة لرؤية توقعات التدفقات",
     
     // Navigation
     "nav.dashboard": "لوحة التحكم",
