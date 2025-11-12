@@ -70,6 +70,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       icon: Target,
       label: t("metrics.portfolioROI"),
       value: formatPercentage(metrics.portfolioROI),
+      secondaryValue: formatCurrency(metrics.totalProfitAmount),
       colorLight: METRIC_COLOR_MAP.roi.colorLight,
       colorDark: METRIC_COLOR_MAP.roi.colorDark,
       bgColor: METRIC_COLOR_MAP.roi.bgColor,
@@ -112,9 +113,20 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
-                  {card.value}
-                </div>
+                {card.secondaryValue ? (
+                  <div className="flex items-center gap-1.5">
+                    <div className="text-xs text-muted-foreground whitespace-nowrap" data-testid={`metric-secondary-value-${card.id}`}>
+                      {card.secondaryValue}
+                    </div>
+                    <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
+                      {card.value}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
+                    {card.value}
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
