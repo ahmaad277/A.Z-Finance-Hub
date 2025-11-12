@@ -480,23 +480,52 @@ export default function Dashboard() {
         })()
       )}
 
-      {/* Platforms Overview */}
+      {/* Platforms Overview - Collapsible */}
       {platformStats.length > 0 && (
-        <PageSection title={t("dashboard.platformsOverview")}>
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {platformStats.map(({ platform, investments, totalReturns, averageIrr, averageDuration }) => (
-              <PlatformCard
-                key={platform.id}
-                platform={platform}
-                investments={investments}
-                totalReturns={totalReturns}
-                averageIrr={averageIrr}
-                averageDuration={averageDuration}
-                onClick={() => setLocation(`/platform/${platform.id}`)}
-              />
-            ))}
-          </div>
-        </PageSection>
+        <Card data-testid="card-platforms-overview">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-lg">{t("dashboard.platformsOverview")}</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleSection('platforms-overview')}
+              data-testid="button-toggle-platforms-overview"
+            >
+              {isSectionCollapsed('platforms-overview') ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+            </Button>
+          </CardHeader>
+          <AnimatePresence initial={false}>
+            {!isSectionCollapsed('platforms-overview') && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {platformStats.map(({ platform, investments, totalReturns, averageIrr, averageDuration }) => (
+                      <PlatformCard
+                        key={platform.id}
+                        platform={platform}
+                        investments={investments}
+                        totalReturns={totalReturns}
+                        averageIrr={averageIrr}
+                        averageDuration={averageDuration}
+                        onClick={() => setLocation(`/platform/${platform.id}`)}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Card>
       )}
 
       {/* Analytics Charts and Lists - Pro Mode Only */}
