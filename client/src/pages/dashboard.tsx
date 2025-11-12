@@ -4,10 +4,12 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { formatCurrency, formatPercentage, cn } from "@/lib/utils";
+import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 import { useLanguage } from "@/lib/language-provider";
 import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
@@ -17,7 +19,7 @@ import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { Vision2040Calculator } from "@/components/vision-2040-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
 import { runBackgroundTasksOnce } from "@/lib/backgroundTaskManager";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform, CashTransaction } from "@shared/schema";
@@ -119,7 +121,7 @@ export default function Dashboard() {
     queryKey: ["/api/analytics"],
   });
 
-  const { data: cashBalance } = useQuery<{balance: number}>({
+  const { data: cashBalance } = useQuery<{balance: number; total: number; byPlatform: Record<string, number>}>({
     queryKey: ["/api/cash/balance"],
   });
 
@@ -481,6 +483,43 @@ export default function Dashboard() {
         isCollapsed={isSectionCollapsed('vision-2040')}
         onToggle={() => toggleSection('vision-2040')}
       />
+
+      {/* Platform-Specific Cash Balance Card */}
+      {selectedPlatform !== "all" && cashBalance?.byPlatform && platforms && (
+        (() => {
+          const platform = platforms.find(p => p.id === selectedPlatform);
+          const platformCashBalance = cashBalance.byPlatform[selectedPlatform] || 0;
+          
+          if (!platform) return null;
+          
+          return (
+            <motion.div
+              key="platform-cash-balance"
+              {...fadeInUp}
+            >
+              <Card 
+                className={cn("border-l-4", getPlatformBorderClasses(platform.name))}
+                data-testid="card-platform-cash-balance"
+              >
+                <CardHeader>
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <Badge className={getPlatformBadgeClasses(platform.name)} data-testid="badge-platform-name">
+                      {platform.name}
+                    </Badge>
+                    <Wallet className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold" data-testid="text-platform-cash-amount">
+                    {formatCurrency(platformCashBalance)}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.cashBalance")}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })()
+      )}
 
       {/* Platforms Overview */}
       {platformStats.length > 0 && (
