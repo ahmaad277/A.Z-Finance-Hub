@@ -83,6 +83,20 @@ export default function Settings() {
     }
   }, [settings]);
 
+  // Sync localTheme with global theme context
+  useEffect(() => {
+    setLocalTheme(theme);
+    // Also update localSettings.theme to ensure Save persists the correct value
+    setLocalSettings(prev => ({ ...prev, theme }));
+  }, [theme]);
+
+  // Sync localLanguage with global language context
+  useEffect(() => {
+    setLocalLanguage(language);
+    // Also update localSettings.language to ensure Save persists the correct value
+    setLocalSettings(prev => ({ ...prev, language }));
+  }, [language]);
+
   // Apply fontSize from local settings
   useEffect(() => {
     if (localSettings.fontSize) {
