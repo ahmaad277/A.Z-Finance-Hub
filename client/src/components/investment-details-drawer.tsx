@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, Trash2, CheckCircle, X, Calendar, DollarSign, TrendingUp, Target, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -225,7 +225,7 @@ export function InvestmentDetailsDrawer({
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{t("investments.currentROI")}</span>
               </div>
-              <span className="text-sm font-medium text-blue-600" data-testid="text-current-roi">
+              <span className={cn("text-sm font-medium", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} data-testid="text-current-roi">
                 {formatPercentage(roi)}
               </span>
             </div>

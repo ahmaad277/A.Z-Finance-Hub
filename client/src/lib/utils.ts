@@ -6,13 +6,25 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Centralized metric color mappings for APR and ROI
- * Ensures consistent color usage across all dashboard and investment components
+ * Centralized color mapping for financial metrics (APR and ROI).
+ * 
+ * IMPORTANT: Use separate colorLight and colorDark properties instead of 
+ * concatenating them (e.g., "text-blue-600 dark:text-blue-400") because 
+ * Tailwind's twMerge utility will remove the base class when it encounters
+ * the dark variant as a single string.
+ * 
+ * Usage: cn("text-lg font-bold", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)
+ * 
+ * Color scheme:
+ * - APR: Uses CSS variable --chart-2 (automatically adapts to dark mode)
+ *   - Light: rgb(74,222,128), Dark: rgb(22,162,73)
+ * - ROI: Uses explicit Tailwind classes for light/dark modes
+ *   - Light: rgb(37,99,235), Dark: rgb(96,165,250)
  */
 export const METRIC_COLOR_MAP = {
   apr: {
     colorLight: "text-chart-2",
-    colorDark: "", // text-chart-2 works in both modes
+    colorDark: "", // Not needed - CSS variable adapts automatically
     bgColor: "bg-chart-2/10",
   },
   roi: {
