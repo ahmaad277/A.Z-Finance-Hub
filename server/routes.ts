@@ -10,6 +10,7 @@ import {
   insertUserSettingsSchema,
   insertCashTransactionSchema,
   insertSavedScenarioSchema,
+  insertPortfolioSnapshotSchema,
   apiCustomDistributionSchema,
   type ApiCustomDistribution,
 } from "@shared/schema";
@@ -641,6 +642,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Delete scenario error:", error);
       res.status(500).json({ error: "Failed to delete scenario" });
+    }
+  });
+
+  // Portfolio Snapshots (Checkpoints)
+  app.get("/api/snapshots", async (_req, res) => {
+    try {
+      const snapshots = await storage.getSnapshots();
+      res.json(snapshots);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch snapshots" });
+    }
+  });
+
+  app.post("/api/snapshots", async (req, res) => {
+    try {
+      const { name } = insertPortfolioSnapshotSchema.pick({ name: true }).parse(req.body);
+      const snapshot = await storage.createSnapshot(name);
+      res.status(201).json(snapshot);
+    } catch (error: any) {
+      console.error("Create snapshot error:", error);
+      res.status(400).json({ error: error.message || "Invalid snapshot data" });
+    }
+  });
+
+  app.post("/api/snapshots/:id/restore", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.restoreSnapshot(id);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Restore snapshot error:", error);
+      if (error.message?.includes("not found")) {
+        res.status(404).json({ error: "Snapshot not found" });
+      } else {
+        res.status(500).json({ error: error.message || "Failed to restore snapshot" });
+      }
+    }
+  });
+
+  app.delete("/api/snapshots/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteSnapshot(id);
+      if (!success) {
+        return res.status(404).json({ error: "Snapshot not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete snapshot error:", error);
+      res.status(500).json({ error: "Failed to delete snapshot" });
     }
   });
 
