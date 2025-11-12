@@ -22,7 +22,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/language-provider";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import { AlertCircle, CheckCircle, CheckCircle2 } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
 
 const lateStatusSchema = z.object({
@@ -41,27 +42,36 @@ const lateStatusSchema = z.object({
 
 type LateStatusFormData = z.infer<typeof lateStatusSchema>;
 
-interface LateStatusDialogProps {
-  investment: InvestmentWithPlatform | null;
+type SingleModeProps = {
+  mode: "single";
   cashflowId: string | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   onConfirm: (data: {
     cashflowId: string;
     clearLateStatus?: boolean;
     updateLateInfo?: { lateDays: number };
   }) => void;
-  isPending: boolean;
-}
+};
 
-export function LateStatusDialog({
-  investment,
-  cashflowId,
-  open,
-  onOpenChange,
-  onConfirm,
-  isPending,
-}: LateStatusDialogProps) {
+type BulkModeProps = {
+  mode: "bulk";
+  pendingCount: number;
+  totalAmount: number;
+  onConfirm: (data: {
+    investmentId: string;
+    clearLateStatus?: boolean;
+    updateLateInfo?: { lateDays: number };
+  }) => void;
+};
+
+type LateStatusDialogProps = {
+  investment: InvestmentWithPlatform | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  isPending: boolean;
+} & (SingleModeProps | BulkModeProps);
+
+export function LateStatusDialog(props: LateStatusDialogProps) {
+  const { investment, open, onOpenChange, onConfirm, isPending } = props;
   const { t, language } = useLanguage();
   const isRtl = language === "ar";
   
@@ -86,26 +96,48 @@ export function LateStatusDialog({
   }, [open, form]);
 
   const onSubmit = (data: LateStatusFormData) => {
-    if (!cashflowId) return;
+    if (props.mode === "single") {
+      if (!props.cashflowId) return;
 
-    const payload: {
-      cashflowId: string;
-      clearLateStatus?: boolean;
-      updateLateInfo?: { lateDays: number };
-    } = {
-      cashflowId,
-    };
-
-    if (data.clearLateStatus === "clear") {
-      payload.clearLateStatus = true;
-    } else if (data.clearLateStatus === "custom" && data.customLateDays) {
-      payload.updateLateInfo = {
-        lateDays: data.customLateDays,
+      const payload: {
+        cashflowId: string;
+        clearLateStatus?: boolean;
+        updateLateInfo?: { lateDays: number };
+      } = {
+        cashflowId: props.cashflowId,
       };
-    }
-    // If "keep", don't send any additional parameters
 
-    onConfirm(payload);
+      if (data.clearLateStatus === "clear") {
+        payload.clearLateStatus = true;
+      } else if (data.clearLateStatus === "custom" && data.customLateDays) {
+        payload.updateLateInfo = {
+          lateDays: data.customLateDays,
+        };
+      }
+
+      onConfirm(payload);
+    } else {
+      // Bulk mode
+      if (!investment) return;
+
+      const payload: {
+        investmentId: string;
+        clearLateStatus?: boolean;
+        updateLateInfo?: { lateDays: number };
+      } = {
+        investmentId: investment.id,
+      };
+
+      if (data.clearLateStatus === "clear") {
+        payload.clearLateStatus = true;
+      } else if (data.clearLateStatus === "custom" && data.customLateDays) {
+        payload.updateLateInfo = {
+          lateDays: data.customLateDays,
+        };
+      }
+
+      onConfirm(payload);
+    }
   };
 
   // Calculate current late days
@@ -118,37 +150,62 @@ export function LateStatusDialog({
 
   const currentLateDays = calculateLateDays();
   const isDefaulted = investment?.status === "defaulted";
+  const isLateOrDefaulted = investment?.status === "late" || investment?.status === "defaulted";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]" dir={isRtl ? "rtl" : "ltr"}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isDefaulted ? (
+            {props.mode === "bulk" ? (
+              <CheckCircle2 className="h-5 w-5 text-chart-2" />
+            ) : isDefaulted ? (
               <AlertCircle className="h-5 w-5 text-destructive" />
             ) : (
               <AlertCircle className="h-5 w-5 text-yellow-500" />
             )}
-            {language === "ar" ? "إدارة حالة التأخير" : "Late Status Management"}
+            {props.mode === "bulk" 
+              ? (language === "ar" ? "تأكيد استلام جميع الدفعات" : "Complete All Payments")
+              : (language === "ar" ? "إدارة حالة التأخير" : "Late Status Management")
+            }
           </DialogTitle>
           <DialogDescription>
-            {language === "ar" 
-              ? `هذا الاستثمار حالياً ${isDefaulted ? "متعثر" : "متأخر"} (${currentLateDays} يوم). اختر كيف تريد التعامل مع حالة التأخير عند تأكيد السداد.`
-              : `This investment is currently ${isDefaulted ? "defaulted" : "late"} (${currentLateDays} days). Choose how to handle the late status when confirming payment.`
+            {props.mode === "bulk" 
+              ? (language === "ar" 
+                  ? `سيتم تأكيد استلام ${props.pendingCount} دفعة معلقة بإجمالي ${formatCurrency(props.totalAmount, "SAR")}.`
+                  : `This will mark ${props.pendingCount} pending payment${props.pendingCount > 1 ? 's' : ''} as received with total amount of ${formatCurrency(props.totalAmount, "SAR")}.`
+                )
+              : (language === "ar" 
+                  ? `هذا الاستثمار حالياً ${isDefaulted ? "متعثر" : "متأخر"} (${currentLateDays} يوم). اختر كيف تريد التعامل مع حالة التأخير عند تأكيد السداد.`
+                  : `This investment is currently ${isDefaulted ? "defaulted" : "late"} (${currentLateDays} days). Choose how to handle the late status when confirming payment.`
+                )
             }
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="clearLateStatus"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>
-                    {language === "ar" ? "إدارة حالة التأخير" : "Late Status Management"}
-                  </FormLabel>
+        {/* Show late status options only for late/defaulted investments */}
+        {(props.mode === "single" || (props.mode === "bulk" && isLateOrDefaulted)) && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {props.mode === "bulk" && isLateOrDefaulted && (
+                <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-500">
+                    {language === "ar" 
+                      ? `هذا الاستثمار متأخر منذ ${currentLateDays} يوم. اختر كيف تريد التعامل مع حالة التأخير.`
+                      : `This investment has been late for ${currentLateDays} days. Choose how to handle the late status.`
+                    }
+                  </p>
+                </div>
+              )}
+
+              <FormField
+                control={form.control}
+                name="clearLateStatus"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>
+                      {language === "ar" ? "إدارة حالة التأخير" : "Late Status Management"}
+                    </FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -239,33 +296,64 @@ export function LateStatusDialog({
               )}
             />
 
-            <div className="flex gap-3 justify-end">
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isPending}
+                  data-testid="button-cancel-late-status"
+                >
+                  {language === "ar" ? "إلغاء" : "Cancel"}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending || (clearLateStatusValue === "custom" && !form.watch("customLateDays"))}
+                  data-testid="button-confirm-payment"
+                >
+                  {isPending ? (
+                    language === "ar" ? "جاري التأكيد..." : "Confirming..."
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {language === "ar" ? "تأكيد السداد" : "Confirm Payment"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+
+        {/* Bulk mode without late status - simple confirmation */}
+        {props.mode === "bulk" && !isLateOrDefaulted && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
-                data-testid="button-cancel-late-status"
+                className="flex-1"
+                data-testid="button-cancel"
               >
-                {language === "ar" ? "إلغاء" : "Cancel"}
+                {t("common.cancel")}
               </Button>
               <Button
-                type="submit"
-                disabled={isPending || (clearLateStatusValue === "custom" && !form.watch("customLateDays"))}
-                data-testid="button-confirm-payment"
+                onClick={() => {
+                  if (investment) {
+                    onConfirm({ investmentId: investment.id });
+                  }
+                }}
+                disabled={isPending}
+                className="flex-1"
+                data-testid="button-confirm-bulk-complete"
               >
-                {isPending ? (
-                  language === "ar" ? "جاري التأكيد..." : "Confirming..."
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {language === "ar" ? "تأكيد السداد" : "Confirm Payment"}
-                  </>
-                )}
+                {isPending ? (language === "ar" ? "جاري التأكيد..." : "Confirming...") : (language === "ar" ? "تأكيد السداد" : "Confirm Payment")}
               </Button>
             </div>
-          </form>
-        </Form>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

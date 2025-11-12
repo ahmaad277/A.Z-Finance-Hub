@@ -253,6 +253,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete all pending payments for an investment
+  app.post("/api/investments/:id/complete-all-payments", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Schema for bulk completion with late status management
+      const bulkCompleteSchema = z.object({
+        receivedDate: z.coerce.date().optional(),
+        clearLateStatus: z.boolean().optional(),
+        updateLateInfo: z.object({
+          lateDays: z.number().int().min(1),
+        }).strict().optional(),
+      }).refine(
+        (data) => {
+          // Reject contradictory payloads
+          if (data.clearLateStatus && data.updateLateInfo) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: "Cannot both clear late status and update late info simultaneously",
+        }
+      );
+      
+      const { receivedDate, clearLateStatus, updateLateInfo } = bulkCompleteSchema.parse(req.body);
+      
+      const result = await storage.completeAllPendingPayments(
+        id,
+        receivedDate || new Date(),
+        { clearLateStatus, updateLateInfo }
+      );
+      
+      if (!result) {
+        return res.status(404).json({ error: "Investment not found or no pending payments" });
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bulk completion error:", error);
+      res.status(400).json({ error: error.message || "Failed to complete payments" });
+    }
+  });
+
   // Preview cashflows for investment (before creation)
   app.post("/api/investments/preview-cashflows", async (req, res) => {
     try {

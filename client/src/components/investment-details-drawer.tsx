@@ -15,6 +15,7 @@ interface InvestmentDetailsDrawerProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onCompletePayment?: () => void;
+  onCompleteAllPayments?: () => void;
   onAddPayment?: (investmentId: string) => void;
   onRemovePayment?: (cashflowId: string) => void;
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
@@ -28,6 +29,7 @@ export function InvestmentDetailsDrawer({
   onEdit,
   onDelete,
   onCompletePayment,
+  onCompleteAllPayments,
   onAddPayment,
   onRemovePayment,
   onMarkPaymentAsReceived,
@@ -47,6 +49,18 @@ export function InvestmentDetailsDrawer({
   const investmentCashflows = cashflows.filter(cf => cf.investmentId === investment.id);
   const receivedPayments = investmentCashflows.filter(cf => cf.status === "received").length;
   const totalPayments = investmentCashflows.length;
+  const pendingPayments = investmentCashflows.filter(cf => cf.status === "upcoming").length;
+
+  // Debug logging for button visibility
+  console.log('[InvestmentDetailsDrawer] Debug:', {
+    investmentName: investment.name,
+    status: investment.status,
+    pendingPayments,
+    totalPayments,
+    onCompleteAllPayments: !!onCompleteAllPayments,
+    statusCheck: ["active", "late", "defaulted"].includes(investment.status),
+    shouldShowButton: !!onCompleteAllPayments && ["active", "late", "defaulted"].includes(investment.status) && pendingPayments > 0,
+  });
 
   // Calculate total expected profit
   const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
@@ -71,7 +85,7 @@ export function InvestmentDetailsDrawer({
   const getCountdownDays = () => {
     const today = new Date();
     const nextPaymentDate = investmentCashflows
-      .filter(cf => cf.status === "pending")
+      .filter(cf => cf.status === "upcoming")
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
 
     if (!nextPaymentDate) return null;
@@ -257,7 +271,7 @@ export function InvestmentDetailsDrawer({
         </div>
 
         <DrawerFooter className="border-t" dir={isRtl ? "rtl" : "ltr"}>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {onEdit && (
               <Button
                 onClick={() => {
@@ -272,13 +286,27 @@ export function InvestmentDetailsDrawer({
                 {t("common.edit")}
               </Button>
             )}
-            {onCompletePayment && investment.status === "active" && (
+            {onCompleteAllPayments && ["active", "late", "defaulted"].includes(investment.status) && pendingPayments > 0 && (
+              <Button
+                onClick={() => {
+                  onCompleteAllPayments();
+                  onOpenChange(false);
+                }}
+                variant="default"
+                className="flex-1"
+                data-testid="button-complete-all-payments"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تأكيد السداد الكامل" : "Complete All Payments"}
+              </Button>
+            )}
+            {onCompletePayment && ["active", "late", "defaulted"].includes(investment.status) && (
               <Button
                 onClick={() => {
                   onCompletePayment();
                   onOpenChange(false);
                 }}
-                variant="default"
+                variant="outline"
                 className="flex-1"
                 data-testid="button-complete-payment"
               >

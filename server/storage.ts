@@ -88,6 +88,7 @@ export interface IStorage {
   updateInvestmentStatus(id: string, status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', lateDate?: Date | null, defaultedDate?: Date | null): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
   getCustomDistributions(investmentId: string): Promise<ApiCustomDistribution[]>;
+  completeAllPendingPayments(investmentId: string, receivedDate: Date, options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number } }): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null>;
 
   // Cashflows
   getCashflows(): Promise<CashflowWithInvestment[]>;
@@ -571,6 +572,105 @@ export class DatabaseStorage implements IStorage {
       type: dist.type,
       notes: dist.notes,
     }));
+  }
+
+  async completeAllPendingPayments(
+    investmentId: string,
+    receivedDate: Date,
+    options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number } }
+  ): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null> {
+    // Get investment and validate it exists and is not already completed
+    const investment = await this.getInvestment(investmentId);
+    if (!investment || investment.status === 'completed' || investment.status === 'pending') {
+      return null;
+    }
+
+    // Get all pending cashflows for this investment
+    const pendingCashflows = await db
+      .select()
+      .from(cashflows)
+      .where(
+        and(
+          eq(cashflows.investmentId, investmentId),
+          or(
+            eq(cashflows.status, 'expected'),
+            eq(cashflows.status, 'upcoming')
+          )
+        )
+      );
+
+    if (pendingCashflows.length === 0) {
+      return null;
+    }
+
+    // Calculate total amount
+    const totalAmount = pendingCashflows.reduce((sum, cf) => {
+      const amount = typeof cf.amount === 'string' ? parseFloat(cf.amount) : cf.amount;
+      return sum + amount;
+    }, 0);
+
+    // Update all pending cashflows to received
+    for (const cashflow of pendingCashflows) {
+      await db
+        .update(cashflows)
+        .set({
+          status: 'received',
+          receivedDate: receivedDate,
+        })
+        .where(eq(cashflows.id, cashflow.id));
+
+      // Create cash transaction for this cashflow
+      const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
+      const transactionNotes = `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}`;
+
+      await this.createCashTransaction({
+        amount: cashflow.amount,
+        type: 'distribution',
+        source: transactionSource,
+        notes: transactionNotes,
+        date: receivedDate,
+        investmentId: investmentId,
+        cashflowId: cashflow.id,
+      });
+    }
+
+    // Handle late status management
+    if (investment.status === 'late' || investment.status === 'defaulted') {
+      if (options?.clearLateStatus) {
+        // Clear late/defaulted dates and let status checker recalculate
+        await this.updateInvestmentStatus(investmentId, 'completed', null, null);
+      } else if (options?.updateLateInfo?.lateDays) {
+        // Update late date based on custom late days
+        const now = new Date();
+        const customLateDate = new Date(now.getTime() - (options.updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
+        await this.updateInvestmentStatus(
+          investmentId,
+          'completed',
+          customLateDate,
+          investment.defaultedDate ? new Date(investment.defaultedDate) : null
+        );
+      } else {
+        // Keep existing late status but mark as completed
+        await this.updateInvestmentStatus(
+          investmentId,
+          'completed',
+          investment.lateDate ? new Date(investment.lateDate) : null,
+          investment.defaultedDate ? new Date(investment.defaultedDate) : null
+        );
+      }
+    } else {
+      // Mark investment as completed
+      await this.updateInvestmentStatus(investmentId, 'completed', null, null);
+    }
+
+    // Fetch updated investment
+    const updatedInvestment = await this.getInvestment(investmentId);
+    
+    return {
+      investment: updatedInvestment!,
+      updatedCount: pendingCashflows.length,
+      totalAmount,
+    };
   }
 
   // Cashflows

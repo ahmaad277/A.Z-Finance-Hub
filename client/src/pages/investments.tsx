@@ -35,12 +35,14 @@ export default function Investments() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addPaymentDialogOpen, setAddPaymentDialogOpen] = useState(false);
   const [lateStatusDialogOpen, setLateStatusDialogOpen] = useState(false);
+  const [bulkCompleteDialogOpen, setBulkCompleteDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [addingPaymentForInvestment, setAddingPaymentForInvestment] = useState<string | null>(null);
   const [pendingCashflowId, setPendingCashflowId] = useState<string | null>(null);
   const [pendingCashflowInvestment, setPendingCashflowInvestment] = useState<InvestmentWithPlatform | null>(null);
+  const [bulkCompletingInvestment, setBulkCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
 
   // Filter and Sort States
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
@@ -153,6 +155,47 @@ export default function Investments() {
       toast({
         title: language === "ar" ? "خطأ" : "Error",
         description: error.message || (language === "ar" ? "فشل حذف الدفعة" : "Failed to delete payment"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation to complete all pending payments for an investment
+  const bulkCompleteMutation = useMutation({
+    mutationFn: async ({ 
+      investmentId, 
+      clearLateStatus,
+      updateLateInfo,
+    }: { 
+      investmentId: string; 
+      clearLateStatus?: boolean;
+      updateLateInfo?: { lateDays: number };
+    }) => {
+      return apiRequest("POST", `/api/investments/${investmentId}/complete-all-payments`, { 
+        clearLateStatus,
+        updateLateInfo,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      
+      setBulkCompleteDialogOpen(false);
+      setBulkCompletingInvestment(null);
+      
+      toast({
+        title: language === "ar" ? "تم التحديث" : "Updated",
+        description: language === "ar" ? "تم تأكيد استلام جميع الدفعات بنجاح" : "All pending payments marked as received successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: language === "ar" ? "خطأ" : "Error",
+        description: error.message || (language === "ar" ? "فشل تأكيد الدفعات" : "Failed to complete payments"),
         variant: "destructive",
       });
     },
@@ -287,6 +330,25 @@ export default function Investments() {
     updateCashflowMutation.mutate({
       cashflowId: data.cashflowId,
       status: "received",
+      clearLateStatus: data.clearLateStatus,
+      updateLateInfo: data.updateLateInfo,
+    });
+  };
+
+  // Handler for bulk completion (complete all pending payments)
+  const handleBulkCompleteAllPayments = (investment: InvestmentWithPlatform) => {
+    setBulkCompletingInvestment(investment);
+    setBulkCompleteDialogOpen(true);
+  };
+
+  // Handler for bulk complete dialog confirmation
+  const handleBulkCompleteConfirm = (data: {
+    investmentId: string;
+    clearLateStatus?: boolean;
+    updateLateInfo?: { lateDays: number };
+  }) => {
+    bulkCompleteMutation.mutate({
+      investmentId: data.investmentId,
       clearLateStatus: data.clearLateStatus,
       updateLateInfo: data.updateLateInfo,
     });
@@ -549,6 +611,7 @@ export default function Investments() {
       />
 
       <LateStatusDialog
+        mode="single"
         open={lateStatusDialogOpen}
         onOpenChange={setLateStatusDialogOpen}
         investment={pendingCashflowInvestment}
@@ -557,14 +620,52 @@ export default function Investments() {
         isPending={updateCashflowMutation.isPending}
       />
 
+      <LateStatusDialog
+        mode="bulk"
+        open={bulkCompleteDialogOpen}
+        onOpenChange={setBulkCompleteDialogOpen}
+        investment={bulkCompletingInvestment}
+        pendingCount={
+          bulkCompletingInvestment 
+            ? (cashflows || []).filter(cf => cf.investmentId === bulkCompletingInvestment.id && cf.status === "upcoming").length 
+            : 0
+        }
+        totalAmount={
+          bulkCompletingInvestment 
+            ? (cashflows || [])
+                .filter(cf => cf.investmentId === bulkCompletingInvestment.id && cf.status === "upcoming")
+                .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0)
+            : 0
+        }
+        onConfirm={handleBulkCompleteConfirm}
+        isPending={bulkCompleteMutation.isPending}
+      />
+
       <InvestmentDetailsDrawer
         open={!!selectedInvestment}
-        onOpenChange={(open) => !open && setSelectedInvestment(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedInvestment(null);
+          } else if (selectedInvestment) {
+            // Debug logging when drawer opens
+            const investmentCashflows = (cashflows || []).filter(cf => cf.investmentId === selectedInvestment.id);
+            const pendingCount = investmentCashflows.filter(cf => cf.status === "upcoming").length;
+            console.log('[Investments] Opening drawer:', {
+              investmentId: selectedInvestment.id,
+              investmentName: selectedInvestment.name,
+              totalCashflows: (cashflows || []).length,
+              investmentCashflows: investmentCashflows.length,
+              pendingCount,
+              cashflowsStatuses: investmentCashflows.map(cf => ({ id: cf.id, status: cf.status })),
+            });
+          }
+        }}
         investment={selectedInvestment}
         cashflows={cashflows || []}
         onEdit={() => selectedInvestment && handleEdit(selectedInvestment)}
         onDelete={() => selectedInvestment && handleDelete(selectedInvestment)}
         onCompletePayment={() => selectedInvestment && handleCompletePayment(selectedInvestment)}
+        onCompleteAllPayments={() => selectedInvestment && handleBulkCompleteAllPayments(selectedInvestment)}
         onAddPayment={handleAddPayment}
         onRemovePayment={handleRemovePayment}
         onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
