@@ -24,6 +24,7 @@ import { AddPaymentDialog } from "@/components/add-payment-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
+import { LateStatusDialog } from "@/components/late-status-dialog";
 
 export default function Investments() {
   const { t, language } = useLanguage();
@@ -33,10 +34,13 @@ export default function Investments() {
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addPaymentDialogOpen, setAddPaymentDialogOpen] = useState(false);
+  const [lateStatusDialogOpen, setLateStatusDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [completingInvestment, setCompletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [addingPaymentForInvestment, setAddingPaymentForInvestment] = useState<string | null>(null);
+  const [pendingCashflowId, setPendingCashflowId] = useState<string | null>(null);
+  const [pendingCashflowInvestment, setPendingCashflowInvestment] = useState<InvestmentWithPlatform | null>(null);
 
   // Filter and Sort States
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
@@ -58,20 +62,36 @@ export default function Investments() {
     queryKey: ["/api/platforms"],
   });
 
-  // Mutation to mark cashflow as received
+  // Mutation to mark cashflow as received (with late status management)
   const updateCashflowMutation = useMutation({
-    mutationFn: async ({ cashflowId, status }: { cashflowId: string; status: string }) => {
+    mutationFn: async ({ 
+      cashflowId, 
+      status,
+      clearLateStatus,
+      updateLateInfo,
+    }: { 
+      cashflowId: string; 
+      status: string;
+      clearLateStatus?: boolean;
+      updateLateInfo?: { lateDays: number };
+    }) => {
       return apiRequest("PATCH", `/api/cashflows/${cashflowId}`, { 
         status,
-        receivedDate: status === "received" ? new Date().toISOString() : null
+        receivedDate: status === "received" ? new Date().toISOString() : null,
+        clearLateStatus,
+        updateLateInfo,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      
+      // Close late status dialog if open
+      setLateStatusDialogOpen(false);
       
       toast({
         title: language === "ar" ? "تم التحديث" : "Updated",
@@ -237,7 +257,39 @@ export default function Investments() {
   
   // Payment management handlers
   const handleMarkPaymentAsReceived = (cashflowId: string) => {
-    updateCashflowMutation.mutate({ cashflowId, status: "received" });
+    // Find the cashflow to get its investment
+    const cashflow = cashflows?.find(cf => cf.id === cashflowId);
+    if (!cashflow) {
+      updateCashflowMutation.mutate({ cashflowId, status: "received" });
+      return;
+    }
+    
+    // Find the investment
+    const investment = investments?.find(inv => inv.id === cashflow.investmentId);
+    
+    // If investment is late or defaulted, show late status dialog
+    if (investment && (investment.status === "late" || investment.status === "defaulted")) {
+      setPendingCashflowId(cashflowId);
+      setPendingCashflowInvestment(investment);
+      setLateStatusDialogOpen(true);
+    } else {
+      // Normal flow - just mark as received
+      updateCashflowMutation.mutate({ cashflowId, status: "received" });
+    }
+  };
+  
+  // Handler for late status dialog confirmation
+  const handleLateStatusConfirm = (data: {
+    cashflowId: string;
+    clearLateStatus?: boolean;
+    updateLateInfo?: { lateDays: number };
+  }) => {
+    updateCashflowMutation.mutate({
+      cashflowId: data.cashflowId,
+      status: "received",
+      clearLateStatus: data.clearLateStatus,
+      updateLateInfo: data.updateLateInfo,
+    });
   };
   
   const handleAddPayment = (investmentId: string) => {
@@ -494,6 +546,15 @@ export default function Investments() {
         investmentId={addingPaymentForInvestment || ""}
         onSubmit={handleSubmitNewPayment}
         isPending={addCashflowMutation.isPending}
+      />
+
+      <LateStatusDialog
+        open={lateStatusDialogOpen}
+        onOpenChange={setLateStatusDialogOpen}
+        investment={pendingCashflowInvestment}
+        cashflowId={pendingCashflowId}
+        onConfirm={handleLateStatusConfirm}
+        isPending={updateCashflowMutation.isPending}
       />
 
       <InvestmentDetailsDrawer

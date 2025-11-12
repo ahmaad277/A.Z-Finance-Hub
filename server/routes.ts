@@ -309,12 +309,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Extended schema to support late status management and receivedDate
       const extendedCashflowSchema = insertCashflowSchema.partial().extend({
-        receivedDate: z.string().or(z.null()).optional(),
+        receivedDate: z.coerce.date().nullable().optional(),
         clearLateStatus: z.boolean().optional(),
         updateLateInfo: z.object({
-          lateDays: z.number().int().min(1).optional(),
-        }).optional(),
-      });
+          lateDays: z.number().int().min(1),
+        }).strict().optional(), // Require lateDays if updateLateInfo is provided
+      }).refine(
+        (data) => {
+          // Reject contradictory payloads (both clearLateStatus and updateLateInfo)
+          if (data.clearLateStatus && data.updateLateInfo) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: "Cannot both clear late status and update late info simultaneously",
+        }
+      );
       
       const { clearLateStatus, updateLateInfo, ...cashflowData } = extendedCashflowSchema.parse(req.body);
       

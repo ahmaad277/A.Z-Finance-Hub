@@ -625,7 +625,11 @@ export class DatabaseStorage implements IStorage {
         .where(eq(cashTransactions.cashflowId, id));
       
       if (!existingTransaction) {
-        const receivedDate = (update as any).receivedDate || new Date();
+        // Convert receivedDate to Date object if it's a string
+        const receivedDateRaw = (update as any).receivedDate;
+        const receivedDate = receivedDateRaw 
+          ? (typeof receivedDateRaw === 'string' ? new Date(receivedDateRaw) : receivedDateRaw)
+          : new Date();
         
         // Get investment details for better notes
         const [investment] = await db
