@@ -71,9 +71,15 @@ export function calculateMonthlyForecast(
     const monthKey = format(monthDate, "yyyy-MM");
     const data = monthlyData.get(monthKey) || { principal: 0, profit: 0 };
     
+    // Add month numbering starting from next month (month 1)
+    // Current month (i=0) has no number, next month (i=1) = (1), etc.
+    const monthLabel = i === 0 
+      ? format(monthDate, "MMM yyyy")
+      : `${format(monthDate, "MMM yyyy")} (${i})`;
+    
     forecast.push({
       month: monthKey,
-      monthLabel: format(monthDate, "MMM yyyy"),
+      monthLabel,
       principal: data.principal,
       profit: data.profit,
       total: data.principal + data.profit,
