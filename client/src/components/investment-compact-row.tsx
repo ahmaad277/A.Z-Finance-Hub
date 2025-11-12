@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, calculateDaysUntil } from "@/lib/utils";
+import { formatCurrency, calculateDaysUntil, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { InvestmentWithPlatform } from "@shared/schema";
 import { Building2, TrendingUp, Calendar, Percent, ArrowRight } from "lucide-react";
@@ -120,8 +120,8 @@ export function InvestmentCompactRow({
       {/* ROI - Always Visible */}
       <div className="flex items-center justify-center w-16 shrink-0">
         <div className="flex items-center gap-0.5">
-          <TrendingUp className="h-3 w-3 text-blue-600 shrink-0" />
-          <span className="font-semibold text-blue-600" data-testid={`compact-roi-${investment.id}`}>{roi.toFixed(1)}%</span>
+          <TrendingUp className={cn("h-3 w-3 shrink-0", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} />
+          <span className={cn("font-semibold", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} data-testid={`compact-roi-${investment.id}`}>{roi.toFixed(1)}%</span>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign, CheckCircle } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
@@ -79,7 +79,7 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
               <span className="text-xs font-semibold text-chart-2" data-testid={`apr-${investment.id}`}>
                 {formatPercentage(investment.expectedIrr)}
               </span>
-              <span className="text-xs font-semibold text-blue-600" data-testid={`roi-${investment.id}`}>
+              <span className={cn("text-xs font-semibold", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} data-testid={`roi-${investment.id}`}>
                 {formatPercentage(roi)}
               </span>
             </div>
@@ -111,7 +111,7 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
                 <DollarSign className="h-3 w-3" />
                 {t("investments.actualROI")}
               </div>
-              <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`} data-testid={`stat-roi-${investment.id}`}>
+              <div className={cn("text-lg font-bold", roi >= 0 ? cn(METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark) : 'text-destructive')} data-testid={`stat-roi-${investment.id}`}>
                 {formatPercentage(roi)}
               </div>
             </div>

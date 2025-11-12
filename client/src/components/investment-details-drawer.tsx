@@ -138,12 +138,12 @@ export function InvestmentDetailsDrawer({
             </div>
 
             {/* Expected Profit */}
-            <div className="bg-blue-500/5 rounded-lg p-3 border border-blue-500/10">
+            <div className={`${METRIC_COLOR_MAP.roi.bgColor} rounded-lg p-3 border border-blue-600/10 dark:border-blue-400/10`}>
               <div className="flex items-center gap-2 mb-1">
-                <Target className="h-4 w-4 text-blue-500" />
+                <Target className={cn("h-4 w-4", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} />
                 <span className="text-xs text-muted-foreground">{t("investments.expectedProfit")}</span>
               </div>
-              <p className="text-lg font-bold text-blue-500" data-testid="text-expected-profit">
+              <p className={cn("text-lg font-bold", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)} data-testid="text-expected-profit">
                 {formatCurrency(totalExpectedProfit, "SAR")}
               </p>
             </div>
