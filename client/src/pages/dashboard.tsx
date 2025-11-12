@@ -420,8 +420,9 @@ export default function Dashboard() {
       <PageHeader
         title={t("dashboard.title")}
         gradient
+        className="flex-row items-center"
       >
-        {/* Cash Transaction Buttons - positioned to the right */}
+        {/* Cash Transaction Buttons - positioned on opposite side */}
         <CashTransactionDialog type="deposit" />
         <CashTransactionDialog type="withdrawal" />
       </PageHeader>

@@ -85,7 +85,7 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
         >
           <Icon className="h-3.5 w-3.5" />
           <span className="text-[10px] font-medium leading-none whitespace-nowrap">
-            {isDeposit ? t("cash.deposit") : t("cash.withdraw")}
+            {isDeposit ? t("cash.deposit") : t("cash.withdrawal")}
           </span>
         </Button>
       </DialogTrigger>
