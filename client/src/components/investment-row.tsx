@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
+import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 
 interface InvestmentRowProps {
   investment: InvestmentWithPlatform;
@@ -55,12 +56,13 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
     : 0;
   
   const statusConfig = getInvestmentStatusConfig(investment.status);
+  const platformBorderClasses = getPlatformBorderClasses(investment.platform?.name);
   
   return (
     <div
       className={`
         flex flex-col rounded-lg border-l-4 transition-all duration-200
-        ${statusConfig.rowBackground} ${statusConfig.borderLeft}
+        ${statusConfig.rowBackground} ${platformBorderClasses}
       `}
       data-testid={`row-investment-${investment.id}`}
       dir={isRtl ? "rtl" : "ltr"}
@@ -73,7 +75,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 mb-0.5">
             {investment.platform && (
-              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 shrink-0">
+              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
                 {investment.platform.name}
               </Badge>
             )}

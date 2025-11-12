@@ -4,6 +4,7 @@ import { formatCurrency, calculateDaysUntil } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { InvestmentWithPlatform } from "@shared/schema";
 import { Building2, TrendingUp, Calendar, Percent, ArrowRight } from "lucide-react";
+import { getPlatformTextClasses } from "@/lib/platform-colors";
 
 interface InvestmentCompactRowProps {
   investment: InvestmentWithPlatform;
@@ -85,9 +86,11 @@ export function InvestmentCompactRow({
       <div className="flex-1 min-w-0 flex items-center gap-2">
         <div className="flex flex-col min-w-0 flex-1">
           <span className="font-medium truncate leading-tight">{investment.name}</span>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Building2 className="h-3 w-3 shrink-0" />
-            <span className="truncate">{investment.platform?.name || "Unknown"}</span>
+          <div className="flex items-center gap-1 text-[10px]">
+            <Building2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+            <span className={`truncate font-medium ${getPlatformTextClasses(investment.platform?.name)}`}>
+              {investment.platform?.name || "Unknown"}
+            </span>
           </div>
         </div>
         {getStatusBadge(investment.status)}
@@ -117,8 +120,8 @@ export function InvestmentCompactRow({
       {/* ROI - Always Visible */}
       <div className="flex items-center justify-center w-16 shrink-0">
         <div className="flex items-center gap-0.5">
-          <TrendingUp className="h-3 w-3 text-chart-1 shrink-0" />
-          <span className="font-semibold text-chart-1">{roi.toFixed(1)}%</span>
+          <TrendingUp className="h-3 w-3 text-blue-600 shrink-0" />
+          <span className="font-semibold text-blue-600" data-testid={`compact-roi-${investment.id}`}>{roi.toFixed(1)}%</span>
         </div>
       </div>
 

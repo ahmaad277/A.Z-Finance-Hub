@@ -5,6 +5,7 @@ import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calcu
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign, CheckCircle } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
+import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 
 interface InvestmentCardProps {
   investment: InvestmentWithPlatform;
@@ -48,14 +49,16 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
   };
 
   const statusConfig = getInvestmentStatusConfig(investment.status);
+  const platformBadgeClasses = getPlatformBadgeClasses(investment.platform?.name);
+  const platformBorderClasses = getPlatformBorderClasses(investment.platform?.name);
 
   return (
-    <Card className={`hover-elevate transition-all duration-200 border-l-4 ${statusConfig.borderLeft}`} data-testid={`card-investment-${investment.id}`}>
+    <Card className={`hover-elevate transition-all duration-200 border-l-4 ${platformBorderClasses}`} data-testid={`card-investment-${investment.id}`}>
       <CardHeader className="space-y-0 pb-3">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1">
             {investment.platform && (
-              <Badge variant="outline" className="mb-2 text-xs">
+              <Badge variant="outline" className={`mb-2 text-xs ${platformBadgeClasses}`}>
                 {investment.platform.name}
               </Badge>
             )}
@@ -72,6 +75,14 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
           <div>
             <div className="text-xs text-muted-foreground mb-1">{t("investments.amount")}</div>
             <div className="text-lg font-bold">{formatCurrency(investment.faceValue)}</div>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs font-semibold text-chart-2" data-testid={`apr-${investment.id}`}>
+                {formatPercentage(investment.expectedIrr)}
+              </span>
+              <span className="text-xs font-semibold text-blue-600" data-testid={`roi-${investment.id}`}>
+                {formatPercentage(roi)}
+              </span>
+            </div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">

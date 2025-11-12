@@ -1,4 +1,5 @@
 import type { Investment, CashTransaction, Platform, Cashflow } from '@shared/schema';
+import { calculateROI } from './utils';
 
 export interface DashboardMetrics {
   // Portfolio Values
@@ -85,13 +86,7 @@ export function calculateAPR(
   return apr * 100; // Return as percentage
 }
 
-/**
- * Calculate ROI (Return on Investment) for an investment
- */
-export function calculateROI(amount: number, profit: number): number {
-  if (amount === 0) return 0;
-  return (profit / amount) * 100;
-}
+// Removed duplicate calculateROI - now imported from utils.ts
 
 /**
  * Calculate if an investment is late based on expected payment date

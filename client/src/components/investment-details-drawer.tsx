@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
+import { getPlatformBadgeClasses } from "@/lib/platform-colors";
 
 interface InvestmentDetailsDrawerProps {
   open: boolean;
@@ -94,12 +95,14 @@ export function InvestmentDetailsDrawer({
               <DrawerTitle className="text-2xl truncate" data-testid="text-investment-name">
                 {investment.name}
               </DrawerTitle>
-              <DrawerDescription className="flex items-center gap-2 mt-1" data-testid="text-platform-name">
-                <span className="text-sm font-medium">{investment.platform?.name || ""}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className={`text-xs ${getPlatformBadgeClasses(investment.platform?.name)}`} data-testid="text-platform-name">
+                  {investment.platform?.name || ""}
+                </Badge>
                 <Badge variant="outline" className={statusConfig.badge} data-testid={`badge-status-${investment.status}`}>
                   {t(`investments.${investment.status}`)}
                 </Badge>
-              </DrawerDescription>
+              </div>
             </div>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon" data-testid="button-close-drawer">

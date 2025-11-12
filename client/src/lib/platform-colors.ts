@@ -46,8 +46,8 @@ const PLATFORM_COLORS: PlatformColors = {
   // صفقة - Yellow
   'safqa': {
     badgeLight: 'bg-yellow-400 text-gray-900 border-yellow-500',
-    badgeDark: 'dark:bg-yellow-500 dark:text-gray-900 dark:border-yellow-600',
-    borderLeft: 'border-l-yellow-400 dark:border-l-yellow-500',
+    badgeDark: 'dark:bg-yellow-700 dark:text-white dark:border-yellow-800',
+    borderLeft: 'border-l-yellow-400 dark:border-l-yellow-700',
     chartColor: '#FACC15', // yellow-400
   },
   // ترميز - Green
@@ -85,7 +85,7 @@ const PLATFORM_COLORS: PlatformColors = {
 const DEFAULT_COLORS: PlatformColorConfig = {
   badgeLight: 'bg-primary/10 text-primary border-primary/20',
   badgeDark: 'dark:bg-primary/20 dark:text-primary dark:border-primary/30',
-  borderLeft: 'border-l-primary',
+  borderLeft: 'border-l-primary dark:border-l-primary/80',
   chartColor: 'hsl(var(--primary))',
 };
 
@@ -144,6 +144,40 @@ export function getPlatformBorderClasses(platformName?: string | null): string {
 export function getPlatformChartColor(platformName?: string | null): string {
   const colors = getPlatformColors(platformName);
   return colors.chartColor;
+}
+
+/**
+ * Get text-only color classes for a platform (for inline text, not badges)
+ * This returns only text color classes without background/border
+ */
+export function getPlatformTextClasses(platformName?: string | null): string {
+  if (!platformName) return 'text-primary';
+  
+  const normalized = normalizePlatformName(platformName);
+  
+  // Map platform-specific text colors (extracted from badge colors)
+  const textColors: Record<string, string> = {
+    'sukuk': 'text-gray-900 dark:text-gray-100',
+    'manfaa': 'text-gray-900 dark:text-gray-200',
+    'manfa_a': 'text-gray-900 dark:text-gray-200',
+    'safqa': 'text-yellow-900 dark:text-yellow-400',
+    'tarmeem': 'text-green-700 dark:text-green-400',
+    'dinar': 'text-sky-700 dark:text-sky-400',
+    'tameed': 'text-blue-700 dark:text-blue-400',
+    'ta_meed': 'text-blue-700 dark:text-blue-400',
+  };
+  
+  // Try exact match first
+  if (textColors[normalized]) {
+    return textColors[normalized];
+  }
+  
+  // Try partial match
+  const matchedKey = Object.keys(textColors).find(key => 
+    normalized.includes(key) || key.includes(normalized)
+  );
+  
+  return matchedKey ? textColors[matchedKey] : 'text-primary';
 }
 
 /**
