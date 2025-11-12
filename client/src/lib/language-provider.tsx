@@ -1096,7 +1096,7 @@ const translations = {
     "investments.deleteWarning": "سيتم حذف الاستثمار ونهائياً وجميع التدفقات النقدية والتنبيهات المرتبطة به. لا يمكن التراجع عن هذا الإجراء.",
     "investments.expectedIRR": "معدل العائد المتوقع",
     "investments.faceValue": "القيمة الاسمية",
-    "investments.totalReturns": "العوائد المستلمة",
+    "investments.totalReturns": "الأرباح المستلمة",
     "investments.expectedProfit": "الأرباح المتوقعة",
     "investments.months": "شهر",
     "investments.completePayment": "إتمام الدفعة",
