@@ -106,7 +106,7 @@ export interface IStorage {
   // Cash Transactions
   getCashTransactions(): Promise<CashTransaction[]>;
   createCashTransaction(transaction: InsertCashTransaction): Promise<CashTransaction>;
-  getCashBalance(): Promise<number>;
+  getCashBalance(): Promise<{ total: number; byPlatform: Record<string, number> }>;
 
   // Analytics
   getPortfolioStats(): Promise<PortfolioStats>;
@@ -295,8 +295,8 @@ export class DatabaseStorage implements IStorage {
       // If funded from cash, deduct from cash balance using face value (principal invested)
       if (insertInvestment.fundedFromCash === 1) {
         // Calculate new balance
-        const currentBalance = await this.getCashBalance();
-        const newBalance = currentBalance - parseFloat(insertInvestment.faceValue as any);
+        const currentBalanceObj = await this.getCashBalance();
+        const newBalance = currentBalanceObj.total - parseFloat(insertInvestment.faceValue as any);
         
         await tx.insert(cashTransactions).values({
           amount: String(insertInvestment.faceValue),
@@ -305,6 +305,7 @@ export class DatabaseStorage implements IStorage {
           notes: `Investment: ${insertInvestment.name}`,
           date: insertInvestment.startDate,
           investmentId: investment.id,
+          platformId: insertInvestment.platformId, // Auto-assign platform from investment
           balanceAfter: String(newBalance.toFixed(2)),
         });
       }
@@ -640,6 +641,7 @@ export class DatabaseStorage implements IStorage {
         date: receivedDate,
         investmentId: investmentId,
         cashflowId: cashflow.id,
+        platformId: investment.platformId, // Auto-assign platform from investment
       });
     }
 
@@ -760,6 +762,7 @@ export class DatabaseStorage implements IStorage {
           date: receivedDate,
           investmentId: cashflow.investmentId,
           cashflowId: id,
+          platformId: investment?.platformId, // Auto-assign platform from investment
         });
       }
     }
@@ -837,7 +840,8 @@ export class DatabaseStorage implements IStorage {
     return cashTransaction;
   }
 
-  async getCashBalance(): Promise<number> {
+  async getCashBalance(): Promise<{ total: number; byPlatform: Record<string, number> }> {
+    // Get total balance
     const result = await db
       .select({
         balance: sql<string>`
@@ -850,11 +854,45 @@ export class DatabaseStorage implements IStorage {
       })
       .from(cashTransactions);
     
-    if (!result[0] || result[0].balance === null) {
-      return 0;
+    const totalBalance = result[0]?.balance ? parseFloat(result[0].balance) : 0;
+    
+    // Get platform-specific balances
+    // First, get all transactions with platform info
+    const allTransactions = await db.select().from(cashTransactions);
+    const allInvestments = await db.select().from(investments);
+    const allPlatforms = await db.select().from(platforms);
+    
+    // Create platform ID map
+    const platformMap = new Map(allPlatforms.map(p => [p.id, p.name]));
+    
+    // Calculate balance by platform
+    const byPlatform: Record<string, number> = {};
+    
+    for (const txn of allTransactions) {
+      let platformId = txn.platformId;
+      
+      // If no platformId, try to derive from investmentId
+      if (!platformId && txn.investmentId) {
+        const investment = allInvestments.find(inv => inv.id === txn.investmentId);
+        platformId = investment?.platformId || null;
+      }
+      
+      // Skip if still no platform
+      if (!platformId) continue;
+      
+      const platformName = platformMap.get(platformId) || platformId;
+      
+      // Calculate transaction effect
+      const amount = parseFloat(txn.amount);
+      const effect = ['deposit', 'distribution'].includes(txn.type) ? amount : -amount;
+      
+      byPlatform[platformName] = (byPlatform[platformName] || 0) + effect;
     }
     
-    return parseFloat(result[0].balance);
+    return {
+      total: totalBalance,
+      byPlatform
+    };
   }
 
   // Analytics
@@ -891,8 +929,8 @@ export class DatabaseStorage implements IStorage {
     const progressTo2040 = totalCapital > 0 ? (totalCapital / target2040) * 100 : 0;
 
     // Cash balance from cash transactions
-    const cashBalance = await this.getCashBalance();
-    const totalCashBalance = cashBalance;
+    const cashBalanceObj = await this.getCashBalance();
+    const totalCashBalance = cashBalanceObj.total;
 
     // Average duration calculation (for completed investments)
     const completedInvestments = allInvestments.filter((inv) => inv.status === "completed");

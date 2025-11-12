@@ -131,6 +131,7 @@ export const cashTransactions = pgTable("cash_transactions", {
   date: timestamp("date").notNull().default(sql`CURRENT_TIMESTAMP`),
   investmentId: varchar("investment_id"), // If related to an investment
   cashflowId: varchar("cashflow_id"), // If related to a specific cashflow distribution
+  platformId: varchar("platform_id"), // Platform this transaction belongs to (nullable for backwards compatibility)
   balanceAfter: numeric("balance_after", { precision: 15, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

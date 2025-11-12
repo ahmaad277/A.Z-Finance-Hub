@@ -558,8 +558,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/cash/balance", async (_req, res) => {
     try {
-      const balance = await storage.getCashBalance();
-      res.json({ balance });
+      const balanceData = await storage.getCashBalance();
+      // Return both total and byPlatform for backwards compatibility and new features
+      res.json({ 
+        balance: balanceData.total, // Backwards compatible
+        total: balanceData.total,
+        byPlatform: balanceData.byPlatform
+      });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch cash balance" });
     }
