@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/lib/language-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import CashflowsUnified from "@/pages/cashflows-unified";
@@ -61,6 +62,7 @@ function AppContent() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
             <div className="flex items-center gap-2">
+              <SaveCheckpointButton />
               <ThemeToggle />
               <LanguageToggle />
             </div>

@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { UserSettings, Platform } from "@shared/schema";
 import { checkBiometricSupport, registerBiometric } from "@/lib/biometric-auth";
+import { CheckpointsManager } from "@/components/checkpoints-manager";
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
@@ -882,6 +883,9 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Portfolio Checkpoints */}
+      <CheckpointsManager />
 
       {/* Danger Zone - Reset Portfolio */}
       <Card className="border-destructive/50">
