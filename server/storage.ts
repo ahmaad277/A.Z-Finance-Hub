@@ -7,6 +7,7 @@ import {
   userSettings,
   cashTransactions,
   savedScenarios,
+  portfolioSnapshots,
   users,
   roles,
   permissions,
@@ -31,6 +32,8 @@ import {
   type InsertCashTransaction,
   type SavedScenario,
   type InsertSavedScenario,
+  type PortfolioSnapshot,
+  type InsertPortfolioSnapshot,
   type User,
   type InsertUser,
   type Role,
@@ -117,6 +120,12 @@ export interface IStorage {
   getSavedScenarios(userId?: string): Promise<SavedScenario[]>;
   createSavedScenario(scenario: InsertSavedScenario, userId?: string): Promise<SavedScenario>;
   deleteSavedScenario(id: string): Promise<boolean>;
+
+  // Portfolio Snapshots (Checkpoints)
+  getSnapshots(): Promise<PortfolioSnapshot[]>;
+  createSnapshot(name: string): Promise<PortfolioSnapshot>;
+  restoreSnapshot(id: string): Promise<{ success: boolean; entitiesRestored: any }>;
+  deleteSnapshot(id: string): Promise<boolean>;
 
   // Users
   getUsers(): Promise<UserWithRole[]>;
@@ -1797,6 +1806,161 @@ export class DatabaseStorage implements IStorage {
     return impSession || undefined;
   }
   
+  // Portfolio Snapshots (Checkpoints)
+  async getSnapshots(): Promise<PortfolioSnapshot[]> {
+    return await db
+      .select()
+      .from(portfolioSnapshots)
+      .orderBy(desc(portfolioSnapshots.createdAt));
+  }
+
+  async createSnapshot(name: string): Promise<PortfolioSnapshot> {
+    // Capture current portfolio state in a transaction
+    const snapshotData = await db.transaction(async (tx) => {
+      // Fetch all portfolio entities
+      const allPlatforms = await tx.select().from(platforms);
+      const allInvestments = await tx.select().from(investments);
+      const allCashflows = await tx.select().from(cashflows);
+      const allCustomDistributions = await tx.select().from(customDistributions);
+      const allCashTransactions = await tx.select().from(cashTransactions);
+      const allAlerts = await tx.select().from(alerts);
+      const allSavedScenarios = await tx.select().from(savedScenarios);
+      const settings = await tx.select().from(userSettings).limit(1);
+
+      return {
+        platforms: allPlatforms,
+        investments: allInvestments,
+        cashflows: allCashflows,
+        customDistributions: allCustomDistributions,
+        cashTransactions: allCashTransactions,
+        alerts: allAlerts,
+        savedScenarios: allSavedScenarios,
+        userSettings: settings[0] || null,
+      };
+    });
+
+    // Calculate metadata
+    const entityCounts = {
+      platforms: snapshotData.platforms.length,
+      investments: snapshotData.investments.length,
+      cashflows: snapshotData.cashflows.length,
+      customDistributions: snapshotData.customDistributions.length,
+      cashTransactions: snapshotData.cashTransactions.length,
+      alerts: snapshotData.alerts.length,
+      savedScenarios: snapshotData.savedScenarios.length,
+    };
+
+    const snapshotJson = JSON.stringify(snapshotData);
+    const byteSize = Buffer.byteLength(snapshotJson, 'utf8');
+
+    // Insert snapshot
+    const [snapshot] = await db
+      .insert(portfolioSnapshots)
+      .values({
+        name,
+        snapshotData,
+        entityCounts,
+        byteSize,
+      })
+      .returning();
+
+    return snapshot;
+  }
+
+  async restoreSnapshot(id: string): Promise<{ success: boolean; entitiesRestored: any }> {
+    // Retrieve snapshot
+    const [snapshot] = await db
+      .select()
+      .from(portfolioSnapshots)
+      .where(eq(portfolioSnapshots.id, id));
+
+    if (!snapshot) {
+      throw new Error('Snapshot not found');
+    }
+
+    const data = snapshot.snapshotData as any;
+
+    // Restore data in transaction
+    const entitiesRestored = await db.transaction(async (tx) => {
+      // Delete existing data in reverse dependency order
+      await tx.delete(customDistributions);
+      await tx.delete(cashflows);
+      await tx.delete(cashTransactions);
+      await tx.delete(alerts);
+      await tx.delete(savedScenarios);
+      await tx.delete(investments);
+      await tx.delete(platforms);
+
+      // Restore platforms (preserve original IDs)
+      if (data.platforms && data.platforms.length > 0) {
+        await tx.insert(platforms).values(data.platforms);
+      }
+
+      // Restore investments (preserve original IDs)
+      if (data.investments && data.investments.length > 0) {
+        await tx.insert(investments).values(data.investments);
+      }
+
+      // Restore cashflows (preserve original IDs)
+      if (data.cashflows && data.cashflows.length > 0) {
+        await tx.insert(cashflows).values(data.cashflows);
+      }
+
+      // Restore custom distributions (preserve original IDs)
+      if (data.customDistributions && data.customDistributions.length > 0) {
+        await tx.insert(customDistributions).values(data.customDistributions);
+      }
+
+      // Restore cash transactions (preserve original IDs)
+      if (data.cashTransactions && data.cashTransactions.length > 0) {
+        await tx.insert(cashTransactions).values(data.cashTransactions);
+      }
+
+      // Restore alerts (preserve original IDs)
+      if (data.alerts && data.alerts.length > 0) {
+        await tx.insert(alerts).values(data.alerts);
+      }
+
+      // Restore saved scenarios (preserve original IDs)
+      if (data.savedScenarios && data.savedScenarios.length > 0) {
+        await tx.insert(savedScenarios).values(data.savedScenarios);
+      }
+
+      // Restore user settings (update existing or create)
+      if (data.userSettings) {
+        const existing = await tx.select().from(userSettings).limit(1);
+        if (existing.length > 0) {
+          await tx
+            .update(userSettings)
+            .set(data.userSettings)
+            .where(eq(userSettings.id, existing[0].id));
+        } else {
+          await tx.insert(userSettings).values(data.userSettings);
+        }
+      }
+
+      return {
+        platforms: data.platforms?.length || 0,
+        investments: data.investments?.length || 0,
+        cashflows: data.cashflows?.length || 0,
+        customDistributions: data.customDistributions?.length || 0,
+        cashTransactions: data.cashTransactions?.length || 0,
+        alerts: data.alerts?.length || 0,
+        savedScenarios: data.savedScenarios?.length || 0,
+      };
+    });
+
+    return { success: true, entitiesRestored };
+  }
+
+  async deleteSnapshot(id: string): Promise<boolean> {
+    const result = await db
+      .delete(portfolioSnapshots)
+      .where(eq(portfolioSnapshots.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
   // Data Management
   async resetAllData(): Promise<void> {
     await db.transaction(async (tx) => {
