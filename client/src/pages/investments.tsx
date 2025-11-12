@@ -646,18 +646,6 @@ export default function Investments() {
         onOpenChange={(open) => {
           if (!open) {
             setSelectedInvestment(null);
-          } else if (selectedInvestment) {
-            // Debug logging when drawer opens
-            const investmentCashflows = (cashflows || []).filter(cf => cf.investmentId === selectedInvestment.id);
-            const pendingCount = investmentCashflows.filter(cf => cf.status === "upcoming").length;
-            console.log('[Investments] Opening drawer:', {
-              investmentId: selectedInvestment.id,
-              investmentName: selectedInvestment.name,
-              totalCashflows: (cashflows || []).length,
-              investmentCashflows: investmentCashflows.length,
-              pendingCount,
-              cashflowsStatuses: investmentCashflows.map(cf => ({ id: cf.id, status: cf.status })),
-            });
           }
         }}
         investment={selectedInvestment}

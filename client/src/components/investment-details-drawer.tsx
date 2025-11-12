@@ -51,17 +51,6 @@ export function InvestmentDetailsDrawer({
   const totalPayments = investmentCashflows.length;
   const pendingPayments = investmentCashflows.filter(cf => cf.status === "upcoming").length;
 
-  // Debug logging for button visibility
-  console.log('[InvestmentDetailsDrawer] Debug:', {
-    investmentName: investment.name,
-    status: investment.status,
-    pendingPayments,
-    totalPayments,
-    onCompleteAllPayments: !!onCompleteAllPayments,
-    statusCheck: ["active", "late", "defaulted"].includes(investment.status),
-    shouldShowButton: !!onCompleteAllPayments && ["active", "late", "defaulted"].includes(investment.status) && pendingPayments > 0,
-  });
-
   // Calculate total expected profit
   const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
 
