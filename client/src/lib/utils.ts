@@ -5,6 +5,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Centralized metric color mappings for APR and ROI
+ * Ensures consistent color usage across all dashboard and investment components
+ */
+export const METRIC_COLOR_MAP = {
+  apr: {
+    colorLight: "text-chart-2",
+    colorDark: "", // text-chart-2 works in both modes
+    bgColor: "bg-chart-2/10",
+  },
+  roi: {
+    colorLight: "text-blue-600",
+    colorDark: "dark:text-blue-400",
+    bgColor: "bg-blue-600/10",
+  },
+} as const;
+
 export function formatCurrency(amount: number | string | null | undefined, currency = "SAR"): string {
   if (amount === null || amount === undefined) {
     return new Intl.NumberFormat("en-SA", {

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { formatCurrency, formatPercentage, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { InvestmentStatusChart } from "@/components/investment-status-chart";
 import { 
   Wallet, 
@@ -47,8 +47,9 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       subtitle: isRTL 
         ? "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)" 
         : "Average annual return for active, late, and defaulted opportunities",
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-600/10",
+      colorLight: METRIC_COLOR_MAP.apr.colorLight,
+      colorDark: METRIC_COLOR_MAP.apr.colorDark,
+      bgColor: METRIC_COLOR_MAP.apr.bgColor,
     },
     {
       id: "cash-ratio",
@@ -66,8 +67,9 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       subtitle: isRTL 
         ? "متوسط العائد السنوي لجميع فرص المحفظة" 
         : "Average annual return for all portfolio opportunities",
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-600/10",
+      colorLight: METRIC_COLOR_MAP.apr.colorLight,
+      colorDark: METRIC_COLOR_MAP.apr.colorDark,
+      bgColor: METRIC_COLOR_MAP.apr.bgColor,
     },
     {
       id: "portfolio-roi",
@@ -75,8 +77,9 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       label: isRTL ? "العائد على الاستثمار" : "Portfolio ROI",
       value: formatPercentage(metrics.portfolioROI),
       subtitle: formatCurrency(metrics.totalProfitAmount),
-      color: "text-indigo-600 dark:text-indigo-400",
-      bgColor: "bg-indigo-600/10",
+      colorLight: METRIC_COLOR_MAP.roi.colorLight,
+      colorDark: METRIC_COLOR_MAP.roi.colorDark,
+      bgColor: METRIC_COLOR_MAP.roi.bgColor,
     },
     {
       id: "avg-duration",
@@ -116,7 +119,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                 </div>
               </CardHeader>
               <CardContent className="px-3 pb-2 pt-0.5">
-                <div className="text-lg font-bold" data-testid={`metric-value-${card.id}`}>
+                <div className={cn("text-lg font-bold", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>
                 {card.subtitle && (

@@ -225,7 +225,7 @@ export function InvestmentDetailsDrawer({
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{t("investments.currentROI")}</span>
               </div>
-              <span className="text-sm font-medium text-chart-2" data-testid="text-current-roi">
+              <span className="text-sm font-medium text-blue-600" data-testid="text-current-roi">
                 {formatPercentage(roi)}
               </span>
             </div>

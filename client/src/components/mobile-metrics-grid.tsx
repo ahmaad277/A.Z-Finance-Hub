@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { formatCurrency, formatPercentage, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { 
   Wallet, 
   DollarSign, 
@@ -49,8 +49,9 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
       subtitle: isRTL 
         ? "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)" 
         : "Average annual return for active, late, and defaulted opportunities",
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-600/10",
+      colorLight: METRIC_COLOR_MAP.apr.colorLight,
+      colorDark: METRIC_COLOR_MAP.apr.colorDark,
+      bgColor: METRIC_COLOR_MAP.apr.bgColor,
     },
     {
       id: "cash-ratio",
@@ -68,16 +69,18 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
       subtitle: isRTL 
         ? "متوسط العائد السنوي لجميع فرص المحفظة" 
         : "Average annual return for all portfolio opportunities",
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-600/10",
+      colorLight: METRIC_COLOR_MAP.apr.colorLight,
+      colorDark: METRIC_COLOR_MAP.apr.colorDark,
+      bgColor: METRIC_COLOR_MAP.apr.bgColor,
     },
     {
       id: "roi",
       icon: Target,
       label: isRTL ? "العائد على الاستثمار" : "Portfolio ROI",
       value: formatPercentage(metrics.portfolioROI),
-      color: "text-indigo-600 dark:text-indigo-400",
-      bgColor: "bg-indigo-600/10",
+      colorLight: METRIC_COLOR_MAP.roi.colorLight,
+      colorDark: METRIC_COLOR_MAP.roi.colorDark,
+      bgColor: METRIC_COLOR_MAP.roi.bgColor,
     },
     {
       id: "avg-duration",
@@ -165,7 +168,7 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
                   </div>
                 </CardHeader>
                 <CardContent className="px-3 pb-3 pt-1">
-                  <div className="text-lg font-bold" data-testid={`metric-value-${card.id}`}>
+                  <div className={cn("text-lg font-bold", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                     {card.value}
                   </div>
                   {card.subtitle && (
@@ -203,7 +206,7 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
                   </div>
                 </CardHeader>
                 <CardContent className="px-3 pb-3 pt-1">
-                  <div className="text-2xl font-bold" data-testid={`status-value-${card.id}`}>
+                  <div className={cn("text-2xl font-bold", card.color)} data-testid={`status-value-${card.id}`}>
                     {card.value}
                   </div>
                 </CardContent>
