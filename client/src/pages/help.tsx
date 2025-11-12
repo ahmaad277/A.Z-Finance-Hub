@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useLanguage } from "@/lib/language-provider";
 import { BookOpen, Lightbulb, BarChart3, DollarSign, Building2, TrendingUp, Settings2 } from "lucide-react";
@@ -78,13 +79,14 @@ export default function Help() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight" data-testid="text-help-title">{t("help.title")}</h1>
-        <p className="text-muted-foreground" data-testid="text-help-subtitle">{t("help.subtitle")}</p>
-      </div>
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title={t("help.title")}
+        description={t("help.subtitle")}
+        gradient
+      />
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {sections.map((section, sectionIndex) => {
           const Icon = section.icon;
           return (

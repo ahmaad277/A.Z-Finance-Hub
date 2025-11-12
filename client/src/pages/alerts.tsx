@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
@@ -111,36 +112,32 @@ export default function Alerts() {
   const unreadCount = alerts?.filter((a: Alert) => !a.read).length || 0;
 
   return (
-    <div className="space-y-6" data-testid="page-alerts">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("alerts.title")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("alerts.subtitle")}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => generateAlertsMutation.mutate()}
-            disabled={generateAlertsMutation.isPending}
-            variant="outline"
-            data-testid="button-generate-alerts"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${generateAlertsMutation.isPending ? 'animate-spin' : ''}`} />
-            {language === "ar" ? "تحديث التنبيهات" : "Refresh Alerts"}
-          </Button>
-          {unreadCount > 0 && (
-            <Badge className="bg-destructive/10 text-destructive text-base px-3 py-1" data-testid="badge-unread-count">
-              {t("alerts.unread").replace("{0}", unreadCount.toString())}
-            </Badge>
-          )}
-        </div>
-      </div>
+    <div className="space-y-4 sm:space-y-6" data-testid="page-alerts">
+      <PageHeader
+        title={t("alerts.title")}
+        description={t("alerts.subtitle")}
+        gradient
+      >
+        <Button
+          onClick={() => generateAlertsMutation.mutate()}
+          disabled={generateAlertsMutation.isPending}
+          variant="outline"
+          data-testid="button-generate-alerts"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${generateAlertsMutation.isPending ? 'animate-spin' : ''}`} />
+          {language === "ar" ? "تحديث التنبيهات" : "Refresh Alerts"}
+        </Button>
+        {unreadCount > 0 && (
+          <Badge className="bg-destructive/10 text-destructive text-base px-3 py-1" data-testid="badge-unread-count">
+            {t("alerts.unread").replace("{0}", unreadCount.toString())}
+          </Badge>
+        )}
+      </PageHeader>
 
       <Card data-testid="card-alerts">
-        <CardContent className="p-0">
+        <CardContent>
           {alerts && alerts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center" data-testid="empty-state-alerts">
+            <div className="flex flex-col items-center justify-center py-6 text-center" data-testid="empty-state-alerts">
               <div className="rounded-full bg-muted p-4 mb-4">
                 <Bell className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -150,7 +147,7 @@ export default function Alerts() {
               </p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y -mx-6">
               {alerts?.map((alert: Alert) => {
                 const Icon = getAlertIcon(alert.type, alert.severity);
                 const colorClass = getAlertColor(alert.severity);

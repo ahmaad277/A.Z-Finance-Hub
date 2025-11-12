@@ -25,6 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Settings2, Plus, Palette, Globe, TrendingUp, Shield, Fingerprint, Edit, Trash2, Bell, AlertTriangle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { useLanguage } from "@/lib/language-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
@@ -441,18 +442,14 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Settings2 className="w-6 h-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold" data-testid="text-settings-title">
-            {t("settings.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("settings.description")}</p>
-        </div>
-      </div>
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title={t("settings.title")}
+        description={t("settings.description")}
+        gradient
+      />
 
-      <div className="grid gap-2 md:grid-cols-2 items-start auto-rows-max">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 items-start auto-rows-max">
         {/* Appearance Settings */}
         <Card>
           <CardHeader className="pb-3">

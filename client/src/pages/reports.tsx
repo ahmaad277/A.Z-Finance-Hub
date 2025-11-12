@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/lib/language-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -365,15 +366,14 @@ export default function Reports() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-4" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Blue Header Area with Title */}
-      <div className="bg-primary/10 rounded-lg px-4 py-3">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="heading-reports">
-          {language === "ar" ? "التقارير المالية" : "Financial Reports"}
-        </h1>
-      </div>
+    <div className="container mx-auto p-4 md:p-6 space-y-4 sm:space-y-6" dir={isRtl ? "rtl" : "ltr"}>
+      {/* Page Header */}
+      <PageHeader
+        title={language === "ar" ? "التقارير المالية" : "Financial Reports"}
+        gradient
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Configuration Panel */}
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -548,7 +548,7 @@ export default function Reports() {
                         {language === "ar" ? "ملخص المحفظة" : "Portfolio Summary"}
                       </h3>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                         <div className="p-4 rounded-lg bg-muted/50">
                           <div className="text-sm text-muted-foreground mb-1">
                             {language === "ar" ? "قيمة المحفظة" : "Portfolio Value"}

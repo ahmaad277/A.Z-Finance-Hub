@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -433,35 +434,32 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-4" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Blue Header Area with Title and Buttons */}
-      <div className="bg-primary/10 rounded-lg px-4 py-3 flex flex-row items-center justify-between gap-2">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-shrink min-w-0">{t("investments.title")}</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setCompactView(!compactView)}
-            data-testid="button-toggle-view"
-            variant="outline"
-            className="gap-2 flex-shrink-0 h-9"
-            size="sm"
-          >
-            {compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-            <span className="hidden md:inline">{compactView ? t("common.expand") : t("common.compact")}</span>
-          </Button>
-          <Button
-            onClick={handleAddNew}
-            data-testid="button-add-investment"
-            className="gap-2 flex-shrink-0 h-9"
-            size="sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-4 sm:space-y-6" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
+      {/* Page Header with Actions */}
+      <PageHeader title={t("investments.title")} gradient>
+        <Button
+          onClick={() => setCompactView(!compactView)}
+          data-testid="button-toggle-view"
+          variant="outline"
+          className="gap-2"
+          size="sm"
+        >
+          {compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+          <span className="hidden md:inline">{compactView ? t("common.expand") : t("common.compact")}</span>
+        </Button>
+        <Button
+          onClick={handleAddNew}
+          data-testid="button-add-investment"
+          className="gap-2"
+          size="sm"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
+        </Button>
+      </PageHeader>
 
       {/* Filters and Sort */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
           <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-platform-filter">
             <Filter className="h-4 w-4 mr-2 shrink-0" />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, PiggyBank, RefreshCw } from "lucide-react";
@@ -61,18 +62,15 @@ export default function Reinvestment() {
     .sort((a, b) => parseFloat(b.expectedIrr) - parseFloat(a.expectedIrr));
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">
-          {t("reinvestment.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1" data-testid="text-page-description">
-          {t("reinvestment.description")}
-        </p>
-      </div>
+    <div className="p-6 space-y-4 sm:space-y-6">
+      <PageHeader
+        title={t("reinvestment.title")}
+        description={t("reinvestment.description")}
+        gradient
+      />
 
       {/* Cash Balance Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">

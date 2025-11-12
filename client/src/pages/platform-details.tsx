@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, TrendingUp, Wallet, BarChart3, Target, Clock, AlertTriangle } from "lucide-react";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
@@ -111,13 +112,15 @@ export default function PlatformDetails() {
 
   if (!platform) {
     return (
-      <div className="space-y-6">
-        <Link href="/">
-          <Button variant="ghost" data-testid="button-back">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("common.back")}
-          </Button>
-        </Link>
+      <div className="space-y-4 sm:space-y-6">
+        <PageHeader title="Platform Not Found" gradient>
+          <Link href="/">
+            <Button variant="ghost" data-testid="button-back">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t("common.back")}
+            </Button>
+          </Link>
+        </PageHeader>
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">{t("platform.notFound")}</p>
@@ -159,30 +162,18 @@ export default function PlatformDetails() {
   ];
 
   return (
-    <div className="space-y-6" data-testid="page-platform-details">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-6" data-testid="page-platform-details">
+      <PageHeader title={platform.name} gradient>
         <Link href="/">
-          <Button variant="ghost" size="icon" data-testid="button-back">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" data-testid="button-back">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t("common.back")}
           </Button>
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
-            {platform.logoUrl ? (
-              <img src={platform.logoUrl} alt={platform.name} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-xl font-bold text-primary">{platform.name[0]}</span>
-            )}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{platform.name}</h1>
-            <p className="text-muted-foreground">{platform.type}</p>
-          </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <Card key={card.key} className="hover-elevate transition-all duration-200" data-testid={`card-stat-${card.key}`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

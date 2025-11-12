@@ -96,30 +96,30 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
   ];
 
   return (
-    <div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6">
         {metricCards.map((card) => {
           const Icon = card.icon;
           return (
             <Card 
               key={card.id} 
-              className="hover-elevate transition-all duration-200" 
+              className="hover-elevate" 
               data-testid={`metric-card-${card.id}`}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 pt-2 px-3">
-                <CardTitle className="text-xs font-medium text-muted-foreground line-clamp-1">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground line-clamp-1">
                   {card.label}
                 </CardTitle>
-                <div className={`${card.bgColor} ${card.color} rounded-md p-1.5 shrink-0`}>
-                  <Icon className="h-3 w-3" />
+                <div className={`${card.bgColor} ${card.color} rounded-md p-2 shrink-0`}>
+                  <Icon className="h-4 w-4" />
                 </div>
               </CardHeader>
-              <CardContent className="px-3 pb-2 pt-0.5">
-                <div className={cn("text-lg font-bold", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
+              <CardContent className="pt-0">
+                <div className={cn("text-xl font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>
                 {card.subtitle && (
-                  <div className="text-xs text-muted-foreground mt-0.5" data-testid={`metric-subtitle-${card.id}`}>
+                  <div className="text-xs text-muted-foreground mt-1" data-testid={`metric-subtitle-${card.id}`}>
                     {card.subtitle}
                   </div>
                 )}
@@ -130,9 +130,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       </div>
       
       {/* Investment Status Chart as a metric card */}
-      <div className="mt-3">
-        <InvestmentStatusChart metrics={metrics} />
-      </div>
+      <InvestmentStatusChart metrics={metrics} />
     </div>
   );
 }
