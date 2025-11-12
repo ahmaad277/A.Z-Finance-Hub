@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PageSection } from "@/components/ui/page-section";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage, cn } from "@/lib/utils";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
@@ -421,38 +422,46 @@ export default function Dashboard() {
       <PageHeader
         title={t("dashboard.title")}
         gradient
+        inline
       >
-        {/* Platform Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem 
-              onClick={() => setSelectedPlatform("all")}
-              data-testid="menu-filter-all"
-              className={selectedPlatform === "all" ? "bg-accent" : ""}
-            >
-              {t("dashboard.allPlatforms")}
-            </DropdownMenuItem>
-            {platforms?.map((platform) => (
-              <DropdownMenuItem 
-                key={platform.id} 
-                onClick={() => setSelectedPlatform(platform.id)}
-                data-testid={`menu-filter-${platform.id}`}
-                className={selectedPlatform === platform.id ? "bg-accent" : ""}
-              >
-                {platform.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        
         {/* Cash Transaction Buttons */}
         <CashTransactionDialog type="deposit" />
         <CashTransactionDialog type="withdrawal" />
+        
+        {/* Platform Filter */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="button-platform-filter" className="h-8 w-8 p-0">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => setSelectedPlatform("all")}
+                  data-testid="menu-filter-all"
+                  className={selectedPlatform === "all" ? "bg-accent" : ""}
+                >
+                  {t("dashboard.allPlatforms")}
+                </DropdownMenuItem>
+                {platforms?.map((platform) => (
+                  <DropdownMenuItem 
+                    key={platform.id} 
+                    onClick={() => setSelectedPlatform(platform.id)}
+                    data-testid={`menu-filter-${platform.id}`}
+                    className={selectedPlatform === platform.id ? "bg-accent" : ""}
+                  >
+                    {platform.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t("dashboard.filterByPlatform")}</p>
+          </TooltipContent>
+        </Tooltip>
       </PageHeader>
 
       {/* 1. Financial Metrics Only (8 metrics + Investment Status) */}
