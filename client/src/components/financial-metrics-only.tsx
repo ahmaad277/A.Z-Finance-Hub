@@ -42,11 +42,9 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
     {
       id: "active-apr",
       icon: TrendingUp,
-      label: isRTL ? "العائد السنوي النشط" : "Active Annual Return",
+      label: t("metrics.activeAPR"),
       value: formatPercentage(metrics.activeAPR),
-      subtitle: isRTL 
-        ? "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)" 
-        : "Average annual return for active, late, and defaulted opportunities",
+      subtitle: t("metrics.activeAPRSubtitle"),
       colorLight: METRIC_COLOR_MAP.apr.colorLight,
       colorDark: METRIC_COLOR_MAP.apr.colorDark,
       bgColor: METRIC_COLOR_MAP.apr.bgColor,
@@ -62,11 +60,9 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
     {
       id: "weighted-apr",
       icon: Percent,
-      label: isRTL ? "متوسط العائد السنوي التاريخي" : "Historical Average APR",
+      label: t("metrics.historicalAPR"),
       value: formatPercentage(metrics.weightedAPR),
-      subtitle: isRTL 
-        ? "متوسط العائد السنوي لجميع فرص المحفظة" 
-        : "Average annual return for all portfolio opportunities",
+      subtitle: t("metrics.historicalAPRSubtitle"),
       colorLight: METRIC_COLOR_MAP.apr.colorLight,
       colorDark: METRIC_COLOR_MAP.apr.colorDark,
       bgColor: METRIC_COLOR_MAP.apr.bgColor,
@@ -74,7 +70,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
     {
       id: "portfolio-roi",
       icon: Target,
-      label: isRTL ? "العائد على الاستثمار" : "Portfolio ROI",
+      label: t("metrics.portfolioROI"),
       value: formatPercentage(metrics.portfolioROI),
       subtitle: formatCurrency(metrics.totalProfitAmount),
       colorLight: METRIC_COLOR_MAP.roi.colorLight,
