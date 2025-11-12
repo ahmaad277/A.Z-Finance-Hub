@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageSection } from "@/components/ui/page-section";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
+import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, PieChart } from "lucide-react";
 import { formatCurrency, formatPercentage, cn } from "@/lib/utils";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 import { useLanguage } from "@/lib/language-provider";
+import { usePlatformFilter } from "@/lib/platform-filter-context";
 import { PortfolioChart } from "@/components/portfolio-chart";
 import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
@@ -30,6 +30,8 @@ import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, An
 export default function Dashboard() {
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
+  const { selectedPlatform, setSelectedPlatform } = usePlatformFilter();
+  
   const { data: stats, isLoading } = useQuery<PortfolioStats>({
     queryKey: ["/api/portfolio/stats"],
   });
@@ -44,9 +46,6 @@ export default function Dashboard() {
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
   });
-
-  // Platform filter state
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
 
   // Track collapsed sections locally
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
@@ -417,50 +416,14 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="page-dashboard">
-      {/* Page Header with Actions */}
+      {/* Page Header with Cash Transaction Buttons */}
       <PageHeader
         title={t("dashboard.title")}
         gradient
-        inline
       >
-        {/* Cash Transaction Buttons */}
+        {/* Cash Transaction Buttons - positioned to the right */}
         <CashTransactionDialog type="deposit" />
         <CashTransactionDialog type="withdrawal" />
-        
-        {/* Platform Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              data-testid="button-platform-filter" 
-              className="h-8 w-8 p-0"
-              aria-label={t("dashboard.filterByPlatform")}
-              title={t("dashboard.filterByPlatform")}
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem 
-              onClick={() => setSelectedPlatform("all")}
-              data-testid="menu-filter-all"
-              className={selectedPlatform === "all" ? "bg-accent" : ""}
-            >
-              {t("dashboard.allPlatforms")}
-            </DropdownMenuItem>
-            {platforms?.map((platform) => (
-              <DropdownMenuItem 
-                key={platform.id} 
-                onClick={() => setSelectedPlatform(platform.id)}
-                data-testid={`menu-filter-${platform.id}`}
-                className={selectedPlatform === platform.id ? "bg-accent" : ""}
-              >
-                {platform.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </PageHeader>
 
       {/* 1. Financial Metrics Only (8 metrics + Investment Status) */}

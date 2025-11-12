@@ -6,10 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
+import { PlatformFilterProvider } from "@/lib/platform-filter-context";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
+import { PlatformFilterButton } from "@/components/platform-filter-button";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import CashflowsUnified from "@/pages/cashflows-unified";
@@ -61,7 +63,8 @@ function AppContent() {
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <PlatformFilterButton />
               <SaveCheckpointButton />
               <ThemeToggle />
               <LanguageToggle />
@@ -90,10 +93,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
         <LanguageProvider defaultLanguage="en">
-          <TooltipProvider>
-            <AppContent />
-            <Toaster />
-          </TooltipProvider>
+          <PlatformFilterProvider>
+            <TooltipProvider>
+              <AppContent />
+              <Toaster />
+            </TooltipProvider>
+          </PlatformFilterProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
