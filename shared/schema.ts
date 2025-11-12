@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, numeric, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, numeric, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -171,6 +171,28 @@ export const insertSavedScenarioSchema = createInsertSchema(savedScenarios).omit
 });
 export type InsertSavedScenario = z.infer<typeof insertSavedScenarioSchema>;
 export type SavedScenario = typeof savedScenarios.$inferSelect;
+
+// Portfolio Snapshots - Checkpoint system for full portfolio backup/restore
+export const portfolioSnapshots = pgTable("portfolio_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  snapshotData: jsonb("snapshot_data").notNull(), // Full portfolio state
+  entityCounts: jsonb("entity_counts"), // Metadata: { investments: 5, cashflows: 60, ... }
+  byteSize: integer("byte_size"), // Size of snapshot for validation
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapshots).omit({ 
+  id: true,
+  createdAt: true,
+  byteSize: true,
+  entityCounts: true,
+}).extend({
+  name: z.string().trim().min(1).max(120),
+  snapshotData: z.any(), // Will be validated in storage layer
+});
+export type InsertPortfolioSnapshot = z.infer<typeof insertPortfolioSnapshotSchema>;
+export type PortfolioSnapshot = typeof portfolioSnapshots.$inferSelect;
 
 // Roles - Define user roles (Owner, Admin, Advanced Analyst, etc.)
 export const roles = pgTable("roles", {
