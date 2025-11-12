@@ -24,7 +24,7 @@ export function SaveCheckpointButton() {
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
-      return await apiRequest("POST", "/api/snapshots/create", { name });
+      return await apiRequest("POST", "/api/snapshots", { name });
     },
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["/api/snapshots"], type: "all" });

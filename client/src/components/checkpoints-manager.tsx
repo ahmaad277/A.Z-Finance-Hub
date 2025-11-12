@@ -19,21 +19,20 @@ import { RotateCcw, Trash2, Database, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 type PortfolioSnapshot = {
-  id: number;
+  id: string;
   name: string;
   createdAt: string;
-  snapshotData: {
-    metadata: {
-      snapshotDate: string;
-      entityCounts: {
-        investments: number;
-        cashflows: number;
-        cashTransactions: number;
-        alerts: number;
-        platforms: number;
-      };
-    };
-  };
+  snapshotData: any; // Full portfolio state
+  entityCounts: {
+    investments: number;
+    cashflows: number;
+    cashTransactions: number;
+    alerts: number;
+    platforms: number;
+    customDistributions: number;
+    savedScenarios: number;
+  } | null;
+  byteSize: number | null;
 };
 
 export function CheckpointsManager() {
@@ -48,7 +47,7 @@ export function CheckpointsManager() {
   });
 
   const restoreMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return await apiRequest("POST", `/api/snapshots/${id}/restore`);
     },
     onSuccess: () => {
@@ -72,7 +71,7 @@ export function CheckpointsManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/api/snapshots/${id}`);
     },
     onSuccess: () => {
@@ -156,12 +155,16 @@ export function CheckpointsManager() {
                               {format(new Date(snapshot.createdAt), "MMM d, yyyy HH:mm")}
                             </span>
                           </div>
-                          <div>
-                            {t("checkpoints.investments")}: {snapshot.snapshotData.metadata.entityCounts.investments}
-                          </div>
-                          <div>
-                            {t("checkpoints.cashflows")}: {snapshot.snapshotData.metadata.entityCounts.cashflows}
-                          </div>
+                          {snapshot.entityCounts && (
+                            <>
+                              <div>
+                                {t("checkpoints.investments")}: {snapshot.entityCounts.investments}
+                              </div>
+                              <div>
+                                {t("checkpoints.cashflows")}: {snapshot.entityCounts.cashflows}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-2">
