@@ -1076,7 +1076,7 @@ const translations = {
     // Financial Metrics
     "metrics.activeAPR": "العائد السنوي النشط",
     "metrics.activeAPRSubtitle": "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)",
-    "metrics.historicalAPR": "متوسط العائد السنوي التاريخي",
+    "metrics.historicalAPR": "العائد السنوي التاريخي",
     "metrics.historicalAPRSubtitle": "متوسط العائد السنوي لجميع فرص المحفظة",
     "metrics.portfolioROI": "عائد الاستثمار",
     "metrics.expectedIRR": "العائد السنوي المتوقع",

@@ -44,7 +44,6 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       icon: TrendingUp,
       label: t("metrics.activeAPR"),
       value: formatPercentage(metrics.activeAPR),
-      subtitle: t("metrics.activeAPRSubtitle"),
       colorLight: METRIC_COLOR_MAP.apr.colorLight,
       colorDark: METRIC_COLOR_MAP.apr.colorDark,
       bgColor: METRIC_COLOR_MAP.apr.bgColor,
@@ -62,7 +61,6 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       icon: Percent,
       label: t("metrics.historicalAPR"),
       value: formatPercentage(metrics.weightedAPR),
-      subtitle: t("metrics.historicalAPRSubtitle"),
       colorLight: METRIC_COLOR_MAP.apr.colorLight,
       colorDark: METRIC_COLOR_MAP.apr.colorDark,
       bgColor: METRIC_COLOR_MAP.apr.bgColor,
@@ -115,7 +113,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className={cn("text-xl font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
+                <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>
                 {card.subtitle && (
