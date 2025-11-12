@@ -40,10 +40,13 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       bgColor: "bg-green-600/10",
     },
     {
-      id: "returns-ratio",
+      id: "active-apr",
       icon: TrendingUp,
-      label: isRTL ? "نسبة العائد" : "Returns Ratio",
-      value: formatPercentage(metrics.returnsRatio),
+      label: isRTL ? "العائد السنوي النشط" : "Active Annual Return",
+      value: formatPercentage(metrics.activeAPR),
+      subtitle: isRTL 
+        ? "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)" 
+        : "Average annual return for active, late, and defaulted opportunities",
       color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-600/10",
     },
@@ -58,8 +61,11 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
     {
       id: "weighted-apr",
       icon: Percent,
-      label: isRTL ? "متوسط APR المرجح" : "Weighted APR",
+      label: isRTL ? "متوسط العائد السنوي التاريخي" : "Historical Average APR",
       value: formatPercentage(metrics.weightedAPR),
+      subtitle: isRTL 
+        ? "متوسط العائد السنوي لجميع فرص المحفظة" 
+        : "Average annual return for all portfolio opportunities",
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-600/10",
     },

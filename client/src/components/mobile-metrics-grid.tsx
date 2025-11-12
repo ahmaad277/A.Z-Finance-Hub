@@ -42,10 +42,13 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
       bgColor: "bg-green-600/10",
     },
     {
-      id: "returns-ratio",
+      id: "active-apr",
       icon: TrendingUp,
-      label: isRTL ? "نسبة العائد" : "Returns Ratio",
-      value: formatPercentage(metrics.returnsRatio),
+      label: isRTL ? "العائد السنوي النشط" : "Active Annual Return",
+      value: formatPercentage(metrics.activeAPR),
+      subtitle: isRTL 
+        ? "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)" 
+        : "Average annual return for active, late, and defaulted opportunities",
       color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-600/10",
     },
@@ -58,10 +61,13 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
       bgColor: "bg-cyan-600/10",
     },
     {
-      id: "apr",
+      id: "weighted-apr",
       icon: Percent,
-      label: isRTL ? "العائد السنوي" : "Portfolio APR",
-      value: formatPercentage(metrics.portfolioAPR),
+      label: isRTL ? "متوسط العائد السنوي التاريخي" : "Historical Average APR",
+      value: formatPercentage(metrics.weightedAPR),
+      subtitle: isRTL 
+        ? "متوسط العائد السنوي لجميع فرص المحفظة" 
+        : "Average annual return for all portfolio opportunities",
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-600/10",
     },
@@ -162,6 +168,11 @@ export function MobileMetricsGrid({ metrics }: MobileMetricsGridProps) {
                   <div className="text-lg font-bold" data-testid={`metric-value-${card.id}`}>
                     {card.value}
                   </div>
+                  {card.subtitle && (
+                    <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2" data-testid={`metric-subtitle-${card.id}`}>
+                      {card.subtitle}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

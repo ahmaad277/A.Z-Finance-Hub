@@ -9,11 +9,11 @@ export interface DashboardMetrics {
   // Returns
   actualReturns: number;
   expectedReturns: number;
-  returnsRatio: number; // actualReturns / expectedReturns
+  activeAPR: number; // العائد السنوي النشط (Active + Late + Defaulted)
   cashRatio: number; // totalCash / portfolioValue
   
   // Performance
-  weightedAPR: number; // متوسط APR المرجح
+  weightedAPR: number; // متوسط العائد السنوي التاريخي (All investments)
   portfolioROI: number; // نسبة العائد على الاستثمار
   totalProfitAmount: number; // إجمالي الأرباح بالريال
   
@@ -203,21 +203,34 @@ export function calculateDashboardMetrics(
     return sum + parseFloat(inv.totalExpectedProfit || "0");
   }, 0);
   
-  const returnsRatio = expectedReturns > 0 ? (actualReturns / expectedReturns) * 100 : 0;
-  
   // 5. Calculate cash ratio
   const cashRatio = portfolioValue > 0 ? (totalCash / portfolioValue) * 100 : 0;
   
-  // 6. Calculate weighted APR and portfolio ROI
-  // Weighted APR: حساب متوسط APR مرجح حسب قيمة كل استثمار
-  const totalActiveValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
-  const weightedAPR = totalActiveValue > 0
-    ? activeInvestments.reduce((sum, inv) => {
+  // 6. Calculate Active APR: متوسط APR للاستثمارات النشطة + المتأخرة + المتعثرة
+  const activeFilteredInvestments = filteredInvestments.filter(
+    inv => inv.status === 'active' || inv.status === 'late' || inv.status === 'defaulted'
+  );
+  const totalActiveValue = activeFilteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
+  const activeAPR = totalActiveValue > 0
+    ? activeFilteredInvestments.reduce((sum, inv) => {
         const amount = parseFloat(inv.faceValue);
         const profit = parseFloat(inv.totalExpectedProfit || "0");
         const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
         const apr = calculateAPR(amount, profit, durationMonths);
         const weight = amount / totalActiveValue;
+        return sum + (apr * weight);
+      }, 0)
+    : 0;
+  
+  // 7. Calculate Weighted APR (Historical): متوسط APR لجميع الاستثمارات (نشط + متأخر + متعثر + منتهي)
+  const allInvestmentsValue = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
+  const weightedAPR = allInvestmentsValue > 0
+    ? filteredInvestments.reduce((sum, inv) => {
+        const amount = parseFloat(inv.faceValue);
+        const profit = parseFloat(inv.totalExpectedProfit || "0");
+        const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
+        const apr = calculateAPR(amount, profit, durationMonths);
+        const weight = amount / allInvestmentsValue;
         return sum + (apr * weight);
       }, 0)
     : 0;
@@ -286,7 +299,7 @@ export function calculateDashboardMetrics(
     cashByPlatform,
     actualReturns,
     expectedReturns,
-    returnsRatio,
+    activeAPR,
     cashRatio,
     weightedAPR,
     portfolioROI,

@@ -110,8 +110,8 @@ export default function Reports() {
         ["Cash Ratio", formatPercentage(metrics.cashRatio)],
         ["Expected Returns", formatCurrency(metrics.expectedReturns)],
         ["Actual Returns", formatCurrency(metrics.actualReturns)],
-        ["Returns Ratio", formatPercentage(metrics.returnsRatio)],
-        ["Weighted APR", formatPercentage(metrics.weightedAPR)],
+        ["Active Annual Return", formatPercentage(metrics.activeAPR)],
+        ["Historical Average APR", formatPercentage(metrics.weightedAPR)],
         ["Portfolio ROI", formatPercentage(metrics.portfolioROI)],
         [],
         ["Investment Status"],
@@ -578,7 +578,16 @@ export default function Reports() {
 
                         <div className="p-4 rounded-lg bg-muted/50">
                           <div className="text-sm text-muted-foreground mb-1">
-                            {language === "ar" ? "متوسط APR المرجح" : "Weighted APR"}
+                            {language === "ar" ? "العائد السنوي النشط" : "Active Annual Return"}
+                          </div>
+                          <div className="text-xl font-bold text-primary">
+                            {formatPercentage(metrics.activeAPR)}
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-lg bg-muted/50">
+                          <div className="text-sm text-muted-foreground mb-1">
+                            {language === "ar" ? "متوسط العائد السنوي التاريخي" : "Historical Average APR"}
                           </div>
                           <div className="text-xl font-bold text-primary">
                             {formatPercentage(metrics.weightedAPR)}
@@ -591,15 +600,6 @@ export default function Reports() {
                           </div>
                           <div className="text-xl font-bold text-primary">
                             {formatPercentage(metrics.portfolioROI)}
-                          </div>
-                        </div>
-
-                        <div className="p-4 rounded-lg bg-muted/50">
-                          <div className="text-sm text-muted-foreground mb-1">
-                            {language === "ar" ? "نسبة العوائد" : "Returns Ratio"}
-                          </div>
-                          <div className="text-xl font-bold">
-                            {formatPercentage(metrics.returnsRatio)}
                           </div>
                         </div>
                       </div>
