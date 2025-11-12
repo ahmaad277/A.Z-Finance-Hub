@@ -55,9 +55,6 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     return value.toString();
   };
 
-  // Show only every Nth month label to avoid crowding
-  const tickInterval = months > 24 ? Math.floor(months / 12) : Math.floor(months / 8);
-
   return (
     <Card data-testid="card-cashflow-forecast">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -70,19 +67,67 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={600} className="hidden sm:block">
           <BarChart
             data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               dataKey="monthLabel"
               angle={-45}
               textAnchor="end"
-              height={80}
-              interval={tickInterval}
+              height={90}
+              interval={0}
+              tick={{ fontSize: 11 }}
+              className="text-muted-foreground"
+            />
+            <YAxis
+              tickFormatter={formatYAxis}
               tick={{ fontSize: 12 }}
+              className="text-muted-foreground"
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+            <Legend
+              wrapperStyle={{ paddingTop: "20px" }}
+              iconType="square"
+              formatter={(value) => {
+                if (value === "principal") return t("forecast.principal");
+                if (value === "profit") return t("forecast.profit");
+                return value;
+              }}
+            />
+            <Bar
+              dataKey="principal"
+              stackId="a"
+              fill="#3b82f6"
+              radius={[0, 0, 4, 4]}
+              name="principal"
+              data-testid="bar-principal"
+            />
+            <Bar
+              dataKey="profit"
+              stackId="a"
+              fill="#22c55e"
+              radius={[4, 4, 0, 0]}
+              name="profit"
+              data-testid="bar-profit"
+            />
+          </BarChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={500} className="sm:hidden">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 10, left: 10, bottom: 80 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis
+              dataKey="monthLabel"
+              angle={-45}
+              textAnchor="end"
+              height={90}
+              interval={0}
+              tick={{ fontSize: 10 }}
               className="text-muted-foreground"
             />
             <YAxis
