@@ -162,6 +162,15 @@ const translations = {
     "dashboard.count": "#",
     "dashboard.clickToToggle": "Click to toggle %/#",
     
+    // Financial Metrics
+    "metrics.activeAPR": "Active Annual Return",
+    "metrics.activeAPRSubtitle": "Average annual return for active, late, and defaulted opportunities",
+    "metrics.historicalAPR": "Historical Average APR",
+    "metrics.historicalAPRSubtitle": "Average annual return for all portfolio opportunities",
+    "metrics.portfolioROI": "Portfolio ROI",
+    "metrics.expectedIRR": "Expected IRR",
+    "metrics.currentROI": "Current ROI",
+    
     // Status labels for charts
     "status.active": "Active",
     "status.completed": "Completed",
@@ -1023,6 +1032,15 @@ const translations = {
     "dashboard.percentage": "%",
     "dashboard.count": "#",
     "dashboard.clickToToggle": "اضغط للتبديل بين %/#",
+    
+    // Financial Metrics
+    "metrics.activeAPR": "العائد السنوي النشط",
+    "metrics.activeAPRSubtitle": "متوسط العائد السنوي للفرص (القائمة والمتأخرة والمتعثرة)",
+    "metrics.historicalAPR": "متوسط العائد السنوي التاريخي",
+    "metrics.historicalAPRSubtitle": "متوسط العائد السنوي لجميع فرص المحفظة",
+    "metrics.portfolioROI": "عائد الاستثمار",
+    "metrics.expectedIRR": "العائد السنوي المتوقع",
+    "metrics.currentROI": "العائد الحالي",
     
     // Status labels for charts
     "status.active": "نشطة",
