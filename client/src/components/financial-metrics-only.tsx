@@ -70,7 +70,6 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
       icon: Target,
       label: t("metrics.portfolioROI"),
       value: formatPercentage(metrics.portfolioROI),
-      subtitle: formatCurrency(metrics.totalProfitAmount),
       colorLight: METRIC_COLOR_MAP.roi.colorLight,
       colorDark: METRIC_COLOR_MAP.roi.colorDark,
       bgColor: METRIC_COLOR_MAP.roi.bgColor,
@@ -95,7 +94,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
         {metricCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -105,7 +104,7 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
               data-testid={`metric-card-${card.id}`}
             >
               <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground line-clamp-1">
+                <CardTitle className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                   {card.label}
                 </CardTitle>
                 <div className={`${card.bgColor} ${card.color} rounded-md p-2 shrink-0`}>
@@ -116,11 +115,6 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
                 <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                   {card.value}
                 </div>
-                {card.subtitle && (
-                  <div className="text-xs text-muted-foreground mt-1" data-testid={`metric-subtitle-${card.id}`}>
-                    {card.subtitle}
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
