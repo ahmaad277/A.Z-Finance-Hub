@@ -17,8 +17,9 @@ import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { Vision2040Calculator } from "@/components/vision-2040-calculator";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
+import { runBackgroundTasksOnce } from "@/lib/backgroundTaskManager";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform, CashTransaction } from "@shared/schema";
 
 // Animation variants for smooth transitions
@@ -75,25 +76,9 @@ export default function Dashboard() {
     }
   }, [settings?.collapsedSections]);
 
-  // Mutation to check investment statuses
-  const checkStatusMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("POST", "/api/investments/check-status", {});
-    },
-    onSuccess: (data: any) => {
-      if (data.updatesApplied > 0) {
-        queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
-      }
-    },
-  });
-
-  // Auto-check investment statuses and generate alerts on page load
+  // Run background tasks (status check + alert generation) once per session
   useEffect(() => {
-    checkStatusMutation.mutate();
-    // Also trigger alert generation
-    apiRequest("POST", "/api/alerts/generate", {}).catch(() => {});
+    runBackgroundTasksOnce();
   }, []);
 
   // Mutation to save collapsed sections

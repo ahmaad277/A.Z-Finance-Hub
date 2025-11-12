@@ -111,24 +111,6 @@ export default function Investments() {
     },
   });
 
-  // Mutation to check investment statuses
-  const checkStatusMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("POST", "/api/investments/check-status", {});
-    },
-    onSuccess: (data: any) => {
-      if (data.updatesApplied > 0) {
-        queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
-      }
-    },
-  });
-
-  // Auto-check investment statuses on page load
-  useEffect(() => {
-    checkStatusMutation.mutate();
-  }, []);
 
   // Mutation to delete cashflow
   const deleteCashflowMutation = useMutation({

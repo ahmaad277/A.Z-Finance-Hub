@@ -8,7 +8,6 @@ import { Bell, CheckCircle2, AlertTriangle, Info, TrendingUp, Check, RefreshCw }
 import type { Alert } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
 
 export default function Alerts() {
   const { t, language } = useLanguage();
@@ -48,11 +47,6 @@ export default function Alerts() {
       });
     },
   });
-
-  // Auto-generate alerts on page load
-  useEffect(() => {
-    generateAlertsMutation.mutate();
-  }, []);
 
   const markAsReadMutation = useMutation({
     mutationFn: async (alertId: string) => {
