@@ -115,11 +115,11 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
               <CardContent className="pt-0">
                 {card.secondaryValue ? (
                   <div className="flex items-center gap-1.5">
-                    <div className="text-xs text-muted-foreground whitespace-nowrap" data-testid={`metric-secondary-value-${card.id}`}>
-                      {card.secondaryValue}
-                    </div>
                     <div className={cn("text-lg font-bold tracking-tight", card.colorLight, card.colorDark)} data-testid={`metric-value-${card.id}`}>
                       {card.value}
+                    </div>
+                    <div className="text-xs text-muted-foreground whitespace-nowrap" data-testid={`metric-secondary-value-${card.id}`}>
+                      {card.secondaryValue}
                     </div>
                   </div>
                 ) : (
