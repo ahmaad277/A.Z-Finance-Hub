@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
+import { PageSection } from "@/components/ui/page-section";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Wallet, Target, Banknote, Clock, AlertTriangle, ChevronDown, ChevronUp, Filter, PieChart } from "lucide-react";
@@ -22,23 +24,8 @@ import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { calculateDashboardMetrics } from "@/lib/dashboardMetrics";
 import { runBackgroundTasksOnce } from "@/lib/backgroundTaskManager";
+import { fadeInUp, collapseVariant } from "@/lib/motion-variants";
 import type { PortfolioStats, InvestmentWithPlatform, CashflowWithInvestment, AnalyticsData, UserSettings, Platform, CashTransaction } from "@shared/schema";
-
-// Animation variants for smooth transitions
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.3, ease: "easeInOut" }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -429,44 +416,44 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-3 md:space-y-4" data-testid="page-dashboard">
-      {/* Blue Header Area with Title and Buttons */}
-      <div className="bg-primary/10 rounded-lg px-4 py-3 flex flex-row items-center justify-between gap-2">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-shrink min-w-0">{t("dashboard.title")}</h1>
-        <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
-          {/* Platform Filter - Icon Only */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+    <div className="space-y-4 sm:space-y-6" data-testid="page-dashboard">
+      {/* Page Header with Actions */}
+      <PageHeader
+        title={t("dashboard.title")}
+        gradient
+      >
+        {/* Platform Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" data-testid="button-platform-filter" className="h-9 w-9">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              onClick={() => setSelectedPlatform("all")}
+              data-testid="menu-filter-all"
+              className={selectedPlatform === "all" ? "bg-accent" : ""}
+            >
+              {t("dashboard.allPlatforms")}
+            </DropdownMenuItem>
+            {platforms?.map((platform) => (
               <DropdownMenuItem 
-                onClick={() => setSelectedPlatform("all")}
-                data-testid="menu-filter-all"
-                className={selectedPlatform === "all" ? "bg-accent" : ""}
+                key={platform.id} 
+                onClick={() => setSelectedPlatform(platform.id)}
+                data-testid={`menu-filter-${platform.id}`}
+                className={selectedPlatform === platform.id ? "bg-accent" : ""}
               >
-                {t("dashboard.allPlatforms")}
+                {platform.name}
               </DropdownMenuItem>
-              {platforms?.map((platform) => (
-                <DropdownMenuItem 
-                  key={platform.id} 
-                  onClick={() => setSelectedPlatform(platform.id)}
-                  data-testid={`menu-filter-${platform.id}`}
-                  className={selectedPlatform === platform.id ? "bg-accent" : ""}
-                >
-                  {platform.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* Cash Transaction Buttons */}
-          <CashTransactionDialog type="deposit" />
-          <CashTransactionDialog type="withdrawal" />
-        </div>
-      </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        {/* Cash Transaction Buttons */}
+        <CashTransactionDialog type="deposit" />
+        <CashTransactionDialog type="withdrawal" />
+      </PageHeader>
 
       {/* 1. Financial Metrics Only (8 metrics + Investment Status) */}
       {dashboardMetrics && (
@@ -523,11 +510,8 @@ export default function Dashboard() {
 
       {/* Platforms Overview */}
       {platformStats.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">{t("dashboard.platformsOverview")}</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <PageSection title={t("dashboard.platformsOverview")}>
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {platformStats.map(({ platform, investments, totalReturns, averageIrr, averageDuration }) => (
               <PlatformCard
                 key={platform.id}
@@ -540,7 +524,7 @@ export default function Dashboard() {
               />
             ))}
           </div>
-        </div>
+        </PageSection>
       )}
 
       {/* Analytics Charts and Lists - Pro Mode Only */}
@@ -572,13 +556,10 @@ export default function Dashboard() {
                 <AnimatePresence initial={false}>
                   {!isSectionCollapsed('portfolio-performance') && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      {...collapseVariant}
                       style={{ overflow: "hidden" }}
                     >
-                      <CardContent>
+                      <CardContent className="p-6">
                         <PortfolioChart />
                       </CardContent>
                     </motion.div>
@@ -606,13 +587,10 @@ export default function Dashboard() {
                 <AnimatePresence initial={false}>
                   {!isSectionCollapsed('upcoming-cashflows') && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      {...collapseVariant}
                       style={{ overflow: "hidden" }}
                     >
-                      <CardContent>
+                      <CardContent className="p-6">
                         <UpcomingCashflows />
                       </CardContent>
                     </motion.div>
@@ -641,13 +619,10 @@ export default function Dashboard() {
               <AnimatePresence initial={false}>
                 {!isSectionCollapsed('recent-investments') && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    {...collapseVariant}
                     style={{ overflow: "hidden" }}
                   >
-                    <CardContent>
+                    <CardContent className="p-6">
                       <RecentInvestments />
                     </CardContent>
                   </motion.div>
