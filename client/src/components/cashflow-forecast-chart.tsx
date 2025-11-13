@@ -162,66 +162,147 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className={isMobile ? "-mx-6 px-6" : ""} style={{ width: "100%" }}>
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={chartConfig.margins}
-              barCategoryGap={chartConfig.barCategoryGap}
-              barSize={chartConfig.barSize}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                type="number"
-                domain={chartConfig.domain}
-                tickFormatter={formatXAxis}
-                tick={{ fontSize: chartConfig.tickFontSize }}
-                className="text-muted-foreground"
-              />
-              <YAxis
-                type="category"
-                dataKey="monthLabel"
-                width={chartConfig.yAxisWidth}
-                tick={{ 
-                  fontSize: chartConfig.tickFontSize, 
-                  dx: chartConfig.tickDx, 
-                  textAnchor: "start", 
-                  fill: isMobile ? "#ffffff" : "hsl(var(--foreground))",
-                  fontWeight: isMobile ? 500 : 400
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
-              <Legend
-                wrapperStyle={{ paddingTop: "8px" }}
-                iconType="square"
-                formatter={(value) => {
-                  if (value === "principal") return t("forecast.principal");
-                  if (value === "profit") return t("forecast.profit");
-                  return value;
-                }}
-              />
-              <Bar
-                dataKey="principal"
-                stackId="a"
-                fill="hsl(var(--chart-1))"
-                name="principal"
-                data-testid="bar-principal"
+        {isMobile ? (
+          <div className="flex -mx-6">
+            {/* Left column: HTML month labels */}
+            <div className="flex flex-col" style={{ width: '85px', paddingTop: '10px', paddingBottom: '10px' }}>
+              {chartData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-start px-2"
+                  style={{ 
+                    height: `${rowHeight}px`,
+                    fontSize: '11px',
+                    color: '#ffffff',
+                    fontWeight: 500,
+                    marginBottom: index < chartData.length - 1 ? '4px' : '0'
+                  }}
+                  data-testid={`label-month-${index}`}
+                >
+                  {item.monthLabel}
+                </div>
+              ))}
+            </div>
+            
+            {/* Right column: Chart without Y-axis labels */}
+            <div className="flex-1" style={{ minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <BarChart
+                  data={chartData}
+                  layout="vertical"
+                  margin={{ top: 10, right: 8, left: 0, bottom: 10 }}
+                  barCategoryGap={chartConfig.barCategoryGap}
+                  barSize={chartConfig.barSize}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    type="number"
+                    domain={chartConfig.domain}
+                    tickFormatter={formatXAxis}
+                    tick={{ fontSize: chartConfig.tickFontSize }}
+                    className="text-muted-foreground"
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="monthLabel"
+                    width={0}
+                    tick={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+                  <Legend
+                    wrapperStyle={{ paddingTop: "8px" }}
+                    iconType="square"
+                    formatter={(value) => {
+                      if (value === "principal") return t("forecast.principal");
+                      if (value === "profit") return t("forecast.profit");
+                      return value;
+                    }}
+                  />
+                  <Bar
+                    dataKey="principal"
+                    stackId="a"
+                    fill="hsl(var(--chart-1))"
+                    name="principal"
+                    data-testid="bar-principal"
+                  >
+                    <LabelList content={<CustomLabel />} />
+                  </Bar>
+                  <Bar
+                    dataKey="profit"
+                    stackId="a"
+                    fill="hsl(var(--chart-3))"
+                    name="profit"
+                    data-testid="bar-profit"
+                  >
+                    <LabelList content={<CustomLabel />} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : (
+          <div className="px-6 pb-6">
+            <ResponsiveContainer width="100%" height={chartHeight}>
+              <BarChart
+                data={chartData}
+                layout="vertical"
+                margin={chartConfig.margins}
+                barCategoryGap={chartConfig.barCategoryGap}
+                barSize={chartConfig.barSize}
               >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-              <Bar
-                dataKey="profit"
-                stackId="a"
-                fill="hsl(var(--chart-3))"
-                name="profit"
-                data-testid="bar-profit"
-              >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  type="number"
+                  domain={chartConfig.domain}
+                  tickFormatter={formatXAxis}
+                  tick={{ fontSize: chartConfig.tickFontSize }}
+                  className="text-muted-foreground"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="monthLabel"
+                  width={chartConfig.yAxisWidth}
+                  tick={{ 
+                    fontSize: chartConfig.tickFontSize, 
+                    dx: chartConfig.tickDx, 
+                    textAnchor: "start", 
+                    fill: "hsl(var(--foreground))",
+                    fontWeight: 400
+                  }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+                <Legend
+                  wrapperStyle={{ paddingTop: "8px" }}
+                  iconType="square"
+                  formatter={(value) => {
+                    if (value === "principal") return t("forecast.principal");
+                    if (value === "profit") return t("forecast.profit");
+                    return value;
+                  }}
+                />
+                <Bar
+                  dataKey="principal"
+                  stackId="a"
+                  fill="hsl(var(--chart-1))"
+                  name="principal"
+                  data-testid="bar-principal"
+                >
+                  <LabelList content={<CustomLabel />} />
+                </Bar>
+                <Bar
+                  dataKey="profit"
+                  stackId="a"
+                  fill="hsl(var(--chart-3))"
+                  name="profit"
+                  data-testid="bar-profit"
+                >
+                  <LabelList content={<CustomLabel />} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
