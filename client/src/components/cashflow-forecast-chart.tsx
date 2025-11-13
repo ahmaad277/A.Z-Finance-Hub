@@ -120,14 +120,14 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-4))" }} />
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-1))" }} />
                 {t("forecast.principal")}
               </span>
               <span className="font-semibold">{formatCurrency(principal, "SAR")}</span>
             </div>
             <div className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-2))" }} />
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-3))" }} />
                 {t("forecast.profit")}
               </span>
               <span className="font-semibold">{formatCurrency(profit, "SAR")}</span>
@@ -183,8 +183,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 type="category"
                 dataKey="monthLabel"
                 width={chartConfig.yAxisWidth}
-                tick={{ fontSize: chartConfig.tickFontSize, dx: chartConfig.tickDx }}
-                className="text-muted-foreground"
+                tick={{ fontSize: chartConfig.tickFontSize, dx: chartConfig.tickDx, textAnchor: "start", fill: "hsl(var(--foreground))" }}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
               <Legend
@@ -199,7 +198,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
               <Bar
                 dataKey="principal"
                 stackId="a"
-                fill="hsl(var(--chart-4))"
+                fill="hsl(var(--chart-1))"
                 name="principal"
                 data-testid="bar-principal"
               >
@@ -208,7 +207,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
               <Bar
                 dataKey="profit"
                 stackId="a"
-                fill="hsl(var(--chart-2))"
+                fill="hsl(var(--chart-3))"
                 name="profit"
                 data-testid="bar-profit"
               >
