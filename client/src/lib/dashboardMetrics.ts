@@ -160,38 +160,61 @@ export function calculateDashboardMetrics(
   cashTransactions: CashTransaction[],
   platforms: Platform[],
   cashflows: Cashflow[],
-  dateRange?: { start: Date; end: Date }
+  dateRange?: { start: Date; end: Date },
+  selectedPlatform?: string
 ): DashboardMetrics {
-  // Filter investments by date range if provided
+  // 1. Filter by platform if specified (before date filtering)
   let filteredInvestments = investments;
+  let filteredCashTransactions = cashTransactions;
+  
+  if (selectedPlatform && selectedPlatform !== 'all') {
+    filteredInvestments = investments.filter(inv => inv.platformId === selectedPlatform);
+    // Filter cash transactions by platformId (null platformId = unassigned, shown only in "all" view)
+    filteredCashTransactions = cashTransactions.filter(
+      tx => tx.platformId === selectedPlatform
+    );
+  }
+  
+  // 2. Filter investments by date range if provided
   if (dateRange) {
-    filteredInvestments = investments.filter(inv => {
+    filteredInvestments = filteredInvestments.filter(inv => {
       const startDate = new Date(inv.startDate);
       return startDate >= dateRange.start && startDate <= dateRange.end;
     });
   }
   
-  // 1. Calculate total cash from transactions
-  const totalCash = calculateTotalCash(cashTransactions);
+  // 3. Filter cashflows based on filtered investments
+  const filteredInvestmentIds = new Set(filteredInvestments.map(inv => inv.id));
+  const filteredCashflows = cashflows.filter(cf => filteredInvestmentIds.has(cf.investmentId));
   
-  // 2. Calculate cash by platform (simplified - equal distribution for now)
+  // 3. Calculate total cash from filtered transactions
+  const totalCash = calculateTotalCash(filteredCashTransactions);
+  
+  // 4. Calculate cash by platform
   const cashByPlatform: Record<string, number> = {};
-  platforms.forEach(p => {
-    cashByPlatform[p.id] = totalCash / Math.max(platforms.length, 1);
-  });
+  if (selectedPlatform && selectedPlatform !== 'all') {
+    // When platform filter is active, assign all filtered cash to that platform
+    cashByPlatform[selectedPlatform] = totalCash;
+  } else {
+    // When viewing all platforms, distribute cash by actual transaction platformId
+    for (const tx of filteredCashTransactions) {
+      if (tx.platformId) {
+        const amount = parseFloat(tx.amount);
+        const effect = ['deposit', 'distribution'].includes(tx.type) ? amount : -amount;
+        cashByPlatform[tx.platformId] = (cashByPlatform[tx.platformId] || 0) + effect;
+      }
+    }
+  }
   
-  // 3. Calculate portfolio value (active investments amount + cash)
+  // 5. Calculate portfolio value (active investments amount + cash)
   const activeInvestments = filteredInvestments.filter(inv => inv.status === 'active');
   const totalInvestmentValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const portfolioValue = totalInvestmentValue + totalCash;
   
-  // 4. Calculate returns
-  const actualReturns = filteredInvestments.reduce((sum, inv) => {
-    const receivedCashflows = cashflows.filter(
-      cf => cf.investmentId === inv.id && cf.status === 'received' && cf.type === 'profit'
-    );
-    return sum + receivedCashflows.reduce((s, cf) => s + parseFloat(cf.amount), 0);
-  }, 0);
+  // 6. Calculate returns (using filtered cashflows)
+  const actualReturns = filteredCashflows.filter(
+    cf => cf.status === 'received' && cf.type === 'profit'
+  ).reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
   
   // Calculate expected returns from totalExpectedProfit in schema
   const expectedReturns = filteredInvestments.reduce((sum, inv) => {
@@ -246,18 +269,18 @@ export function calculateDashboardMetrics(
     ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0) / filteredInvestments.length 
     : 0;
   
-  // Calculate average payment amount from cashflows
-  const totalPayments = cashflows.filter(cf => cf.type === 'profit').length;
+  // Calculate average payment amount from filtered cashflows
+  const totalPayments = filteredCashflows.filter(cf => cf.type === 'profit').length;
   const avgPaymentAmount = totalPayments > 0
-    ? cashflows
+    ? filteredCashflows
         .filter(cf => cf.type === 'profit')
         .reduce((sum, cf) => sum + parseFloat(cf.amount), 0) / totalPayments
     : 0;
   
-  // 8. Calculate status counts
+  // 8. Calculate status counts (using filtered cashflows)
   const completedInvestments = filteredInvestments.filter(inv => inv.status === 'completed').length;
-  const lateInvestments = filteredInvestments.filter(inv => isInvestmentLate(inv, cashflows)).length;
-  const defaultedInvestments = filteredInvestments.filter(inv => isInvestmentDefaulted(inv, cashflows)).length;
+  const lateInvestments = filteredInvestments.filter(inv => isInvestmentLate(inv, filteredCashflows)).length;
+  const defaultedInvestments = filteredInvestments.filter(inv => isInvestmentDefaulted(inv, filteredCashflows)).length;
   
   const statusDistribution = {
     active: activeInvestments.length,

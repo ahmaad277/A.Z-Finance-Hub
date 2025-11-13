@@ -118,8 +118,15 @@ export default function Dashboard() {
     if (!investments || !cashflows || !platforms || !cashTransactions) {
       return null;
     }
-    return calculateDashboardMetrics(investments, cashTransactions, platforms, cashflows);
-  }, [investments, cashflows, platforms, cashTransactions]);
+    return calculateDashboardMetrics(
+      investments, 
+      cashTransactions, 
+      platforms, 
+      cashflows, 
+      dateRange, 
+      selectedPlatform
+    );
+  }, [investments, cashflows, platforms, cashTransactions, dateRange, selectedPlatform]);
 
   // Calculate filtered stats based on selected platform
   const filteredStats = useMemo(() => {

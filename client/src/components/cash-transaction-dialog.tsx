@@ -129,14 +129,17 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("cash.platform")} ({t("common.optional")})</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === "none" ? undefined : value)} 
+                    value={field.value || "none"}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-cash-platform">
                         <SelectValue placeholder={t("cash.selectPlatform")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">{t("cash.noPlatform")}</SelectItem>
+                      <SelectItem value="none">{t("cash.noPlatform")}</SelectItem>
                       {platforms?.map((platform) => (
                         <SelectItem key={platform.id} value={platform.id}>
                           {platform.name}
