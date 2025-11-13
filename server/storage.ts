@@ -267,8 +267,54 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createInvestment(insertInvestment: InsertInvestment, customDistributionPayload?: ApiCustomDistribution[]): Promise<InvestmentWithPlatform> {
+    // Use fundedFromCash as provided (default 0 to maintain existing behavior)
+    const fundedFromCash = insertInvestment.fundedFromCash || 0;
+    
     // Wrap all operations in a transaction for atomicity
     const investmentId = await db.transaction(async (tx) => {
+      // If funded from cash, validate platform has sufficient balance
+      if (fundedFromCash === 1 && insertInvestment.platformId) {
+        // Step 1: Lock platform investments to prevent race conditions
+        const platformInvestments = await tx
+          .select({ id: investments.id })
+          .from(investments)
+          .where(eq(investments.platformId, insertInvestment.platformId))
+          .for('update');
+        
+        const platformInvestmentIds = platformInvestments.map(inv => inv.id);
+        
+        // Step 2: Lock and fetch relevant cash transactions
+        const platformTransactions = await tx
+          .select()
+          .from(cashTransactions)
+          .where(
+            or(
+              eq(cashTransactions.platformId, insertInvestment.platformId),
+              platformInvestmentIds.length > 0 
+                ? and(
+                    inArray(cashTransactions.investmentId, platformInvestmentIds),
+                    sql`${cashTransactions.platformId} IS NULL`
+                  )
+                : sql`false`
+            )
+          )
+          .for('update'); // Lock rows without aggregation
+        
+        // Step 3: Calculate balance in-memory from locked rows
+        let platformBalance = 0;
+        for (const txn of platformTransactions) {
+          const amount = parseFloat(txn.amount);
+          const effect = ['deposit', 'distribution'].includes(txn.type) ? amount : -amount;
+          platformBalance += effect;
+        }
+        
+        const requiredAmount = parseFloat(insertInvestment.faceValue as any);
+        
+        if (platformBalance < requiredAmount) {
+          throw new Error(`Insufficient cash balance for platform. Required: ${requiredAmount.toFixed(2)} SAR, Available: ${platformBalance.toFixed(2)} SAR`);
+        }
+      }
+      
       // Create the investment (convert numbers to strings for database)
       const [investment] = await tx
         .insert(investments)
@@ -286,18 +332,14 @@ export class DatabaseStorage implements IStorage {
           status: insertInvestment.status || 'active',
           riskScore: insertInvestment.riskScore || 50,
           isReinvestment: insertInvestment.isReinvestment || 0,
-          fundedFromCash: insertInvestment.fundedFromCash || 0,
+          fundedFromCash,
           actualIrr: null,
           actualEndDate: null,
         })
         .returning();
       
       // If funded from cash, deduct from cash balance using face value (principal invested)
-      if (insertInvestment.fundedFromCash === 1) {
-        // Calculate new balance
-        const currentBalanceObj = await this.getCashBalance();
-        const newBalance = currentBalanceObj.total - parseFloat(insertInvestment.faceValue as any);
-        
+      if (fundedFromCash === 1) {
         await tx.insert(cashTransactions).values({
           amount: String(insertInvestment.faceValue),
           type: 'investment',
@@ -305,8 +347,8 @@ export class DatabaseStorage implements IStorage {
           notes: `Investment: ${insertInvestment.name}`,
           date: insertInvestment.startDate,
           investmentId: investment.id,
-          platformId: insertInvestment.platformId, // Auto-assign platform from investment
-          balanceAfter: String(newBalance.toFixed(2)),
+          platformId: insertInvestment.platformId,
+          balanceAfter: '0', // Deprecated field
         });
       }
       
@@ -589,99 +631,131 @@ export class DatabaseStorage implements IStorage {
     receivedDate: Date,
     options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number } }
   ): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null> {
-    // Get investment and validate it exists and is not already completed
-    const investment = await this.getInvestment(investmentId);
-    if (!investment || investment.status === 'completed' || investment.status === 'pending') {
-      return null;
-    }
+    // Wrap entire operation in transaction for atomicity
+    return await db.transaction(async (tx) => {
+      // Get and lock investment to prevent concurrent completion
+      const [investment] = await tx
+        .select()
+        .from(investments)
+        .where(eq(investments.id, investmentId))
+        .for('update');
+      
+      if (!investment || investment.status === 'completed' || investment.status === 'pending') {
+        return null;
+      }
 
-    // Get all pending cashflows for this investment
-    const pendingCashflows = await db
-      .select()
-      .from(cashflows)
-      .where(
-        and(
-          eq(cashflows.investmentId, investmentId),
-          or(
-            eq(cashflows.status, 'expected'),
-            eq(cashflows.status, 'upcoming')
+      // Get and lock all pending cashflows for this investment
+      const pendingCashflows = await tx
+        .select()
+        .from(cashflows)
+        .where(
+          and(
+            eq(cashflows.investmentId, investmentId),
+            or(
+              eq(cashflows.status, 'expected'),
+              eq(cashflows.status, 'upcoming')
+            )
           )
         )
-      );
+        .for('update'); // Lock to prevent concurrent updates
 
-    if (pendingCashflows.length === 0) {
-      return null;
-    }
-
-    // Calculate total amount
-    const totalAmount = pendingCashflows.reduce((sum, cf) => {
-      const amount = typeof cf.amount === 'string' ? parseFloat(cf.amount) : cf.amount;
-      return sum + amount;
-    }, 0);
-
-    // Update all pending cashflows to received
-    for (const cashflow of pendingCashflows) {
-      await db
-        .update(cashflows)
-        .set({
-          status: 'received',
-          receivedDate: receivedDate,
-        })
-        .where(eq(cashflows.id, cashflow.id));
-
-      // Create cash transaction for this cashflow
-      const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
-      const transactionNotes = `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}`;
-
-      await this.createCashTransaction({
-        amount: cashflow.amount,
-        type: 'distribution',
-        source: transactionSource,
-        notes: transactionNotes,
-        date: receivedDate,
-        investmentId: investmentId,
-        cashflowId: cashflow.id,
-        platformId: investment.platformId, // Auto-assign platform from investment
-      });
-    }
-
-    // Handle late status management
-    if (investment.status === 'late' || investment.status === 'defaulted') {
-      if (options?.clearLateStatus) {
-        // Clear late/defaulted dates and let status checker recalculate
-        await this.updateInvestmentStatus(investmentId, 'completed', null, null);
-      } else if (options?.updateLateInfo?.lateDays) {
-        // Update late date based on custom late days
-        const now = new Date();
-        const customLateDate = new Date(now.getTime() - (options.updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
-        await this.updateInvestmentStatus(
-          investmentId,
-          'completed',
-          customLateDate,
-          investment.defaultedDate ? new Date(investment.defaultedDate) : null
-        );
-      } else {
-        // Keep existing late status but mark as completed
-        await this.updateInvestmentStatus(
-          investmentId,
-          'completed',
-          investment.lateDate ? new Date(investment.lateDate) : null,
-          investment.defaultedDate ? new Date(investment.defaultedDate) : null
-        );
+      if (pendingCashflows.length === 0) {
+        return null;
       }
-    } else {
-      // Mark investment as completed
-      await this.updateInvestmentStatus(investmentId, 'completed', null, null);
-    }
 
-    // Fetch updated investment
-    const updatedInvestment = await this.getInvestment(investmentId);
-    
-    return {
-      investment: updatedInvestment!,
-      updatedCount: pendingCashflows.length,
-      totalAmount,
-    };
+      // Calculate total amount
+      const totalAmount = pendingCashflows.reduce((sum, cf) => {
+        const amount = typeof cf.amount === 'string' ? parseFloat(cf.amount) : cf.amount;
+        return sum + amount;
+      }, 0);
+
+      // Update all pending cashflows to received and create cash transactions
+      for (const cashflow of pendingCashflows) {
+        // Update cashflow status
+        await tx
+          .update(cashflows)
+          .set({
+            status: 'received',
+            receivedDate: receivedDate,
+          })
+          .where(eq(cashflows.id, cashflow.id));
+
+        // Check for existing cash transaction to prevent duplicates
+        const [existingTransaction] = await tx
+          .select()
+          .from(cashTransactions)
+          .where(eq(cashTransactions.cashflowId, cashflow.id));
+        
+        if (!existingTransaction) {
+          // Create cash transaction
+          const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
+          const transactionNotes = `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}`;
+
+          await tx.insert(cashTransactions).values({
+            amount: String(Math.abs(parseFloat(cashflow.amount))),
+            type: 'distribution',
+            source: transactionSource,
+            notes: transactionNotes,
+            date: receivedDate,
+            investmentId: investmentId,
+            cashflowId: cashflow.id,
+            platformId: investment.platformId,
+            balanceAfter: '0', // Deprecated field
+          });
+        }
+      }
+
+      // Handle late status management
+      if (investment.status === 'late' || investment.status === 'defaulted') {
+        if (options?.clearLateStatus) {
+          // Clear late/defaulted dates
+          await tx
+            .update(investments)
+            .set({
+              status: 'completed',
+              lateDate: null,
+              defaultedDate: null,
+            })
+            .where(eq(investments.id, investmentId));
+        } else if (options?.updateLateInfo?.lateDays) {
+          // Update late date based on custom late days
+          const now = new Date();
+          const customLateDate = new Date(now.getTime() - (options.updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
+          await tx
+            .update(investments)
+            .set({
+              status: 'completed',
+              lateDate: customLateDate,
+              defaultedDate: investment.defaultedDate ? new Date(investment.defaultedDate) : null,
+            })
+            .where(eq(investments.id, investmentId));
+        } else {
+          // Keep existing late status
+          await tx
+            .update(investments)
+            .set({ status: 'completed' })
+            .where(eq(investments.id, investmentId));
+        }
+      } else {
+        // Mark investment as completed
+        await tx
+          .update(investments)
+          .set({ status: 'completed' })
+          .where(eq(investments.id, investmentId));
+      }
+
+      // Fetch updated investment inside transaction
+      const [updatedInvestment] = await tx
+        .select()
+        .from(investments)
+        .where(eq(investments.id, investmentId));
+      
+      return {
+        investment: updatedInvestment,
+        updatedCount: pendingCashflows.length,
+        totalAmount,
+      };
+    });
   }
 
   // Cashflows
@@ -710,64 +784,71 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCashflow(id: string, update: Partial<InsertCashflow>): Promise<Cashflow | undefined> {
-    // Get the original cashflow before update
-    const [originalCashflow] = await db
-      .select()
-      .from(cashflows)
-      .where(eq(cashflows.id, id));
-    
-    if (!originalCashflow) {
-      return undefined;
-    }
-    
-    // Update the cashflow
-    const [cashflow] = await db
-      .update(cashflows)
-      .set(update)
-      .where(eq(cashflows.id, id))
-      .returning();
-    
-    // If status changed to "received", create a cash transaction automatically
-    if (update.status === 'received' && originalCashflow.status !== 'received') {
-      // Check if a transaction already exists for this cashflow to prevent duplicates
-      const [existingTransaction] = await db
+    // Wrap in transaction for atomicity
+    return await db.transaction(async (tx) => {
+      // Get and lock the original cashflow before update
+      const [originalCashflow] = await tx
         .select()
-        .from(cashTransactions)
-        .where(eq(cashTransactions.cashflowId, id));
+        .from(cashflows)
+        .where(eq(cashflows.id, id))
+        .for('update'); // Lock to prevent concurrent updates
       
-      if (!existingTransaction) {
-        // Convert receivedDate to Date object if it's a string
-        const receivedDateRaw = (update as any).receivedDate;
-        const receivedDate = receivedDateRaw 
-          ? (typeof receivedDateRaw === 'string' ? new Date(receivedDateRaw) : receivedDateRaw)
-          : new Date();
-        
-        // Get investment details for better notes
-        const [investment] = await db
-          .select()
-          .from(investments)
-          .where(eq(investments.id, cashflow.investmentId));
-        
-        // Determine transaction source based on cashflow type
-        const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
-        const transactionNotes = investment 
-          ? `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}` 
-          : `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} received`;
-        
-        await this.createCashTransaction({
-          amount: cashflow.amount,
-          type: 'distribution',
-          source: transactionSource,
-          notes: transactionNotes,
-          date: receivedDate,
-          investmentId: cashflow.investmentId,
-          cashflowId: id,
-          platformId: investment?.platformId, // Auto-assign platform from investment
-        });
+      if (!originalCashflow) {
+        return undefined;
       }
-    }
-    
-    return cashflow || undefined;
+      
+      // Update the cashflow
+      const [cashflow] = await tx
+        .update(cashflows)
+        .set(update)
+        .where(eq(cashflows.id, id))
+        .returning();
+      
+      // If status changed to "received", create a cash transaction automatically
+      if (update.status === 'received' && originalCashflow.status !== 'received') {
+        // Check if a transaction already exists for this cashflow to prevent duplicates
+        const [existingTransaction] = await tx
+          .select()
+          .from(cashTransactions)
+          .where(eq(cashTransactions.cashflowId, id))
+          .for('update'); // Lock check to prevent race conditions
+        
+        if (!existingTransaction) {
+          // Convert receivedDate to Date object if it's a string
+          const receivedDateRaw = (update as any).receivedDate;
+          const receivedDate = receivedDateRaw 
+            ? (typeof receivedDateRaw === 'string' ? new Date(receivedDateRaw) : receivedDateRaw)
+            : new Date();
+          
+          // Get investment details for better notes
+          const [investment] = await tx
+            .select()
+            .from(investments)
+            .where(eq(investments.id, cashflow.investmentId));
+          
+          // Determine transaction source based on cashflow type
+          const transactionSource = cashflow.type === 'profit' ? 'profit' : 'investment_return';
+          const transactionNotes = investment 
+            ? `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} from: ${investment.name}` 
+            : `${cashflow.type === 'profit' ? 'Distribution' : 'Principal return'} received`;
+          
+          // Create cash transaction inside same transaction
+          await tx.insert(cashTransactions).values({
+            amount: String(Math.abs(parseFloat(cashflow.amount))),
+            type: 'distribution',
+            source: transactionSource,
+            notes: transactionNotes,
+            date: receivedDate,
+            investmentId: cashflow.investmentId,
+            cashflowId: id,
+            platformId: investment?.platformId,
+            balanceAfter: '0', // Deprecated field
+          });
+        }
+      }
+      
+      return cashflow || undefined;
+    });
   }
 
   async deleteCashflow(id: string): Promise<boolean> {
