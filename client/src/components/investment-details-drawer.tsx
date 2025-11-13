@@ -89,7 +89,7 @@ export function InvestmentDetailsDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh]" data-testid="drawer-investment-details">
-        <DrawerHeader className="border-b" dir={isRtl ? "rtl" : "ltr"}>
+        <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <DrawerTitle className="text-2xl truncate" data-testid="text-investment-name">
@@ -112,7 +112,7 @@ export function InvestmentDetailsDrawer({
           </div>
         </DrawerHeader>
 
-        <div className="overflow-y-auto flex-1 p-4" dir={isRtl ? "rtl" : "ltr"}>
+        <div className="overflow-y-auto flex-1 p-4">
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {/* Face Value */}
@@ -262,7 +262,7 @@ export function InvestmentDetailsDrawer({
           )}
         </div>
 
-        <DrawerFooter className="border-t" dir={isRtl ? "rtl" : "ltr"}>
+        <DrawerFooter className="border-t">
           <div className="flex gap-2 flex-wrap">
             {onEdit && (
               <Button

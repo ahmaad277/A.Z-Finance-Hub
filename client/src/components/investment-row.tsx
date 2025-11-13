@@ -65,7 +65,6 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         ${statusConfig.rowBackground} ${platformBorderClasses}
       `}
       data-testid={`row-investment-${investment.id}`}
-      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Compact Mobile View */}
       <div 

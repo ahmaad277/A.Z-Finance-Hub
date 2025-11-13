@@ -154,7 +154,7 @@ export function LateStatusDialog(props: LateStatusDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" dir={isRtl ? "rtl" : "ltr"}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {props.mode === "bulk" ? (

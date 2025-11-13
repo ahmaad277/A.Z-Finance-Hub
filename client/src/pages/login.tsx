@@ -81,7 +81,6 @@ export default function Login() {
                 <Select
                   value={selectedEmail}
                   onValueChange={setSelectedEmail}
-                  dir={isRTL ? "rtl" : "ltr"}
                 >
                   <SelectTrigger id="user-select" data-testid="select-user">
                     <SelectValue 
@@ -137,7 +136,6 @@ export default function Login() {
               <Label 
                 htmlFor="remember" 
                 className="text-sm cursor-pointer"
-                dir={isRTL ? "rtl" : "ltr"}
               >
                 {language === "ar" ? "تذكرني (30 يوم)" : "Remember me (30 days)"}
               </Label>

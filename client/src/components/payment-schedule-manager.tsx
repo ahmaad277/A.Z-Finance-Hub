@@ -83,7 +83,7 @@ export function PaymentScheduleManager({
   const [selectedPaymentIndex, setSelectedPaymentIndex] = useState<number | null>(null);
   
   return (
-    <div className="space-y-3" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="space-y-3">
       {/* Top Row: Expected Profit on right, Payment Value on left */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         {/* Expected Profit (Right) */}

@@ -74,7 +74,7 @@ export function AddPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" dir={isRtl ? "rtl" : "ltr"}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {language === "ar" ? "إضافة دفعة جديدة" : "Add New Payment"}

@@ -434,7 +434,7 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6" data-testid="page-investments" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="space-y-4 sm:space-y-6" data-testid="page-investments">
       {/* Page Header with Actions */}
       <PageHeader title={t("investments.title")} gradient>
         <Button

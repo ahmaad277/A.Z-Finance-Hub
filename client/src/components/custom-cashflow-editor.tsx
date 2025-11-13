@@ -67,7 +67,7 @@ export function CustomCashflowEditor({
   );
 
   return (
-    <div className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">
           {language === 'ar' ? 'جدول التوزيعات المخصص' : 'Custom Distribution Schedule'}
