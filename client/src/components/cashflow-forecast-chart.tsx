@@ -55,12 +55,12 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     
     if (isMobile) {
       return {
-        yAxisWidth: 88,
+        yAxisWidth: 92,
         margins: { top: 10, right: 8, left: 0, bottom: 10 },
-        tickFontSize: 12,
+        tickFontSize: 11,
         barSize: 12,
         barCategoryGap: 4,
-        tickDx: -15,
+        tickDx: -14,
         domain,
       };
     }
@@ -152,7 +152,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
 
   return (
     <Card data-testid="card-cashflow-forecast">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className={`flex flex-row items-center justify-between space-y-0 pb-4 ${isMobile ? 'px-4' : ''}`}>
         <CardTitle className="text-lg flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-chart-2" />
           {t("forecast.title")}
