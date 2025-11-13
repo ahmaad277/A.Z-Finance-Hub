@@ -55,7 +55,8 @@ export function PortfolioChart() {
       </div>
       {/* Mobile version - edge to edge with scroll */}
       <div className="w-full overflow-x-auto sm:hidden -mx-6 px-6">
-        <ResponsiveContainer width="100%" height={200} minWidth={600}>
+        <div style={{ minWidth: "600px", width: "100%" }}>
+          <ResponsiveContainer width="100%" height={200}>
           <LineChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
@@ -86,6 +87,7 @@ export function PortfolioChart() {
             />
           </LineChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </>
   );

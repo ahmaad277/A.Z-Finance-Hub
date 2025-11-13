@@ -86,8 +86,8 @@ export function PaymentScheduleManager({
     <div className="space-y-3">
       {/* Top Row: Expected Profit on right, Payment Value on left */}
       <div className="grid grid-cols-2 gap-2 text-xs">
-        {/* Expected Profit (Right) */}
-        <div className={isRtl ? "order-1" : "order-2"}>
+        {/* Expected Profit (Right in RTL) */}
+        <div>
           <div className="text-muted-foreground">
             {t("dialog.expectedProfit")}
           </div>
@@ -99,8 +99,8 @@ export function PaymentScheduleManager({
           </div>
         </div>
         
-        {/* Payment Value (Left) */}
-        <div className={isRtl ? "order-2" : "order-1"}>
+        {/* Payment Value (Left in RTL) */}
+        <div>
           <div className="text-muted-foreground">
             {t("dialog.paymentValue")}
           </div>

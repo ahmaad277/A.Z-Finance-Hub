@@ -8,6 +8,7 @@ A.Z Finance Hub is a personal investment management platform designed for tracki
 - Default language: English (supports Arabic)
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
+- Layout Direction: **Permanent RTL** - Application uses right-to-left layout for both English and Arabic, optimized for right-hand mobile usage
 - Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
 
 ## System Architecture
