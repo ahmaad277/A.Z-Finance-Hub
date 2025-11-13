@@ -196,7 +196,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         {isMobile ? (
           <div className="flex -mx-6">
             {/* Left column: HTML month labels */}
-            <div className="flex flex-col" style={{ width: '90px', height: `${chartHeight}px`, paddingTop: '10px', paddingBottom: '10px', paddingInlineStart: '2px' }}>
+            <div className="flex flex-col" style={{ width: '90px', height: `${chartHeight}px`, paddingTop: '10px', paddingBottom: '10px', paddingInlineStart: '20px' }}>
               {chartData.map((item, index) => (
                 <div
                   key={index}
