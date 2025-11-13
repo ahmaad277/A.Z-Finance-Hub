@@ -119,6 +119,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
+                domain={[0, 50000]}
                 tickFormatter={formatXAxis}
                 tick={{ fontSize: 11 }}
                 className="text-muted-foreground"
@@ -162,8 +163,8 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
           </ResponsiveContainer>
         </div>
         {/* Mobile version - edge to edge with scroll */}
-        <div className="w-full overflow-x-auto overflow-y-auto sm:hidden -mx-6 px-6" style={{ maxHeight: "600px" }}>
-          <ResponsiveContainer width="100%" height={chartHeight} minWidth={700}>
+        <div className="w-full overflow-y-auto sm:hidden -mx-6 px-6" style={{ maxHeight: "600px" }}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart
               data={chartData}
               layout="vertical"
@@ -174,6 +175,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
+                domain={[0, 50000]}
                 tickFormatter={formatXAxis}
                 tick={{ fontSize: 10 }}
                 className="text-muted-foreground"
