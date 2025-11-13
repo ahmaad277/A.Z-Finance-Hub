@@ -75,7 +75,7 @@ export default function Analytics() {
             <CardHeader>
               <CardTitle>{t("analytics.monthlyReturnsTrend")}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <MonthlyReturnsChart data={analytics?.monthlyReturns || []} />
             </CardContent>
           </Card>
@@ -86,7 +86,7 @@ export default function Analytics() {
             <CardHeader>
               <CardTitle>{t("analytics.portfolioAllocation")}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <PlatformAllocationChart data={analytics?.platformAllocation || []} />
             </CardContent>
           </Card>
@@ -97,7 +97,7 @@ export default function Analytics() {
             <CardHeader>
               <CardTitle>{t("analytics.performanceVsTarget")}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <PerformanceVsTargetChart data={analytics?.performanceVsTarget || []} />
             </CardContent>
           </Card>

@@ -560,7 +560,7 @@ export default function Dashboard() {
                       {...collapseVariant}
                       style={{ overflow: "hidden" }}
                     >
-                      <CardContent className="p-6">
+                      <CardContent className="p-0">
                         <PortfolioChart />
                       </CardContent>
                     </motion.div>
