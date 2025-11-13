@@ -188,7 +188,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.refetchQueries({ queryKey: ["/api/investments"], type: 'all' });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+
       toast({
         title: t("dialog.save"),
         description: t("dialog.add"),
@@ -213,7 +213,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.refetchQueries({ queryKey: ["/api/investments"], type: 'all' });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+
       toast({
         title: t("dialog.save"),
         description: t("dialog.update"),

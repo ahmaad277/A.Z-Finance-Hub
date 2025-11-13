@@ -580,16 +580,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Analytics
-  app.get("/api/analytics", async (_req, res) => {
-    try {
-      const analytics = await storage.getAnalyticsData();
-      res.json(analytics);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch analytics data" });
-    }
-  });
-
   // Settings
   app.get("/api/settings", async (req, res) => {
     try {

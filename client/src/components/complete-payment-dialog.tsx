@@ -75,7 +75,6 @@ export function CompletePaymentDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       toast({
         title: t("dialog.success") || "Success",
         description: t("dialog.investmentCompleted") || "Investment marked as completed",
