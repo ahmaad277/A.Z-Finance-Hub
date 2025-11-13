@@ -212,7 +212,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 10, right: 8, left: 0, bottom: 10 }}
+                  margin={{ top: 10, right: 8, left: 40, bottom: 10 }}
                   barCategoryGap={chartConfig.barCategoryGap}
                   barSize={chartConfig.barSize}
                 >
@@ -220,6 +220,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                   <XAxis
                     type="number"
                     domain={chartConfig.domain}
+                    reversed={true}
                     tickFormatter={formatXAxis}
                     tick={{ fontSize: chartConfig.tickFontSize }}
                     className="text-muted-foreground"
