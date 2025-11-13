@@ -30,9 +30,33 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
   // Take only the requested number of months
   const chartData = data.slice(0, months);
 
+  // Guard against empty datasets
+  if (chartData.length === 0) {
+    return (
+      <Card data-testid="card-cashflow-forecast">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-chart-2" />
+            {t("forecast.title")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-8">
+            {t("forecast.noData") || "No forecast data available"}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Calculate dynamic height based on number of rows (32px per row)
-  const rowHeight = 32;
-  const chartHeight = Math.max(chartData.length * rowHeight, 400);
+  const baseRowHeight = 32;
+  const minChartHeight = 400;
+  const chartHeight = Math.max(chartData.length * baseRowHeight, minChartHeight);
+  
+  // Mobile label alignment: account for padding/margins (10px top + 10px bottom)
+  const mobilePadding = 20;
+  const effectiveRowHeight = (chartHeight - mobilePadding) / chartData.length;
   
   // Responsive chart configuration
   const chartConfig = useMemo(() => {
@@ -165,17 +189,15 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         {isMobile ? (
           <div className="flex -mx-6">
             {/* Left column: HTML month labels */}
-            <div className="flex flex-col" style={{ width: '90px', paddingTop: '10px', paddingBottom: '10px', paddingLeft: '8px' }}>
+            <div className="flex flex-col" style={{ width: '90px', height: `${chartHeight}px`, paddingTop: '10px', paddingBottom: '10px', paddingInlineStart: '8px' }}>
               {chartData.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-start"
+                  className="flex items-center text-foreground font-medium"
                   style={{ 
-                    height: `${rowHeight}px`,
+                    height: `${effectiveRowHeight}px`,
                     fontSize: '11px',
-                    color: '#ffffff',
-                    fontWeight: 500,
-                    marginBottom: index < chartData.length - 1 ? '4px' : '0'
+                    lineHeight: '1'
                   }}
                   data-testid={`label-month-${index}`}
                 >
@@ -185,7 +207,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
             </div>
             
             {/* Right column: Chart without Y-axis labels */}
-            <div className="flex-1" style={{ minWidth: 0 }}>
+            <div className="flex-1" style={{ minWidth: 0, height: `${chartHeight}px` }}>
               <ResponsiveContainer width="100%" height={chartHeight}>
                 <BarChart
                   data={chartData}
