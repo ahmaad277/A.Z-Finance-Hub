@@ -162,7 +162,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div style={{ width: "100%" }}>
+        <div className={isMobile ? "-mx-6 px-6" : ""} style={{ width: "100%" }}>
           <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart
               data={chartData}
