@@ -101,7 +101,7 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
     <div 
       role="button"
       tabIndex={0}
-      className="rounded-lg border bg-card hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden"
+      className="rounded-lg border bg-card hover-elevate active-elevate-2 transition-all cursor-pointer"
       onClick={handleChartClick}
       onKeyDown={handleKeyDown}
       aria-label={`${t("dashboard.platformDistribution")} - ${t("dashboard.clickToToggle")}`}
@@ -142,11 +142,12 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
                   ))}
                 </Pie>
                 <Tooltip
+                  cursor={{ fill: 'transparent' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const item = payload[0].payload;
                       return (
-                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="rounded-lg border bg-background p-2 shadow-md" style={{ zIndex: 1000 }}>
                           <div className="grid gap-1">
                             <div className="flex flex-col">
                               <span className="text-[0.70rem] uppercase text-muted-foreground">
