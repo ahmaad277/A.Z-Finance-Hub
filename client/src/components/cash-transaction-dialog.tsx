@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,6 +100,9 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
           <DialogTitle>
             {isDeposit ? t("cash.addCashTransaction") : t("cash.withdrawCashTransaction")}
           </DialogTitle>
+          <DialogDescription>
+            {isDeposit ? t("cash.depositDescription") : t("cash.withdrawalDescription")}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
