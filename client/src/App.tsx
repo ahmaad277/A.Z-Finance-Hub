@@ -15,10 +15,8 @@ import { PlatformFilterButton } from "@/components/platform-filter-button";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import CashflowsUnified from "@/pages/cashflows-unified";
-import Analytics from "@/pages/analytics";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
-import Reinvestment from "@/pages/reinvestment";
 import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
@@ -36,10 +34,8 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/investments" component={Investments} />
       <Route path="/cashflows" component={CashflowsUnified} />
-      <Route path="/analytics" component={Analytics} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />
-      <Route path="/reinvestment" component={Reinvestment} />
       <Route path="/help" component={Help} />
       <Route path="/settings" component={Settings} />
       <Route path="/platform/:id" component={PlatformDetails} />

@@ -32,19 +32,9 @@ const menuItems = [
     icon: TrendingUp,
   },
   {
-    key: "analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
     key: "reports",
     url: "/reports",
     icon: FileText,
-  },
-  {
-    key: "reinvestment",
-    url: "/reinvestment",
-    icon: RefreshCw,
   },
   {
     key: "alerts",
