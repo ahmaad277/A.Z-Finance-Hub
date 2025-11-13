@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, ReferenceLine } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { MonthlyForecast } from "@shared/cashflow-forecast";
@@ -100,6 +100,13 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     };
   }, [isMobile, chartData]);
 
+  // Calculate average value for reference line
+  const averageValue = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    const total = chartData.reduce((sum, d) => sum + (d.principal || 0) + (d.profit || 0), 0);
+    return total / chartData.length;
+  }, [chartData]);
+
   // Format large numbers compactly (K, M)
   const formatCompact = (value: number): string => {
     if (value === 0) return "0";
@@ -189,7 +196,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         {isMobile ? (
           <div className="flex -mx-6">
             {/* Left column: HTML month labels */}
-            <div className="flex flex-col" style={{ width: '90px', height: `${chartHeight}px`, paddingTop: '10px', paddingBottom: '10px', paddingInlineStart: '8px' }}>
+            <div className="flex flex-col" style={{ width: '90px', height: `${chartHeight}px`, paddingTop: '10px', paddingBottom: '10px', paddingInlineStart: '2px' }}>
               {chartData.map((item, index) => (
                 <div
                   key={index}
@@ -217,6 +224,13 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                   barSize={chartConfig.barSize}
                 >
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <ReferenceLine 
+                    x={averageValue} 
+                    stroke="hsl(var(--muted-foreground))" 
+                    strokeDasharray="5 5" 
+                    strokeWidth={1}
+                    label={{ value: `${t("forecast.average") || "Avg"}: ${formatXAxis(averageValue)}`, position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                  />
                   <XAxis
                     type="number"
                     domain={chartConfig.domain}
@@ -235,11 +249,22 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
                   <Legend
                     wrapperStyle={{ paddingTop: "8px" }}
-                    iconType="square"
                     formatter={(value) => {
                       if (value === "principal") return t("forecast.principal");
                       if (value === "profit") return t("forecast.profit");
                       return value;
+                    }}
+                    content={(props) => {
+                      const { payload } = props;
+                      return (
+                        <div className="flex justify-center gap-4 pt-2 text-sm">
+                          {payload?.map((entry: any, index: number) => (
+                            <span key={index} style={{ color: entry.color }}>
+                              {entry.value === "principal" ? t("forecast.principal") : t("forecast.profit")}
+                            </span>
+                          ))}
+                        </div>
+                      );
                     }}
                   />
                   <Bar
@@ -275,6 +300,13 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 barSize={chartConfig.barSize}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <ReferenceLine 
+                  x={averageValue} 
+                  stroke="hsl(var(--muted-foreground))" 
+                  strokeDasharray="5 5" 
+                  strokeWidth={1}
+                  label={{ value: `${t("forecast.average") || "Avg"}: ${formatXAxis(averageValue)}`, position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                />
                 <XAxis
                   type="number"
                   domain={chartConfig.domain}
@@ -297,11 +329,17 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
                 <Legend
                   wrapperStyle={{ paddingTop: "8px" }}
-                  iconType="square"
-                  formatter={(value) => {
-                    if (value === "principal") return t("forecast.principal");
-                    if (value === "profit") return t("forecast.profit");
-                    return value;
+                  content={(props) => {
+                    const { payload } = props;
+                    return (
+                      <div className="flex justify-center gap-4 pt-2 text-sm">
+                        {payload?.map((entry: any, index: number) => (
+                          <span key={index} style={{ color: entry.color }}>
+                            {entry.value === "principal" ? t("forecast.principal") : t("forecast.profit")}
+                          </span>
+                        ))}
+                      </div>
+                    );
                   }}
                 />
                 <Bar
