@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { MonthlyForecast } from "@shared/cashflow-forecast";
 import { TrendingUp } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 
 interface CashflowForecastChartProps {
   data: MonthlyForecast[];
@@ -12,6 +13,19 @@ interface CashflowForecastChartProps {
 
 export function CashflowForecastChart({ data, months = 40 }: CashflowForecastChartProps) {
   const { t } = useLanguage();
+  
+  // Detect mobile viewport
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Take only the requested number of months
   const chartData = data.slice(0, months);
@@ -19,6 +33,42 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
   // Calculate dynamic height based on number of rows (32px per row)
   const rowHeight = 32;
   const chartHeight = Math.max(chartData.length * rowHeight, 400);
+  
+  // Responsive chart configuration
+  const chartConfig = useMemo(() => {
+    // Calculate max value from data for dynamic domain
+    const maxValue = Math.max(
+      ...chartData.map(d => (d.principal || 0) + (d.profit || 0)),
+      1
+    );
+    
+    // Adaptive rounding for domain - use appropriate step based on value
+    let roundingStep = 1000;
+    if (maxValue >= 100000) roundingStep = 10000;
+    else if (maxValue >= 10000) roundingStep = 5000;
+    else if (maxValue >= 1000) roundingStep = 1000;
+    else roundingStep = 100;
+    
+    const domain = [0, Math.ceil(maxValue * 1.15 / roundingStep) * roundingStep];
+    
+    if (isMobile) {
+      return {
+        yAxisWidth: 70,
+        margins: { top: 10, right: 8, left: 4, bottom: 10 },
+        tickFontSize: 8,
+        barSize: 14,
+        domain,
+      };
+    }
+    
+    return {
+      yAxisWidth: 100,
+      margins: { top: 10, right: 20, left: 0, bottom: 10 },
+      tickFontSize: 10,
+      barSize: 16,
+      domain,
+    };
+  }, [isMobile, chartData]);
 
   // Format large numbers compactly (K, M)
   const formatCompact = (value: number): string => {
@@ -112,23 +162,23 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
             <BarChart
               data={chartData}
               layout="vertical"
-              margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+              margin={chartConfig.margins}
               barCategoryGap={10}
-              barSize={16}
+              barSize={chartConfig.barSize}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
-                domain={[0, 50000]}
+                domain={chartConfig.domain}
                 tickFormatter={formatXAxis}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: chartConfig.tickFontSize }}
                 className="text-muted-foreground"
               />
               <YAxis
                 type="category"
                 dataKey="monthLabel"
-                width={100}
-                tick={{ fontSize: 10 }}
+                width={chartConfig.yAxisWidth}
+                tick={{ fontSize: chartConfig.tickFontSize }}
                 className="text-muted-foreground"
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
