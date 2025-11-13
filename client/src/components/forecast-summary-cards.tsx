@@ -16,6 +16,7 @@ interface ForecastSummaryCardsProps {
   months6: ForecastSummary;
   months12: ForecastSummary;
   months24: ForecastSummary;
+  months60: ForecastSummary;
 }
 
 interface SummaryCardProps {
@@ -86,6 +87,7 @@ export function ForecastSummaryCards({
   months6,
   months12,
   months24,
+  months60,
 }: ForecastSummaryCardsProps) {
   const { t } = useLanguage();
 
@@ -130,10 +132,18 @@ export function ForecastSummaryCards({
       icon: <DollarSign className="h-4 w-4" />,
       testId: "card-forecast-24months",
     },
+    {
+      key: "months60",
+      title: t("forecast.period.years5"),
+      period: t("forecast.period.years5Desc"),
+      data: months60,
+      icon: <DollarSign className="h-4 w-4" />,
+      testId: "card-forecast-60months",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" data-testid="forecast-summary-cards">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4" data-testid="forecast-summary-cards">
       {summaries.map((summary) => (
         <SummaryCard
           key={summary.key}

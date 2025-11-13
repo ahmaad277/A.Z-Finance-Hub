@@ -50,6 +50,9 @@ const translations = {
     "forecast.period.year1Desc": "Next 12 Months",
     "forecast.period.years2": "2 Years",
     "forecast.period.years2Desc": "Next 24 Months",
+    "forecast.period.years5": "5 Years",
+    "forecast.period.years5Desc": "Next 60 Months",
+    "forecast.average": "Avg",
     "forecast.noData": "No forecast data available",
     "forecast.noDataDesc": "Add active investments to see cashflow projections",
     
@@ -943,6 +946,9 @@ const translations = {
     "forecast.period.year1Desc": "الـ 12 شهر القادمة",
     "forecast.period.years2": "سنتين",
     "forecast.period.years2Desc": "الـ 24 شهر القادمة",
+    "forecast.period.years5": "5 سنوات",
+    "forecast.period.years5Desc": "الـ 60 شهر القادمة",
+    "forecast.average": "المتوسط",
     "forecast.noData": "لا توجد بيانات توقعات",
     "forecast.noDataDesc": "أضف استثمارات نشطة لرؤية توقعات التدفقات",
     

@@ -109,5 +109,6 @@ export function calculateForecastSummaries(forecast: MonthlyForecast[]) {
     months6: calculatePeriod(6),
     months12: calculatePeriod(12),
     months24: calculatePeriod(24),
+    months60: calculatePeriod(60),
   };
 }

@@ -81,7 +81,7 @@ export default function CashflowsUnified() {
 
   // Calculate forecast data (memoized for performance)
   const forecastData = useMemo(() => {
-    return calculateMonthlyForecast(cashflows, 40);
+    return calculateMonthlyForecast(cashflows, 60);
   }, [cashflows]);
 
   // Calculate forecast summaries
@@ -230,8 +230,8 @@ export default function CashflowsUnified() {
     return (
       <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map(i => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-4">
                 <div className="h-20 bg-muted rounded" />
@@ -259,7 +259,7 @@ export default function CashflowsUnified() {
       </div>
 
       {/* Combined Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="hover-elevate" data-testid="card-stat-availableBalance">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -315,6 +315,20 @@ export default function CashflowsUnified() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="hover-elevate" data-testid="card-stat-fiveYearForecast">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">{t("forecast.period.years5")}</p>
+                <p className="text-2xl font-bold">{formatCurrency(forecastSummaries.months60.total, "SAR")}</p>
+              </div>
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Cashflow Forecast Section */}
@@ -327,6 +341,7 @@ export default function CashflowsUnified() {
             months6={forecastSummaries.months6}
             months12={forecastSummaries.months12}
             months24={forecastSummaries.months24}
+            months60={forecastSummaries.months60}
           />
         </div>
       ) : cashflows.length > 0 ? (
