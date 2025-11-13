@@ -55,12 +55,12 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     
     if (isMobile) {
       return {
-        yAxisWidth: 56,
+        yAxisWidth: 60,
         margins: { top: 10, right: -8, left: -48, bottom: 10 },
-        tickFontSize: 10,
+        tickFontSize: 12,
         barSize: 12,
         barCategoryGap: 4,
-        tickDx: 0,
+        tickDx: 4,
         domain,
       };
     }
@@ -183,7 +183,13 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 type="category"
                 dataKey="monthLabel"
                 width={chartConfig.yAxisWidth}
-                tick={{ fontSize: chartConfig.tickFontSize, dx: chartConfig.tickDx, textAnchor: "start", fill: "hsl(var(--foreground))" }}
+                tick={{ 
+                  fontSize: chartConfig.tickFontSize, 
+                  dx: chartConfig.tickDx, 
+                  textAnchor: "start", 
+                  fill: isMobile ? "#ffffff" : "hsl(var(--foreground))",
+                  fontWeight: isMobile ? 500 : 400
+                }}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
               <Legend
