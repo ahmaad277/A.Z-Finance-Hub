@@ -47,24 +47,20 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
   const totalValue = data.reduce((sum, item) => sum + item.value, 0);
 
   // Custom label renderer - positioned inside the pie chart
-  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percentage, value }: any) => {
+  const renderLabel = (props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, payload } = props;
+    const count = payload?.count || 0;
+    // Use the already-computed percentage from metrics (0-100), not Recharts percent (0-1)
+    const pct = payload?.percentage ?? 0;
     const RADIAN = Math.PI / 180;
     // Position labels inside the pie chart (midpoint between inner and outer radius)
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    // Format value: show in thousands (K) if >= 1000
-    const formatValue = (val: number) => {
-      if (val >= 1000) {
-        return `${(val / 1000).toFixed(0)}K`;
-      }
-      return val.toFixed(0);
-    };
-
     const displayText = showPercentage 
-      ? `${percentage.toFixed(0)}%` 
-      : formatValue(value);
+      ? `${pct.toFixed(0)}%` 
+      : `#${count}`;
 
     return (
       <text
