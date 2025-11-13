@@ -187,10 +187,10 @@ const translations = {
     "dashboard.clickToToggle": "Click to toggle %/#",
     
     // Financial Metrics
-    "metrics.activeAPR": "Active Annual Return",
-    "metrics.activeAPRSubtitle": "Average annual return for active, late, and defaulted opportunities",
-    "metrics.historicalAPR": "Historical Average APR",
-    "metrics.historicalAPRSubtitle": "Average annual return for all portfolio opportunities",
+    "metrics.activeAPR": "Active APR",
+    "metrics.activeAPRSubtitle": "Weighted return for current positions",
+    "metrics.historicalAPR": "Historical APR",
+    "metrics.historicalAPRSubtitle": "All-time portfolio average",
     "metrics.portfolioROI": "Portfolio ROI",
     "metrics.expectedIRR": "Expected IRR",
     "metrics.currentROI": "Current ROI",
