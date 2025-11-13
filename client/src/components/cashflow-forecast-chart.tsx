@@ -42,21 +42,25 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
       1
     );
     
-    // Adaptive rounding for domain - use appropriate step based on value
-    let roundingStep = 1000;
-    if (maxValue >= 100000) roundingStep = 10000;
-    else if (maxValue >= 10000) roundingStep = 5000;
-    else if (maxValue >= 1000) roundingStep = 1000;
-    else roundingStep = 100;
+    // Adaptive rounding for domain - smaller steps for tighter fit
+    let roundingStep = 100;
+    if (maxValue >= 100000) roundingStep = 5000;
+    else if (maxValue >= 10000) roundingStep = 1000;
+    else if (maxValue >= 5000) roundingStep = 500;
+    else if (maxValue >= 1000) roundingStep = 100;
+    else roundingStep = 50;
     
-    const domain = [0, Math.ceil(maxValue * 1.15 / roundingStep) * roundingStep];
+    // Tighter domain - only 5% headroom instead of 15%
+    const domain = [0, Math.ceil(maxValue * 1.05 / roundingStep) * roundingStep];
     
     if (isMobile) {
       return {
-        yAxisWidth: 70,
-        margins: { top: 10, right: 8, left: 4, bottom: 10 },
-        tickFontSize: 8,
-        barSize: 14,
+        yAxisWidth: 56,
+        margins: { top: 10, right: -8, left: -48, bottom: 10 },
+        tickFontSize: 10,
+        barSize: 12,
+        barCategoryGap: 4,
+        tickDx: 0,
         domain,
       };
     }
@@ -66,6 +70,8 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
       margins: { top: 10, right: 20, left: 0, bottom: 10 },
       tickFontSize: 10,
       barSize: 16,
+      barCategoryGap: 10,
+      tickDx: 0,
       domain,
     };
   }, [isMobile, chartData]);
@@ -156,14 +162,13 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Full width chart wrapper - ensures ResponsiveContainer spans full width */}
         <div style={{ width: "100%" }}>
           <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart
               data={chartData}
               layout="vertical"
               margin={chartConfig.margins}
-              barCategoryGap={10}
+              barCategoryGap={chartConfig.barCategoryGap}
               barSize={chartConfig.barSize}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -178,7 +183,7 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
                 type="category"
                 dataKey="monthLabel"
                 width={chartConfig.yAxisWidth}
-                tick={{ fontSize: chartConfig.tickFontSize }}
+                tick={{ fontSize: chartConfig.tickFontSize, dx: chartConfig.tickDx }}
                 className="text-muted-foreground"
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
