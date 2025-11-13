@@ -73,9 +73,10 @@ export function calculateMonthlyForecast(
     
     // Add month numbering starting from next month (month 1)
     // Current month (i=0) has no number, next month (i=1) = (1), etc.
+    // Use compact format: Sep-25 instead of Sep 2025
     const monthLabel = i === 0 
-      ? format(monthDate, "MMM yyyy")
-      : `${format(monthDate, "MMM yyyy")} (${i})`;
+      ? format(monthDate, "MMM-yy")
+      : `${format(monthDate, "MMM-yy")} (${i})`;
     
     forecast.push({
       month: monthKey,
