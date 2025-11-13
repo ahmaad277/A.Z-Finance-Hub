@@ -6,10 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useLanguage } from "@/lib/language-provider";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { insertCashTransactionSchema, type InsertCashTransaction } from "@shared/schema";
+import { insertCashTransactionSchema, type InsertCashTransaction, type Platform } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -26,6 +26,10 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
   const isDeposit = type === "deposit";
   const Icon = isDeposit ? ArrowDown : ArrowUp;
 
+  const { data: platforms } = useQuery<Platform[]>({
+    queryKey: ["/api/platforms"],
+  });
+
   const form = useForm<InsertCashTransaction>({
     resolver: zodResolver(insertCashTransactionSchema),
     defaultValues: {
@@ -34,6 +38,7 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
       source: "transfer",
       notes: "",
       date: new Date(),
+      platformId: undefined,
     },
   });
 
@@ -58,6 +63,7 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
         source: "transfer",
         notes: "",
         date: new Date(),
+        platformId: undefined,
       });
     },
     onError: (error: any) => {
@@ -112,6 +118,32 @@ export function CashTransactionDialog({ type }: CashTransactionDialogProps) {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="platformId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("cash.platform")} ({t("common.optional")})</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-cash-platform">
+                        <SelectValue placeholder={t("cash.selectPlatform")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">{t("cash.noPlatform")}</SelectItem>
+                      {platforms?.map((platform) => (
+                        <SelectItem key={platform.id} value={platform.id}>
+                          {platform.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

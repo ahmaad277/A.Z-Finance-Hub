@@ -416,6 +416,9 @@ const translations = {
     "cash.selectPeriod": "Select Period",
     "cash.noTransactions": "No transactions found",
     "cash.type": "Type",
+    "cash.platform": "Platform",
+    "cash.selectPlatform": "Select platform",
+    "cash.noPlatform": "No specific platform",
     
     // Common
     "common.type": "Type",
@@ -1312,6 +1315,9 @@ const translations = {
     "cash.selectPeriod": "اختر الفترة",
     "cash.noTransactions": "لا توجد معاملات",
     "cash.type": "النوع",
+    "cash.platform": "المنصة",
+    "cash.selectPlatform": "اختر المنصة",
+    "cash.noPlatform": "بدون منصة محددة",
     
     // Common
     "common.type": "النوع",
