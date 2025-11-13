@@ -55,12 +55,12 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     
     if (isMobile) {
       return {
-        yAxisWidth: 80,
+        yAxisWidth: 95,
         margins: { top: 10, right: 8, left: 0, bottom: 10 },
         tickFontSize: 12,
         barSize: 12,
         barCategoryGap: 4,
-        tickDx: 6,
+        tickDx: 0,
         domain,
       };
     }
