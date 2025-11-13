@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { MonthlyForecast } from "@shared/cashflow-forecast";
@@ -16,30 +16,69 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
   // Take only the requested number of months
   const chartData = data.slice(0, months);
 
+  // Calculate dynamic height based on number of rows (32px per row)
+  const rowHeight = 32;
+  const chartHeight = Math.max(chartData.length * rowHeight, 400);
+
+  // Format large numbers compactly (K, M)
+  const formatCompact = (value: number): string => {
+    if (value === 0) return "0";
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+    return value.toLocaleString();
+  };
+
+  // Custom label for bars - show value only if bar is wide enough
+  const CustomLabel = (props: any) => {
+    const { x, y, width, height, value } = props;
+    
+    // Only show label if bar width is at least 40px
+    if (width < 40 || value === 0) return null;
+    
+    const formattedValue = formatCompact(value);
+    
+    return (
+      <text
+        x={x + width / 2}
+        y={y + height / 2}
+        fill="white"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={11}
+        fontWeight="600"
+      >
+        {formattedValue}
+      </text>
+    );
+  };
+
   // Custom tooltip to show formatted values
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const principal = payload.find((p: any) => p.dataKey === "principal")?.value || 0;
+      const profit = payload.find((p: any) => p.dataKey === "profit")?.value || 0;
+      
       return (
         <Card className="p-3 shadow-lg">
           <p className="font-semibold mb-2">{payload[0].payload.monthLabel}</p>
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-blue-500" />
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-4))" }} />
                 {t("forecast.principal")}
               </span>
-              <span className="font-semibold">{formatCurrency(payload[0].value, "SAR")}</span>
+              <span className="font-semibold">{formatCurrency(principal, "SAR")}</span>
             </div>
             <div className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-green-500" />
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-2))" }} />
                 {t("forecast.profit")}
               </span>
-              <span className="font-semibold">{formatCurrency(payload[1].value, "SAR")}</span>
+              <span className="font-semibold">{formatCurrency(profit, "SAR")}</span>
             </div>
             <div className="flex items-center justify-between gap-4 pt-1 border-t">
               <span className="font-semibold">{t("forecast.total")}</span>
-              <span className="font-bold">{formatCurrency(payload[0].value + payload[1].value, "SAR")}</span>
+              <span className="font-bold">{formatCurrency(principal + profit, "SAR")}</span>
             </div>
           </div>
         </Card>
@@ -48,8 +87,8 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
     return null;
   };
 
-  // Format tick values for Y-axis
-  const formatYAxis = (value: number) => {
+  // Format tick values for X-axis (horizontal)
+  const formatXAxis = (value: number) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
     return value.toString();
@@ -67,75 +106,28 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {/* Desktop version */}
         <div className="px-6 pb-6">
-          <ResponsiveContainer width="100%" height={600} className="hidden sm:block">
+          <ResponsiveContainer width="100%" height={chartHeight} className="hidden sm:block">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 0, left: 0, bottom: 80 }}
+              layout="vertical"
+              margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
+              barCategoryGap={12}
+              barSize={18}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
-                dataKey="monthLabel"
-                angle={-45}
-                textAnchor="end"
-                height={90}
-                interval={0}
+                type="number"
+                tickFormatter={formatXAxis}
                 tick={{ fontSize: 11 }}
                 className="text-muted-foreground"
               />
               <YAxis
-                tickFormatter={formatYAxis}
-                tick={{ fontSize: 12 }}
-                className="text-muted-foreground"
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
-              <Legend
-                wrapperStyle={{ paddingTop: "20px" }}
-                iconType="square"
-                formatter={(value) => {
-                  if (value === "principal") return t("forecast.principal");
-                  if (value === "profit") return t("forecast.profit");
-                  return value;
-                }}
-              />
-              <Bar
-                dataKey="principal"
-                stackId="a"
-                fill="#3b82f6"
-                radius={[0, 0, 4, 4]}
-                name="principal"
-                data-testid="bar-principal"
-              />
-              <Bar
-                dataKey="profit"
-                stackId="a"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
-                name="profit"
-                data-testid="bar-profit"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="w-full overflow-x-auto sm:hidden -mx-6 px-6">
-          <ResponsiveContainer width="100%" height={200} minWidth={800}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 10, left: 10, bottom: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
+                type="category"
                 dataKey="monthLabel"
-                angle={-45}
-                textAnchor="end"
-                height={70}
-                interval={0}
-                tick={{ fontSize: 9 }}
-                className="text-muted-foreground"
-              />
-              <YAxis
-                tickFormatter={formatYAxis}
-                tick={{ fontSize: 10 }}
+                width={110}
+                tick={{ fontSize: 11 }}
                 className="text-muted-foreground"
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
@@ -151,19 +143,76 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
               <Bar
                 dataKey="principal"
                 stackId="a"
-                fill="#3b82f6"
-                radius={[0, 0, 4, 4]}
+                fill="hsl(var(--chart-4))"
                 name="principal"
                 data-testid="bar-principal"
-              />
+              >
+                <LabelList content={<CustomLabel />} />
+              </Bar>
               <Bar
                 dataKey="profit"
                 stackId="a"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
+                fill="hsl(var(--chart-2))"
                 name="profit"
                 data-testid="bar-profit"
+              >
+                <LabelList content={<CustomLabel />} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Mobile version - edge to edge with scroll */}
+        <div className="w-full overflow-x-auto overflow-y-auto sm:hidden -mx-6 px-6" style={{ maxHeight: "600px" }}>
+          <ResponsiveContainer width="100%" height={chartHeight} minWidth={700}>
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+              barCategoryGap={10}
+              barSize={16}
+            >
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                type="number"
+                tickFormatter={formatXAxis}
+                tick={{ fontSize: 10 }}
+                className="text-muted-foreground"
               />
+              <YAxis
+                type="category"
+                dataKey="monthLabel"
+                width={100}
+                tick={{ fontSize: 10 }}
+                className="text-muted-foreground"
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+              <Legend
+                wrapperStyle={{ paddingTop: "8px" }}
+                iconType="square"
+                formatter={(value) => {
+                  if (value === "principal") return t("forecast.principal");
+                  if (value === "profit") return t("forecast.profit");
+                  return value;
+                }}
+              />
+              <Bar
+                dataKey="principal"
+                stackId="a"
+                fill="hsl(var(--chart-4))"
+                name="principal"
+                data-testid="bar-principal"
+              >
+                <LabelList content={<CustomLabel />} />
+              </Bar>
+              <Bar
+                dataKey="profit"
+                stackId="a"
+                fill="hsl(var(--chart-2))"
+                name="profit"
+                data-testid="bar-profit"
+              >
+                <LabelList content={<CustomLabel />} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
