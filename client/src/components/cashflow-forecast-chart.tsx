@@ -106,118 +106,60 @@ export function CashflowForecastChart({ data, months = 40 }: CashflowForecastCha
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Desktop version */}
-        <div className="px-6 pb-6">
-          <ResponsiveContainer width="100%" height={chartHeight} className="hidden sm:block">
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
-              barCategoryGap={12}
-              barSize={18}
+        {/* Full width chart - no padding, no scroll, displays all months */}
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+            barCategoryGap={10}
+            barSize={16}
+          >
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis
+              type="number"
+              domain={[0, 50000]}
+              tickFormatter={formatXAxis}
+              tick={{ fontSize: 10 }}
+              className="text-muted-foreground"
+            />
+            <YAxis
+              type="category"
+              dataKey="monthLabel"
+              width={100}
+              tick={{ fontSize: 10 }}
+              className="text-muted-foreground"
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+            <Legend
+              wrapperStyle={{ paddingTop: "8px" }}
+              iconType="square"
+              formatter={(value) => {
+                if (value === "principal") return t("forecast.principal");
+                if (value === "profit") return t("forecast.profit");
+                return value;
+              }}
+            />
+            <Bar
+              dataKey="principal"
+              stackId="a"
+              fill="hsl(var(--chart-4))"
+              name="principal"
+              data-testid="bar-principal"
             >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                type="number"
-                domain={[0, 50000]}
-                tickFormatter={formatXAxis}
-                tick={{ fontSize: 11 }}
-                className="text-muted-foreground"
-              />
-              <YAxis
-                type="category"
-                dataKey="monthLabel"
-                width={110}
-                tick={{ fontSize: 11 }}
-                className="text-muted-foreground"
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
-              <Legend
-                wrapperStyle={{ paddingTop: "10px" }}
-                iconType="square"
-                formatter={(value) => {
-                  if (value === "principal") return t("forecast.principal");
-                  if (value === "profit") return t("forecast.profit");
-                  return value;
-                }}
-              />
-              <Bar
-                dataKey="principal"
-                stackId="a"
-                fill="hsl(var(--chart-4))"
-                name="principal"
-                data-testid="bar-principal"
-              >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-              <Bar
-                dataKey="profit"
-                stackId="a"
-                fill="hsl(var(--chart-2))"
-                name="profit"
-                data-testid="bar-profit"
-              >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* Mobile version - edge to edge with scroll */}
-        <div className="w-full overflow-y-auto sm:hidden -mx-6 px-6" style={{ maxHeight: "600px" }}>
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-              barCategoryGap={10}
-              barSize={16}
+              <LabelList content={<CustomLabel />} />
+            </Bar>
+            <Bar
+              dataKey="profit"
+              stackId="a"
+              fill="hsl(var(--chart-2))"
+              name="profit"
+              data-testid="bar-profit"
             >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                type="number"
-                domain={[0, 50000]}
-                tickFormatter={formatXAxis}
-                tick={{ fontSize: 10 }}
-                className="text-muted-foreground"
-              />
-              <YAxis
-                type="category"
-                dataKey="monthLabel"
-                width={100}
-                tick={{ fontSize: 10 }}
-                className="text-muted-foreground"
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
-              <Legend
-                wrapperStyle={{ paddingTop: "8px" }}
-                iconType="square"
-                formatter={(value) => {
-                  if (value === "principal") return t("forecast.principal");
-                  if (value === "profit") return t("forecast.profit");
-                  return value;
-                }}
-              />
-              <Bar
-                dataKey="principal"
-                stackId="a"
-                fill="hsl(var(--chart-4))"
-                name="principal"
-                data-testid="bar-principal"
-              >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-              <Bar
-                dataKey="profit"
-                stackId="a"
-                fill="hsl(var(--chart-2))"
-                name="profit"
-                data-testid="bar-profit"
-              >
-                <LabelList content={<CustomLabel />} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+              <LabelList content={<CustomLabel />} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

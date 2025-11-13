@@ -13,8 +13,6 @@ import { formatCurrency, formatPercentage, cn } from "@/lib/utils";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 import { useLanguage } from "@/lib/language-provider";
 import { usePlatformFilter } from "@/lib/platform-filter-context";
-import { PortfolioChart } from "@/components/portfolio-chart";
-import { UpcomingCashflows } from "@/components/upcoming-cashflows";
 import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
@@ -536,70 +534,6 @@ export default function Dashboard() {
             {...fadeInUp}
             className="space-y-6"
           >
-            <div className="grid gap-6 lg:grid-cols-7">
-              <Card className="lg:col-span-4" data-testid="card-portfolio-performance">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle className="text-lg">{t("dashboard.portfolioPerformance")}</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleSection('portfolio-performance')}
-                    data-testid="button-toggle-portfolio-performance"
-                    className="h-8 w-8 p-0"
-                  >
-                    {isSectionCollapsed('portfolio-performance') ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronUp className="h-4 w-4" />
-                    )}
-                  </Button>
-                </CardHeader>
-                <AnimatePresence initial={false}>
-                  {!isSectionCollapsed('portfolio-performance') && (
-                    <motion.div
-                      {...collapseVariant}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <CardContent className="p-0">
-                        <PortfolioChart />
-                      </CardContent>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Card>
-
-              <Card className="lg:col-span-3" data-testid="card-upcoming-cashflows">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle className="text-lg">{t("dashboard.upcomingCashflows")}</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleSection('upcoming-cashflows')}
-                    data-testid="button-toggle-upcoming-cashflows"
-                    className="h-8 w-8 p-0"
-                  >
-                    {isSectionCollapsed('upcoming-cashflows') ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronUp className="h-4 w-4" />
-                    )}
-                  </Button>
-                </CardHeader>
-                <AnimatePresence initial={false}>
-                  {!isSectionCollapsed('upcoming-cashflows') && (
-                    <motion.div
-                      {...collapseVariant}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <CardContent className="p-6">
-                        <UpcomingCashflows />
-                      </CardContent>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Card>
-            </div>
-
             <Card data-testid="card-recent-investments">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle className="text-lg">{t("dashboard.recentInvestments")}</CardTitle>
