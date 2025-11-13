@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/lib/language-provider";
 import { formatCurrency, formatPercentage, METRIC_COLOR_MAP, cn } from "@/lib/utils";
 import { InvestmentStatusChart } from "@/components/investment-status-chart";
+import { PlatformDistributionChart } from "@/components/platform-distribution-chart";
 import { 
   Wallet, 
   DollarSign, 
@@ -133,8 +134,11 @@ export function FinancialMetricsOnly({ metrics }: FinancialMetricsOnlyProps) {
         })}
       </div>
       
-      {/* Investment Status Chart as a metric card */}
-      <InvestmentStatusChart metrics={metrics} />
+      {/* Charts Grid - Status and Platform Distribution */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InvestmentStatusChart metrics={metrics} />
+        <PlatformDistributionChart metrics={metrics} />
+      </div>
     </div>
   );
 }

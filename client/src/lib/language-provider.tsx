@@ -185,6 +185,9 @@ const translations = {
     "dashboard.percentage": "%",
     "dashboard.count": "#",
     "dashboard.clickToToggle": "Click to toggle %/#",
+    "dashboard.platformDistribution": "Platform Distribution",
+    "dashboard.totalValue": "Total Value",
+    "dashboard.noPlatformData": "No platform data",
     
     // Financial Metrics
     "metrics.activeAPR": "Active APR",
@@ -419,6 +422,8 @@ const translations = {
     "cash.platform": "Platform",
     "cash.selectPlatform": "Select platform",
     "cash.noPlatform": "No specific platform",
+    "cash.depositDescription": "Record a new deposit to your cash balance",
+    "cash.withdrawalDescription": "Record a withdrawal from your cash balance",
     
     // Common
     "common.type": "Type",
@@ -1083,6 +1088,9 @@ const translations = {
     "dashboard.percentage": "%",
     "dashboard.count": "#",
     "dashboard.clickToToggle": "اضغط للتبديل بين %/#",
+    "dashboard.platformDistribution": "توزيع المنصات",
+    "dashboard.totalValue": "القيمة الإجمالية",
+    "dashboard.noPlatformData": "لا توجد بيانات للمنصات",
     
     // Financial Metrics
     "metrics.activeAPR": "العائد السنوي النشط",
@@ -1318,6 +1326,8 @@ const translations = {
     "cash.platform": "المنصة",
     "cash.selectPlatform": "اختر المنصة",
     "cash.noPlatform": "بدون منصة محددة",
+    "cash.depositDescription": "تسجيل إيداع جديد للرصيد النقدي",
+    "cash.withdrawalDescription": "تسجيل سحب من الرصيد النقدي",
     
     // Common
     "common.type": "النوع",
