@@ -10,9 +10,11 @@ export function PlatformFilterButton() {
   const { t } = useLanguage();
   const { selectedPlatform, setSelectedPlatform } = usePlatformFilter();
   
-  const { data: platforms, isLoading } = useQuery<Platform[]>({
+  const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
   });
+
+  const platformList = platforms || [];
 
   return (
     <DropdownMenu>
@@ -36,29 +38,16 @@ export function PlatformFilterButton() {
         >
           {t("dashboard.allPlatforms")}
         </DropdownMenuItem>
-        {isLoading && (
-          <DropdownMenuItem disabled>
-            Loading platforms...
+        {platformList.map((platform) => (
+          <DropdownMenuItem 
+            key={platform.id} 
+            onClick={() => setSelectedPlatform(platform.id)}
+            data-testid={`menu-filter-${platform.id}`}
+            className={selectedPlatform === platform.id ? "bg-accent" : ""}
+          >
+            {platform.name}
           </DropdownMenuItem>
-        )}
-        {platforms && platforms.length > 0 ? (
-          platforms.map((platform) => (
-            <DropdownMenuItem 
-              key={platform.id} 
-              onClick={() => setSelectedPlatform(platform.id)}
-              data-testid={`menu-filter-${platform.id}`}
-              className={selectedPlatform === platform.id ? "bg-accent" : ""}
-            >
-              {platform.name}
-            </DropdownMenuItem>
-          ))
-        ) : (
-          !isLoading && (
-            <DropdownMenuItem disabled>
-              No platforms available
-            </DropdownMenuItem>
-          )
-        )}
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
