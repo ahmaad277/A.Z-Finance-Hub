@@ -65,8 +65,9 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg line-clamp-2">{investment.name}</CardTitle>
               {investment.needsReview === 1 && (
-                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-xs px-1.5 py-0 h-5" data-testid="badge-needs-review">
-                  <AlertTriangle className="h-3 w-3" />
+                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-xs px-2 py-0.5 h-5 shrink-0" data-testid="badge-needs-review">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Check!
                 </Badge>
               )}
             </div>

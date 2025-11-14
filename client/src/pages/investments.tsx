@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2 } from "lucide-react";
+import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -51,6 +52,7 @@ export default function Investments() {
   const [sortBy, setSortBy] = useState<string>("date-desc");
   const [compactView, setCompactView] = useState<boolean>(true); // Default to compact view
   const [selectedInvestment, setSelectedInvestment] = useState<InvestmentWithPlatform | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -380,6 +382,34 @@ export default function Investments() {
 
     let filtered = investments;
 
+    // Smart Search Filter (searches across name, duration, profit, dates)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      
+      filtered = filtered.filter(inv => {
+        // Search in name (case-insensitive)
+        if (inv.name.toLowerCase().includes(query)) return true;
+        
+        // Search in duration months (exact or partial match)
+        const durationStr = inv.durationMonths?.toString() || "";
+        if (durationStr.includes(query)) return true;
+        
+        // Search in profit amount (number search)
+        const profitStr = inv.totalExpectedProfit?.toString() || "";
+        if (profitStr.includes(query)) return true;
+        
+        // Search in start date (formatted as YYYY-MM-DD or any part)
+        const startDateStr = inv.startDate?.toString() || "";
+        if (startDateStr.toLowerCase().includes(query)) return true;
+        
+        // Search in end date (formatted as YYYY-MM-DD or any part)
+        const endDateStr = inv.endDate?.toString() || "";
+        if (endDateStr.toLowerCase().includes(query)) return true;
+        
+        return false;
+      });
+    }
+
     // Filter by platform
     if (selectedPlatform !== "all") {
       filtered = filtered.filter(inv => inv.platformId === selectedPlatform);
@@ -411,7 +441,7 @@ export default function Investments() {
     });
 
     return sorted;
-  }, [investments, selectedPlatform, selectedStatus, sortBy]);
+  }, [investments, selectedPlatform, selectedStatus, sortBy, searchQuery]);
 
   const isLoading = investmentsLoading || cashflowsLoading;
 
@@ -458,8 +488,22 @@ export default function Investments() {
         </Button>
       </PageHeader>
 
-      {/* Filters and Sort */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Search and Filters */}
+      <div className="space-y-3">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={language === "ar" ? "ابحث بالاسم، المدة، الربح، أو التاريخ..." : "Search by name, duration, profit, or date..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pr-10 h-10"
+            data-testid="input-search-investments"
+          />
+        </div>
+
+        {/* Filters and Sort */}
+        <div className="flex flex-wrap items-center gap-3">
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
           <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-platform-filter">
             <Filter className="h-4 w-4 mr-2 shrink-0" />
@@ -503,7 +547,7 @@ export default function Investments() {
           </SelectContent>
         </Select>
 
-        {(selectedPlatform !== "all" || selectedStatus !== "all" || sortBy !== "date-desc") && (
+        {(selectedPlatform !== "all" || selectedStatus !== "all" || sortBy !== "date-desc" || searchQuery) && (
           <Button
             variant="ghost"
             size="sm"
@@ -511,12 +555,15 @@ export default function Investments() {
               setSelectedPlatform("all");
               setSelectedStatus("all");
               setSortBy("date-desc");
+              setSearchQuery("");
             }}
             className="w-full sm:w-auto"
+            data-testid="button-reset-filters"
           >
             {language === "ar" ? "إعادة تعيين" : "Reset"}
           </Button>
         )}
+        </div>
       </div>
 
       {filteredAndSortedInvestments.length === 0 ? (

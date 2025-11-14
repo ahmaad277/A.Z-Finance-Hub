@@ -89,10 +89,11 @@ export function InvestmentCompactRow({
             <span className="font-medium truncate leading-tight">{investment.name}</span>
             {investment.needsReview === 1 && (
               <Badge 
-                className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-[9px] px-1 py-0 h-3.5 shrink-0"
+                className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-[9px] px-1.5 py-0.5 h-4 shrink-0"
                 data-testid="badge-needs-review"
               >
-                <AlertTriangle className="h-2.5 w-2.5" />
+                <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+                Check!
               </Badge>
             )}
           </div>
