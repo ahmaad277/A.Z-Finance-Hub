@@ -28,10 +28,16 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
     refetchOnMount: true,
   });
 
-  // Upsert mutation
+  // Upsert mutation (handles both create and update)
   const upsertMutation = useMutation({
-    mutationFn: async (entry: { month: Date; totalValue: number; notes?: string }) => {
-      return apiRequest('POST', '/api/portfolio-history', entry);
+    mutationFn: async (entry: { month: Date; totalValue: number; notes?: string; isUpdate?: boolean }) => {
+      // Use PUT for updates, POST for new entries
+      const method = entry.isUpdate ? 'PUT' : 'POST';
+      return apiRequest(method, '/api/portfolio-history', {
+        month: entry.month,
+        totalValue: entry.totalValue,
+        notes: entry.notes || ''
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/portfolio-history'] });
@@ -127,6 +133,7 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
       month: firstDayOfMonth,
       totalValue: parseFloat(editingValues.value),
       notes: editingValues.notes,
+      isUpdate: true, // This is an update of an existing entry
     });
   };
 
@@ -154,6 +161,7 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
       month: date,
       totalValue: parseFloat(newEntry.value),
       notes: newEntry.notes,
+      isUpdate: false, // This is a new entry
     });
   };
 
@@ -165,6 +173,7 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
       month: firstDayOfMonth,
       totalValue: currentPortfolioValue,
       notes: "Auto-filled from current portfolio value",
+      isUpdate: false, // Could be either, but we'll let the backend handle it
     });
   };
 
