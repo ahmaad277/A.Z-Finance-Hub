@@ -12,6 +12,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
 import { PlatformFilterButton } from "@/components/platform-filter-button";
+import { ShareDataEntryButton } from "@/components/share-data-entry-button";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
 import CashflowsUnified from "@/pages/cashflows-unified";
@@ -21,6 +22,7 @@ import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
 import Vision2040 from "@/pages/vision-2040";
+import DataEntry from "@/pages/data-entry";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
@@ -43,6 +45,7 @@ function Router() {
       <Route path="/help" component={Help} />
       <Route path="/settings" component={Settings} />
       <Route path="/platform/:id" component={PlatformDetails} />
+      <Route path="/data-entry/:token" component={DataEntry} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -71,6 +74,7 @@ function MainContent() {
           <SidebarTrigger data-testid="button-sidebar-toggle" />
         </div>
         <div className="flex items-center gap-1">
+          <ShareDataEntryButton />
           <PlatformFilterButton />
           <SaveCheckpointButton />
           <ThemeToggle />

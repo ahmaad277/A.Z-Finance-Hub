@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
+import { withDataEntryToken, blockDataEntry } from "./data-entry-middleware";
 import {
   insertPlatformSchema,
   insertInvestmentSchema,
@@ -69,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/platforms", async (req, res) => {
+  app.post("/api/platforms", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const data = insertPlatformSchema.parse(req.body);
       const platform = await storage.createPlatform(data);
@@ -79,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/platforms/:id", async (req, res) => {
+  app.delete("/api/platforms/:id", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deletePlatform(id);
@@ -98,8 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Investments
-  app.get("/api/investments", async (_req, res) => {
+  // Investments (with data-entry token support)
+  app.get("/api/investments", withDataEntryToken, async (_req, res) => {
     try {
       const investments = await storage.getInvestments();
       res.json(investments);
@@ -108,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/investments", async (req, res) => {
+  app.post("/api/investments", withDataEntryToken, async (req, res) => {
     try {
       const data = apiInvestmentSchema.parse(req.body);
       
@@ -141,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/investments/:id", async (req, res) => {
+  app.patch("/api/investments/:id", withDataEntryToken, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -239,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/investments/:id", async (req, res) => {
+  app.delete("/api/investments/:id", withDataEntryToken, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteInvestment(id);
@@ -330,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cashflows
-  app.get("/api/cashflows", async (_req, res) => {
+  app.get("/api/cashflows", withDataEntryToken, async (_req, res) => {
     try {
       const cashflows = await storage.getCashflows();
       res.json(cashflows);
@@ -339,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cashflows", async (req, res) => {
+  app.post("/api/cashflows", withDataEntryToken, async (req, res) => {
     try {
       const data = insertCashflowSchema.parse(req.body);
       const cashflow = await storage.createCashflow(data);
@@ -349,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/cashflows/:id", async (req, res) => {
+  app.patch("/api/cashflows/:id", withDataEntryToken, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -420,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/cashflows/:id", async (req, res) => {
+  app.delete("/api/cashflows/:id", withDataEntryToken, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteCashflow(id);
@@ -437,7 +438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Alerts
-  app.get("/api/alerts", async (_req, res) => {
+  app.get("/api/alerts", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const alerts = await storage.getAlerts();
       res.json(alerts);
@@ -446,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts", async (req, res) => {
+  app.post("/api/alerts", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const data = insertAlertSchema.parse(req.body);
       const alert = await storage.createAlert(data);
@@ -456,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/alerts/:id/read", async (req, res) => {
+  app.patch("/api/alerts/:id/read", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { id } = req.params;
       const alert = await storage.markAlertAsRead(id);
@@ -471,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts/generate", async (_req, res) => {
+  app.post("/api/alerts/generate", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const settings = await storage.getSettings();
       
@@ -538,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cash Transactions
-  app.get("/api/cash/transactions", async (_req, res) => {
+  app.get("/api/cash/transactions", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const transactions = await storage.getCashTransactions();
       res.json(transactions);
@@ -547,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cash/transactions", async (req, res) => {
+  app.post("/api/cash/transactions", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const data = insertCashTransactionSchema.parse(req.body);
       const transaction = await storage.createCashTransaction(data);
@@ -557,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/cash/balance", async (_req, res) => {
+  app.get("/api/cash/balance", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const balanceData = await storage.getCashBalance();
       // Return both total and byPlatform for backwards compatibility and new features
@@ -572,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio Stats
-  app.get("/api/portfolio/stats", async (_req, res) => {
+  app.get("/api/portfolio/stats", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const stats = await storage.getPortfolioStats();
       res.json(stats);
@@ -582,7 +583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Settings
-  app.get("/api/settings", async (req, res) => {
+  app.get("/api/settings", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const settings = await storage.getSettings();
       res.json(settings);
@@ -591,7 +592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/settings", async (req, res) => {
+  app.put("/api/settings", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const data = insertUserSettingsSchema.partial().parse(req.body);
       const settings = await storage.updateSettings(data);
@@ -599,6 +600,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Settings update error:", error);
       res.status(400).json({ error: error.message || "Invalid settings data" });
+    }
+  });
+
+  // Generate or regenerate data entry token (owner only)
+  app.post("/api/settings/generate-data-entry-token", withDataEntryToken, blockDataEntry, async (_req, res) => {
+    try {
+      // Generate a secure random token
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      
+      // Update settings with new token
+      const settings = await storage.updateSettings({ dataEntryToken: token });
+      res.json({ token, settings });
+    } catch (error: any) {
+      console.error("Token generation error:", error);
+      res.status(500).json({ error: "Failed to generate token" });
+    }
+  });
+
+  // Verify data entry token
+  app.get("/api/verify-data-entry-token/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const settings = await storage.getSettings();
+      
+      if (!settings.dataEntryToken) {
+        return res.status(404).json({ valid: false, error: "No token configured" });
+      }
+      
+      const valid = settings.dataEntryToken === token;
+      res.json({ valid });
+    } catch (error: any) {
+      console.error("Token verification error:", error);
+      res.status(500).json({ error: "Failed to verify token" });
     }
   });
 
@@ -692,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio History
-  app.get("/api/portfolio-history", async (req, res) => {
+  app.get("/api/portfolio-history", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       // Parse query params for date range filtering
       const { startDate, endDate } = req.query;
@@ -707,7 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/portfolio-history/:month", async (req, res) => {
+  app.get("/api/portfolio-history/:month", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { month } = req.params;
       const monthDate = new Date(month);
@@ -729,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/portfolio-history", async (req, res) => {
+  app.post("/api/portfolio-history", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       // Parse and validate the request body
       const data = insertPortfolioHistorySchema.parse(req.body);
@@ -943,7 +978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Portfolio Data Reset (Destructive Operation)
   // Note: This is a single-user application with no authentication system.
   // Security relies on server-side confirmation validation only.
-  app.post("/api/portfolio/reset", async (req, res) => {
+  app.post("/api/portfolio/reset", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       // Validate confirmation string from user input
       const { confirm } = req.body;

@@ -343,6 +343,7 @@ export const userSettings = pgTable("user_settings", {
   biometricCredentialId: text("biometric_credential_id"), // WebAuthn credential ID
   collapsedSections: text("collapsed_sections"), // JSON array of collapsed section IDs
   alertsEnabled: integer("alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
+  dataEntryToken: text("data_entry_token"), // Secure token for data entry access
   alertDaysBefore: integer("alert_days_before").notNull().default(7), // Days before cashflow due date to alert
   latePaymentAlertsEnabled: integer("late_payment_alerts_enabled").notNull().default(1), // 0 = disabled, 1 = enabled
   dashboardLayout: text("dashboard_layout"), // JSON string storing widget layouts (react-grid-layout format)
