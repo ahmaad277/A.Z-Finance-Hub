@@ -178,8 +178,9 @@ export default function BulkImport() {
             return;
           }
 
+          // Parse investments with platform matching
           const parsedInvestments: ParsedInvestment[] = jsonData.map((row: any, index) => {
-            return parseRowData(row, index);
+            return parseRowData(row, index, platforms);
           });
 
           resolve(parsedInvestments);
@@ -224,7 +225,7 @@ export default function BulkImport() {
     return null; // Return null if not found (distinguish from empty string)
   };
 
-  const parseRowData = (row: any, index: number): ParsedInvestment => {
+  const parseRowData = (row: any, index: number, availablePlatforms: any[]): ParsedInvestment => {
     const warnings: string[] = [];
     const errors: string[] = [];
     const id = `temp-${index}`;
@@ -234,6 +235,28 @@ export default function BulkImport() {
       'Name', 'اسم الفرصة', 'Investment Name', 'الاسم', 'اسم', 'الفرصة',
       'name', 'investment_name', 'opportunity_name'
     ]) || '';
+    
+    // Extract platform from CSV
+    const platformNameFromCSV = findColumnValue(row, [
+      'Platform', 'المنصة', 'Platform Name', 'اسم المنصة', 'منصة',
+      'platform', 'platform_name', 'source'
+    ]);
+    
+    // Match platform name to existing platforms (case/diacritics insensitive)
+    let matchedPlatformId: string | null = null;
+    if (platformNameFromCSV && availablePlatforms.length > 0) {
+      const normalizedInput = normalizeColumnName(platformNameFromCSV);
+      const matchedPlatform = availablePlatforms.find(p => 
+        normalizeColumnName(p.name) === normalizedInput || 
+        normalizeColumnName(p.id) === normalizedInput
+      );
+      
+      if (matchedPlatform) {
+        matchedPlatformId = matchedPlatform.id;
+      } else {
+        warnings.push(`Platform "${platformNameFromCSV}" not found. Please select manually.`);
+      }
+    }
     
     const faceValueStr = findColumnValue(row, [
       'Face Value', 'القيمة الاسمية', 'Amount', 'Principal', 'المبلغ', 'رأس المال',
@@ -299,7 +322,7 @@ export default function BulkImport() {
     return {
       id,
       name: name || `Investment ${index + 1}`,
-      platformId: null, // Will be selected by user
+      platformId: matchedPlatformId, // Auto-matched from CSV or null (user will select)
       faceValue: faceValue ?? 0,
       totalExpectedProfit,
       expectedIrr: expectedIrr ?? 0,
@@ -363,18 +386,9 @@ export default function BulkImport() {
   };
 
   const handleSaveSelected = async () => {
-    if (!defaultPlatformId) {
-      toast({
-        title: "Platform Required",
-        description: "Please select a platform before saving",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Prepare investments for bulk creation - filter out invalid rows and rows without platformId
+    // Prepare investments for bulk creation - filter valid rows only
     const selectedInvestments = parsedData
-      .filter(inv => selectedRows.has(inv.id) && inv.errors.length === 0 && inv.platformId !== null)
+      .filter(inv => selectedRows.has(inv.id) && inv.errors.length === 0)
       .map(inv => ({
         name: inv.name,
         platformId: inv.platformId!,
@@ -392,12 +406,12 @@ export default function BulkImport() {
         fundedFromCash: inv.fundedFromCash,
       }));
 
-    // Final validation: ensure all investments have platformId
+    // Validation: ensure all selected investments have platformId (from CSV or bulk selector)
     const invalidInvestments = selectedInvestments.filter(inv => !inv.platformId);
     if (invalidInvestments.length > 0) {
       toast({
-        title: "Validation Error",
-        description: "All investments must have a platform assigned",
+        title: "Platform Required",
+        description: `${invalidInvestments.length} investment(s) missing platform. Please use bulk selector or add Platform column to CSV.`,
         variant: "destructive",
       });
       return;
@@ -406,7 +420,7 @@ export default function BulkImport() {
     if (selectedInvestments.length === 0) {
       toast({
         title: "No Valid Investments",
-        description: "Please select at least one valid investment with a platform assigned",
+        description: "Please select at least one valid investment with errors resolved",
         variant: "destructive",
       });
       return;
