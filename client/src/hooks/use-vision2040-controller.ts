@@ -122,14 +122,25 @@ export function useVision2040Controller() {
     return Math.max(0, 2040 - currentYear);
   }, []);
   
-  // Current status inputs (read-only)
-  const currentInputs: ScenarioInputs = useMemo(() => ({
-    initialAmount: currentPortfolioValue,
+  // Current status inputs (editable for user)
+  const [currentInputs, setCurrentInputs] = useState<ScenarioInputs>({
+    initialAmount: 0,
     monthlyDeposit: 0,
-    expectedIRR: weightedAPR,
-    targetAmount: targetCapital2040,
-    durationYears: yearsTo2040,
-  }), [currentPortfolioValue, weightedAPR, targetCapital2040, yearsTo2040]);
+    expectedIRR: 10,
+    targetAmount: 10000000,
+    durationYears: 15,
+  });
+  
+  // Update current inputs when portfolio changes
+  useEffect(() => {
+    setCurrentInputs(prev => ({
+      ...prev,
+      initialAmount: currentPortfolioValue,
+      expectedIRR: weightedAPR > 0 ? weightedAPR : 10,
+      targetAmount: targetCapital2040,
+      durationYears: yearsTo2040,
+    }));
+  }, [currentPortfolioValue, weightedAPR, targetCapital2040, yearsTo2040]);
   
   // Scenario inputs (editable)
   const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({
@@ -141,6 +152,34 @@ export function useVision2040Controller() {
   });
   
   const [scenarioName, setScenarioName] = useState("");
+  
+  // Helper to update current inputs
+  const updateCurrentInput = (key: keyof ScenarioInputs, value: number) => {
+    setCurrentInputs(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+  
+  // Helper to update target capital
+  const updateTargetCapital = async (value: number) => {
+    try {
+      await apiRequest("/api/settings", "PATCH", {
+        targetCapital2040: value.toString(),
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      toast({
+        title: "Success",
+        description: "Target capital updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update target capital.",
+      });
+    }
+  };
   
   // Update scenario inputs when current inputs change
   useEffect(() => {
@@ -340,6 +379,8 @@ export function useVision2040Controller() {
     isSavingScenario: saveScenarioMutation.isPending,
     deleteScenario: deleteScenarioMutation.mutate,
     loadScenario,
+    updateCurrentInput,
+    updateTargetCapital,
     
     // Helper functions
     calculateFutureValue,
