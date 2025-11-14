@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useLanguage } from "@/lib/language-provider";
 import { formatCurrency } from "@/lib/utils";
+import { getPlatformChartColor } from "@/lib/platform-colors";
 import type { DashboardMetrics } from "@/lib/dashboardMetrics";
 
 interface CombinedChartsCardProps {
@@ -15,13 +16,16 @@ const STATUS_COLORS = {
   defaulted: "hsl(var(--destructive))",
 };
 
-const PLATFORM_COLORS = [
+// Fallback colors for unmapped platforms (cycle through these)
+const FALLBACK_PLATFORM_COLORS = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
   "hsl(var(--chart-3))",
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
 ];
+
+const DEFAULT_PLATFORM_COLOR = "hsl(var(--primary))";
 
 export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
   const { t } = useLanguage();
@@ -58,13 +62,21 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
   ].filter(item => item.value > 0);
 
   // Use platformDistributionAll for default view (all investments by value)
-  const platformData = metrics.platformDistributionAll.map((platform, index) => ({
-    name: platform.platformName,
-    value: platform.value,
-    count: platform.count,
-    percentage: platform.percentage,
-    color: PLATFORM_COLORS[index % PLATFORM_COLORS.length],
-  })).filter(item => item.value > 0);
+  const platformData = metrics.platformDistributionAll.map((platform, index) => {
+    // Get platform-specific color, fallback to rotating palette for unknown platforms
+    const platformColor = getPlatformChartColor(platform.platformName);
+    const color = platformColor !== DEFAULT_PLATFORM_COLOR 
+      ? platformColor 
+      : FALLBACK_PLATFORM_COLORS[index % FALLBACK_PLATFORM_COLORS.length];
+    
+    return {
+      name: platform.platformName,
+      value: platform.value,
+      count: platform.count,
+      percentage: platform.percentage,
+      color,
+    };
+  }).filter(item => item.value > 0);
 
   const statusTotal = metrics.totalInvestments;
 

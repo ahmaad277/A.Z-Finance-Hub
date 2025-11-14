@@ -3,20 +3,23 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useLanguage } from "@/lib/language-provider";
 import { Building2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { getPlatformChartColor } from "@/lib/platform-colors";
 import type { DashboardMetrics } from "@/lib/dashboardMetrics";
 
 interface PlatformDistributionChartProps {
   metrics: DashboardMetrics;
 }
 
-// Platform colors - using chart colors
-const PLATFORM_COLORS = [
+// Fallback colors for unmapped platforms (cycle through these)
+const FALLBACK_PLATFORM_COLORS = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
   "hsl(var(--chart-3))",
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
 ];
+
+const DEFAULT_PLATFORM_COLOR = "hsl(var(--primary))";
 
 export function PlatformDistributionChart({ metrics }: PlatformDistributionChartProps) {
   const { t } = useLanguage();
@@ -35,14 +38,22 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
     }
   };
 
-  // Map platform distribution to chart data with colors
-  const data = metrics.platformDistribution.map((platform, index) => ({
-    name: platform.platformName,
-    value: platform.value,
-    count: platform.count,
-    percentage: platform.percentage,
-    color: PLATFORM_COLORS[index % PLATFORM_COLORS.length],
-  })).filter(item => item.value > 0);
+  // Map platform distribution to chart data with platform-specific colors
+  const data = metrics.platformDistribution.map((platform, index) => {
+    // Get platform-specific color, fallback to rotating palette for unknown platforms
+    const platformColor = getPlatformChartColor(platform.platformName);
+    const color = platformColor !== DEFAULT_PLATFORM_COLOR 
+      ? platformColor 
+      : FALLBACK_PLATFORM_COLORS[index % FALLBACK_PLATFORM_COLORS.length];
+    
+    return {
+      name: platform.platformName,
+      value: platform.value,
+      count: platform.count,
+      percentage: platform.percentage,
+      color,
+    };
+  }).filter(item => item.value > 0);
 
   const totalValue = data.reduce((sum, item) => sum + item.value, 0);
 

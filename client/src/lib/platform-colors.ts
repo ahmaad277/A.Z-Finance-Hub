@@ -23,12 +23,12 @@ type PlatformColors = Record<string, PlatformColorConfig>;
  * Colors are defined for both light and dark modes
  */
 const PLATFORM_COLORS: PlatformColors = {
-  // صكوك - White/Light Gray
+  // صكوك - Light Gray (off-white)
   'sukuk': {
     badgeLight: 'bg-gray-100 text-gray-900 border-gray-300',
     badgeDark: 'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600',
     borderLeft: 'border-l-gray-300 dark:border-l-gray-600',
-    chartColor: '#9CA3AF', // gray-400
+    chartColor: '#E5E7EB', // gray-200 (light gray, visible on light backgrounds)
   },
   // منافع - Black/Dark
   'manfaa': {
