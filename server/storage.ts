@@ -68,6 +68,10 @@ import {
   type ExportRequestWithUser,
   type ViewRequestWithUser,
   type ApiCustomDistribution,
+  visionTargets,
+  type VisionTarget,
+  type InsertVisionTarget,
+  type MonthlyProgress,
 } from "@shared/schema";
 import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
 import { db, pool } from "./db";
@@ -135,6 +139,16 @@ export interface IStorage {
   getPortfolioHistoryEntry(month: Date): Promise<PortfolioHistory | undefined>;
   upsertPortfolioHistory(entry: InsertPortfolioHistory): Promise<PortfolioHistory>;
   deletePortfolioHistory(id: string): Promise<boolean>;
+
+  // Vision Targets
+  getVisionTargets(startDate?: Date, endDate?: Date): Promise<VisionTarget[]>;
+  getVisionTargetEntry(month: Date): Promise<VisionTarget | undefined>;
+  upsertVisionTarget(target: InsertVisionTarget): Promise<VisionTarget>;
+  deleteVisionTarget(id: string): Promise<boolean>;
+  bulkUpsertVisionTargets(targets: InsertVisionTarget[]): Promise<VisionTarget[]>;
+  
+  // Monthly Progress (combined targets and actuals)
+  getMonthlyProgress(startDate?: Date, endDate?: Date): Promise<MonthlyProgress[]>;
 
   // Users
   getUsers(): Promise<UserWithRole[]>;
@@ -2163,6 +2177,152 @@ export class DatabaseStorage implements IStorage {
       .where(eq(portfolioHistory.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  // Vision Targets
+  async getVisionTargets(startDate?: Date, endDate?: Date): Promise<VisionTarget[]> {
+    let query = db.select().from(visionTargets);
+    
+    const conditions = [];
+    if (startDate) {
+      conditions.push(gte(visionTargets.month, startDate));
+    }
+    if (endDate) {
+      conditions.push(lte(visionTargets.month, endDate));
+    }
+    
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions)).orderBy(visionTargets.month);
+    }
+    
+    return await query.orderBy(visionTargets.month);
+  }
+
+  async getVisionTargetEntry(month: Date): Promise<VisionTarget | undefined> {
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const [entry] = await db
+      .select()
+      .from(visionTargets)
+      .where(eq(visionTargets.month, firstDayOfMonth))
+      .limit(1);
+    return entry;
+  }
+
+  async upsertVisionTarget(target: InsertVisionTarget): Promise<VisionTarget> {
+    // Normalize to first day of month
+    const firstDayOfMonth = new Date(target.month.getFullYear(), target.month.getMonth(), 1);
+    
+    // Check if entry exists for this month
+    const existing = await this.getVisionTargetEntry(firstDayOfMonth);
+    
+    if (existing) {
+      // Update existing entry
+      const [updated] = await db
+        .update(visionTargets)
+        .set({
+          targetValue: target.targetValue.toString(),
+          scenarioId: target.scenarioId,
+          generated: target.generated ?? 1,
+          notes: target.notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(visionTargets.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new entry
+      const [created] = await db
+        .insert(visionTargets)
+        .values({
+          month: firstDayOfMonth,
+          targetValue: target.targetValue.toString(),
+          scenarioId: target.scenarioId,
+          generated: target.generated ?? 1,
+          notes: target.notes,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async deleteVisionTarget(id: string): Promise<boolean> {
+    const result = await db
+      .delete(visionTargets)
+      .where(eq(visionTargets.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async bulkUpsertVisionTargets(targets: InsertVisionTarget[]): Promise<VisionTarget[]> {
+    const results: VisionTarget[] = [];
+    
+    for (const target of targets) {
+      const result = await this.upsertVisionTarget(target);
+      results.push(result);
+    }
+    
+    return results;
+  }
+
+  // Monthly Progress (combined targets and actuals)
+  async getMonthlyProgress(startDate?: Date, endDate?: Date): Promise<MonthlyProgress[]> {
+    // Get both portfolio history and vision targets
+    const [history, targets] = await Promise.all([
+      this.getPortfolioHistory(startDate, endDate),
+      this.getVisionTargets(startDate, endDate)
+    ]);
+
+    // Create a map of month to combined data
+    const progressMap = new Map<string, MonthlyProgress>();
+
+    // Add actuals from portfolio history
+    for (const entry of history) {
+      const monthKey = entry.month.toISOString().substring(0, 7); // YYYY-MM
+      progressMap.set(monthKey, {
+        month: entry.month,
+        targetValue: null,
+        actualValue: parseFloat(entry.totalValue),
+        variance: null,
+        variancePercent: null,
+        targetSource: null,
+        actualSource: entry.source as 'manual' | 'auto',
+      });
+    }
+
+    // Add or merge targets
+    for (const target of targets) {
+      const monthKey = target.month.toISOString().substring(0, 7); // YYYY-MM
+      const existing = progressMap.get(monthKey);
+      const targetValue = parseFloat(target.targetValue);
+      
+      if (existing) {
+        // Merge with existing actual
+        existing.targetValue = targetValue;
+        existing.targetSource = target.generated === 1 ? 'generated' : 'manual';
+        if (existing.actualValue !== null) {
+          existing.variance = existing.actualValue - targetValue;
+          existing.variancePercent = targetValue !== 0 ? 
+            ((existing.actualValue - targetValue) / targetValue) * 100 : null;
+        }
+        progressMap.set(monthKey, existing);
+      } else {
+        // Add target-only entry
+        progressMap.set(monthKey, {
+          month: target.month,
+          targetValue: targetValue,
+          actualValue: null,
+          variance: null,
+          variancePercent: null,
+          targetSource: target.generated === 1 ? 'generated' : 'manual',
+          actualSource: null,
+        });
+      }
+    }
+
+    // Convert map to sorted array
+    return Array.from(progressMap.values()).sort((a, b) => 
+      a.month.getTime() - b.month.getTime()
+    );
   }
 
   // Data Management

@@ -230,7 +230,7 @@ export const visionTargets = pgTable("vision_targets", {
   month: timestamp("month").notNull().unique(), // First day of month
   targetValue: numeric("target_value", { precision: 15, scale: 2 }).notNull(),
   scenarioId: varchar("scenario_id"), // Optional link to saved scenario
-  generated: boolean("generated").notNull().default(true), // true if auto-calculated, false if manually edited
+  generated: integer("generated").notNull().default(1), // 1 if auto-calculated, 0 if manually edited
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
