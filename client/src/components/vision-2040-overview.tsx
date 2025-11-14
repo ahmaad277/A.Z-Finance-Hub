@@ -235,7 +235,7 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
                 y={controller.targetCapital2040} 
                 stroke="hsl(var(--destructive))" 
                 strokeDasharray="5 5"
-                label={{ value: "Target", position: "right", fontSize: 10 }}
+                label={{ value: t("vision2040.targetGoal"), position: "right", fontSize: 10 }}
               />
               <Area
                 type="monotone"
@@ -282,7 +282,7 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
           <AlertDescription>
             <div className="font-medium mb-1">{t("vision2040.timeProgress")}</div>
             <div className="text-xs">
-              {controller.yearsTo2040} years ({(controller.yearsTo2040 * 12)} months) remaining
+              {controller.yearsTo2040} {t("vision2040.years")} ({(controller.yearsTo2040 * 12)} {t("vision2040.monthsShort")}) {t("vision2040.remaining")}
             </div>
           </AlertDescription>
         </Alert>
@@ -340,7 +340,7 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
             data-testid="button-generate-targets"
           >
             <Calculator className="h-4 w-4 mr-2" />
-            Generate Monthly Targets
+            {t("vision2040.generateMonthlyTargets")}
           </Button>
         </div>
 

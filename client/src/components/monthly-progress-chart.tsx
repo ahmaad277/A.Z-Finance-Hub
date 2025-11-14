@@ -83,7 +83,7 @@ export function MonthlyProgressChart({
       if (endDate) params.append("endDate", endDate.toISOString());
       
       const response = await fetch(`/api/monthly-progress${params.toString() ? `?${params}` : ""}`);
-      if (!response.ok) throw new Error("Failed to fetch monthly progress");
+      if (!response.ok) throw new Error(t("vision2040.fetchError"));
       return response.json();
     },
   });

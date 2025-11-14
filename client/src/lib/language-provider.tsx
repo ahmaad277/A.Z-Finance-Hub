@@ -641,6 +641,15 @@ const translations = {
     "vision2040.years": "years",
     "vision2040.monthsShort": "months",
     "vision2040.remaining": "remaining",
+    "vision2040.onTrackTitle": "On Track",
+    "vision2040.surplusAmount": "Surplus",
+    "vision2040.scenarioPlanning": "Scenario Planning",
+    "vision2040.fetchError": "Failed to fetch monthly progress",
+    "vision2040.deleteConfirm": "Are you sure you want to delete this entry?",
+    "vision2040.noDataMessage": "No data available. Add entries to start tracking progress.",
+    "vision2040.sourceManual": "Manual",
+    "vision2040.sourceGenerated": "Generated",
+    "vision2040.sourceAuto": "Auto",
     
     // Export
     "export.report": "Export",
@@ -1590,6 +1599,15 @@ const translations = {
     "vision2040.years": "سنوات",
     "vision2040.monthsShort": "أشهر",
     "vision2040.remaining": "متبقية",
+    "vision2040.onTrackTitle": "على المسار الصحيح",
+    "vision2040.surplusAmount": "فائض",
+    "vision2040.scenarioPlanning": "تخطيط السيناريوهات",
+    "vision2040.fetchError": "فشل في جلب بيانات التقدم الشهري",
+    "vision2040.deleteConfirm": "هل أنت متأكد من حذف هذا السجل؟",
+    "vision2040.noDataMessage": "لا توجد بيانات متاحة. أضف سجلات لبدء تتبع التقدم.",
+    "vision2040.sourceManual": "يدوي",
+    "vision2040.sourceGenerated": "محسوب",
+    "vision2040.sourceAuto": "تلقائي",
     
     // Export
     "export.report": "تصدير",

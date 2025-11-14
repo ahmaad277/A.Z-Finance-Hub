@@ -45,6 +45,21 @@ export function MonthlyTargetsTable({
   const { t } = useLanguage();
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Translate source values
+  const translateSource = (source: string | null | undefined): string => {
+    if (!source) return "-";
+    switch (source) {
+      case "manual":
+        return t("vision2040.sourceManual");
+      case "generated":
+        return t("vision2040.sourceGenerated");
+      case "auto":
+        return t("vision2040.sourceAuto");
+      default:
+        return source;
+    }
+  };
   const [editValues, setEditValues] = useState<{
     targetValue: string;
     actualValue: string;
@@ -59,7 +74,7 @@ export function MonthlyTargetsTable({
       if (endDate) params.append("endDate", endDate.toISOString());
       
       const response = await fetch(`/api/monthly-progress${params.toString() ? `?${params}` : ""}`);
-      if (!response.ok) throw new Error("Failed to fetch monthly progress");
+      if (!response.ok) throw new Error(t("vision2040.fetchError"));
       return response.json();
     },
   });
@@ -217,7 +232,7 @@ export function MonthlyTargetsTable({
   };
 
   const handleDelete = (row: MonthlyProgress) => {
-    if (window.confirm("Are you sure you want to delete this entry?")) {
+    if (window.confirm(t("vision2040.deleteConfirm"))) {
       const monthDate = row.month instanceof Date ? row.month : new Date(row.month);
       deleteMutation.mutate(monthDate);
     }
@@ -285,7 +300,7 @@ export function MonthlyTargetsTable({
               {monthlyProgress.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    No data available. Add entries to start tracking progress.
+                    {t("vision2040.noDataMessage")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -366,7 +381,7 @@ export function MonthlyTargetsTable({
                               className="text-xs"
                               data-testid={`badge-target-source-${monthKey}`}
                             >
-                              {row.targetSource}
+                              {translateSource(row.targetSource)}
                             </Badge>
                           )}
                           {row.actualSource && (
@@ -375,7 +390,7 @@ export function MonthlyTargetsTable({
                               className="text-xs"
                               data-testid={`badge-actual-source-${monthKey}`}
                             >
-                              {row.actualSource}
+                              {translateSource(row.actualSource)}
                             </Badge>
                           )}
                         </div>
