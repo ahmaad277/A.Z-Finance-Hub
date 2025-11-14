@@ -3,7 +3,7 @@ import { queryClient, clearCache } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
 import { PlatformFilterProvider } from "@/lib/platform-filter-context";
@@ -23,6 +23,8 @@ import PlatformDetails from "@/pages/platform-details";
 import Vision2040 from "@/pages/vision-2040";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
+import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // App version - increment to force cache clear
 const APP_VERSION = "5";
@@ -46,6 +48,42 @@ function Router() {
   );
 }
 
+function MainContent() {
+  const { setOpenMobile } = useSidebar();
+  const isMobile = useIsMobile();
+
+  // Enable swipe gesture to open sidebar on mobile
+  useSwipeGesture({
+    onSwipeLeft: () => {
+      if (isMobile) {
+        setOpenMobile(true);
+      }
+    },
+    enabled: isMobile,
+    edgeThreshold: 50,
+    minSwipeDistance: 50,
+  });
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <header className="flex items-center justify-between gap-2 border-b px-3 sm:px-4 py-2">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger data-testid="button-sidebar-toggle" />
+        </div>
+        <div className="flex items-center gap-1">
+          <PlatformFilterButton />
+          <SaveCheckpointButton />
+          <ThemeToggle />
+          <LanguageToggle />
+        </div>
+      </header>
+      <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+        <Router />
+      </main>
+    </div>
+  );
+}
+
 function AppContent() {
   const style = {
     "--sidebar-width": "16rem",
@@ -53,25 +91,10 @@ function AppContent() {
   };
 
   return (
-    <SidebarProvider style={style as React.CSSProperties}>
+    <SidebarProvider style={style as React.CSSProperties} defaultOpen={false}>
       <div className="flex h-screen w-full">
         <AppSidebar />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between gap-2 border-b px-3 sm:px-4 py-2">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
-            </div>
-            <div className="flex items-center gap-1">
-              <PlatformFilterButton />
-              <SaveCheckpointButton />
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
-          </header>
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
-            <Router />
-          </main>
-        </div>
+        <MainContent />
       </div>
     </SidebarProvider>
   );

@@ -11,6 +11,7 @@ A.Z Finance Hub is a personal investment management platform for tracking and an
 - **Number Format:** All numbers display in English digits (0-9) across both English and Arabic interfaces, using `Intl.NumberFormat('en-US')` consistently throughout the application
 - Layout Direction: **Permanent RTL** - Application uses right-to-left layout for both English and Arabic, optimized for right-hand mobile usage
 - Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
+- **Mobile Gesture Navigation:** Swipe from right edge (>50px from edge) to left on mobile devices to open sidebar navigation
 
 ## System Architecture
 The application is a single-user personal tool built with a modern web stack, operating without authentication.
@@ -30,6 +31,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Backend:** Express.js and Node.js.
 - **Styling:** Tailwind CSS with custom design tokens, dark/light mode, and full bilingual support (English/Arabic) with RTL typography.
 - **Number Formatting:** Unified `Intl.NumberFormat('en-US')` across all components ensures consistent English digit display (0-9) in both English and Arabic interfaces, applied to currency values, percentages, dates, and all numeric displays throughout the application.
+- **Mobile Swipe Gesture Navigation:** Custom `useSwipeGesture` hook enables touch-based sidebar navigation on mobile devices. Detects swipes from right edge (threshold: 50px) with minimum swipe distance of 50px. Filters out vertical scrolls and only activates on mobile devices (breakpoint: <768px). Integrates seamlessly with Shadcn sidebar system using touch events (touchstart, touchmove, touchend).
 - **Design System Unification:** Standardized reusable primitives, consistent spacing, typography, card padding, grid gaps, icon sizing, and motion variants across all pages and components.
 - **Mobile Chart Optimization:** Universal edge-to-edge chart pattern for optimal mobile viewing across all chart components, with self-contained responsive patterns and optimized heights.
 - **Cashflow Forecast Chart Redesign:** Rebuilt as a horizontal stacked bar chart for enhanced readability of 40-month forecasts, separating principal and profit. Features inline numeric labels, dynamic height calculation, and mobile edge-to-edge rendering.
