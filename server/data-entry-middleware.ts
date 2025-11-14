@@ -17,6 +17,12 @@ declare global {
  * Sets req.dataEntry.isDataEntry = true if valid token provided
  * Rejects request with 403 if invalid token provided
  * Allows request through if no token header (normal owner access)
+ * 
+ * SECURITY NOTE: This is designed for a single-user personal finance application.
+ * The system assumes that without authentication, the user accessing the app directly
+ * is the owner. Data-entry users MUST include the X-Data-Entry-Token header to be 
+ * identified and restricted. This design works when the app is privately hosted and
+ * the owner controls physical/network access to the application.
  */
 export async function withDataEntryToken(
   req: Request,

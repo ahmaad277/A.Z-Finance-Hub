@@ -47,6 +47,8 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Cash Balance Calculation:** Platform-specific balance aggregation using signed CASE logic, supporting legacy transactions via investment linkage.
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality, allowing users to save and restore complete portfolio states with metadata tracking, using transaction-safe operations.
 
+- **Data-Entry Sharing System:** Secure token-based system allowing external users to manage investments while restricting access to sensitive financial data. Implemented with backend middleware (`withDataEntryToken`, `blockDataEntry`), client-side token verification, and dedicated `/data-entry/:token` page. Data-entry users have full CRUD on investments/cashflows only, blocked from dashboard stats, reports, cash transactions, settings, and platform management. **Security Note:** System designed for single-user application with private hosting; owner access assumed when no X-Data-Entry-Token header present. **Current Limitation:** InvestmentDialog component uses standard API client without token support; create/edit investment operations from data-entry page require component enhancement.
+
 ## External Dependencies
 - **Charting:** Recharts for data visualization.
-- **Database:** Currently uses in-memory storage (MemStorage).
+- **Database:** PostgreSQL (via Neon) with Drizzle ORM.

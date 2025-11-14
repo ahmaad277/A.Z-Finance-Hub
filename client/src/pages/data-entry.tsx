@@ -283,6 +283,23 @@ export default function DataEntry() {
                         setEditingInvestment(investment);
                         setDialogOpen(true);
                       }}
+                      onDelete={() => {
+                        if (confirm(language === "ar" ? "هل أنت متأكد من حذف هذا الاستثمار؟" : "Are you sure you want to delete this investment?")) {
+                          fetch(`/api/investments/${investment.id}`, {
+                            method: "DELETE",
+                            headers: {
+                              "X-Data-Entry-Token": token || "",
+                            },
+                            credentials: "include",
+                          }).then(() => {
+                            queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+                            toast({
+                              title: language === "ar" ? "تم الحذف" : "Deleted",
+                              description: language === "ar" ? "تم حذف الاستثمار بنجاح" : "Investment deleted successfully",
+                            });
+                          });
+                        }
+                      }}
                       onCompletePayment={() => {
                         setCompletingInvestment(investment);
                         setCompletePaymentDialogOpen(true);
