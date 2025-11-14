@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { TrendingUp, Target } from "lucide-react";
 import type { MonthlyProgress } from "@shared/schema";
+import { useLanguage } from "@/lib/language-provider";
 
 interface MonthlyProgressChartProps {
   startDate?: Date;
@@ -32,6 +33,8 @@ interface MonthlyProgressChartProps {
 
 // Custom tooltip component
 function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  const { t } = useLanguage();
+  
   if (active && payload && payload.length) {
     const target = payload.find(p => p.dataKey === 'targetValue');
     const actual = payload.find(p => p.dataKey === 'actualValue');
@@ -43,17 +46,17 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
         </p>
         {target && target.value !== null && (
           <p className="text-sm text-blue-600 dark:text-blue-400">
-            Target: {formatCurrency(target.value as number)}
+            {t("vision2040.targetValue")}: {formatCurrency(target.value as number)}
           </p>
         )}
         {actual && actual.value !== null && (
           <p className="text-sm text-orange-600 dark:text-orange-400">
-            Actual: {formatCurrency(actual.value as number)}
+            {t("vision2040.actualColumn")}: {formatCurrency(actual.value as number)}
           </p>
         )}
         {target?.value && actual?.value && (
           <p className="text-xs mt-1 text-muted-foreground">
-            Variance: {formatCurrency((actual.value as number) - (target.value as number))}
+            {t("vision2040.latestVariance")}: {formatCurrency((actual.value as number) - (target.value as number))}
             {' '}({((((actual.value as number) - (target.value as number)) / (target.value as number)) * 100).toFixed(1)}%)
           </p>
         )}
@@ -69,6 +72,8 @@ export function MonthlyProgressChart({
   endDate,
   height = 400,
 }: MonthlyProgressChartProps) {
+  const { t } = useLanguage();
+  
   // Fetch monthly progress data
   const { data: monthlyProgress = [], isLoading } = useQuery<MonthlyProgress[]>({
     queryKey: ["/api/monthly-progress", startDate, endDate],
@@ -128,9 +133,9 @@ export function MonthlyProgressChart({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            Progress Towards Vision 2040
+            {t("vision2040.progressTowardsVision")}
           </CardTitle>
-          <CardDescription>Loading chart...</CardDescription>
+          <CardDescription>{t("vision2040.trackProgress")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="w-full" style={{ height }} />
@@ -145,16 +150,16 @@ export function MonthlyProgressChart({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            Progress Towards Vision 2040
+            {t("vision2040.progressTowardsVision")}
           </CardTitle>
           <CardDescription>
-            No data available. Add targets and track your portfolio value to see progress.
+            {t("vision2040.noData")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center" style={{ height: height / 2 }}>
           <div className="text-center text-muted-foreground">
             <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No progress data available</p>
+            <p>{t("vision2040.noData")}</p>
           </div>
         </CardContent>
       </Card>
@@ -168,15 +173,15 @@ export function MonthlyProgressChart({
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Progress Towards Vision 2040
+              {t("vision2040.progressTowardsVision")}
             </CardTitle>
             <CardDescription>
-              Monthly targets vs. actual portfolio values
+              {t("vision2040.monthlyTargetsVsActual")}
             </CardDescription>
           </div>
           {stats.latestVariance !== null && (
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Latest Variance</p>
+              <p className="text-xs text-muted-foreground">{t("vision2040.latestVariance")}</p>
               <p className={`text-lg font-semibold ${
                 stats.latestVariance >= 0 
                   ? "text-green-600 dark:text-green-400" 
@@ -229,7 +234,7 @@ export function MonthlyProgressChart({
               <Line
                 type="monotone"
                 dataKey="targetValue"
-                name="Target"
+                name={t("vision2040.targetValue")}
                 stroke="#3b82f6"
                 strokeWidth={2}
                 dot={{ r: 4 }}
@@ -241,7 +246,7 @@ export function MonthlyProgressChart({
               <Line
                 type="monotone"
                 dataKey="actualValue"
-                name="Actual"
+                name={t("vision2040.actualColumn")}
                 stroke="#fb923c"
                 strokeWidth={2}
                 dot={{ r: 4 }}
