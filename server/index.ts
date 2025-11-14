@@ -74,16 +74,46 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // State tracking for server initialization
+  let serverStarted = false;
+  let statusCheckInterval: NodeJS.Timeout | null = null;
+  
+  // Handle server listen errors (especially EADDRINUSE) - attach BEFORE listen()
+  server.once('error', (error: NodeJS.ErrnoException) => {
+    console.error('❌ Server error during startup:', error);
+    
+    if (error.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${port} is already in use.`);
+      console.error('This usually means another instance is running.');
+      console.error('Waiting 3 seconds before exiting to allow cleanup...');
+      
+      // Give time for logs to flush and cleanup
+      setTimeout(() => {
+        process.exit(1);
+      }, 3000);
+    } else {
+      // Other server errors - exit immediately
+      console.error('Exiting due to server error');
+      process.exit(1);
+    }
+  });
+  
   server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    serverStarted = true;
+    
+    // Start background tasks ONLY after server is successfully listening
+    startBackgroundTasks();
   });
 
   // Background task: Periodic investment status checker
-  async function runInvestmentStatusCheck() {
+  function startBackgroundTasks() {
+    async function runInvestmentStatusCheck() {
     try {
       log('Running investment status check...');
       
@@ -124,16 +154,98 @@ app.use((req, res, next) => {
         log('No status updates needed');
       }
     } catch (error) {
-      log(`Error in investment status check: ${error}`);
+      console.error('❌ Critical error in investment status check:', error);
+      // Don't crash the server - log and continue
     }
   }
 
-  // Run status check immediately on startup
-  runInvestmentStatusCheck();
+    // Run status check immediately on startup
+    runInvestmentStatusCheck().catch(err => {
+      console.error('❌ Failed to run initial status check:', err);
+    });
 
-  // Run status check periodically (configurable via environment variable)
-  const CHECK_INTERVAL_MINUTES = parseInt(process.env.STATUS_CHECK_INTERVAL_MINUTES || '60', 10);
-  const CHECK_INTERVAL_MS = CHECK_INTERVAL_MINUTES * 60 * 1000;
-  setInterval(runInvestmentStatusCheck, CHECK_INTERVAL_MS);
-  log(`Investment status checker scheduled to run every ${CHECK_INTERVAL_MINUTES} minutes`);
+    // Run status check periodically (configurable via environment variable)
+    const CHECK_INTERVAL_MINUTES = parseInt(process.env.STATUS_CHECK_INTERVAL_MINUTES || '60', 10);
+    const CHECK_INTERVAL_MS = CHECK_INTERVAL_MINUTES * 60 * 1000;
+    statusCheckInterval = setInterval(runInvestmentStatusCheck, CHECK_INTERVAL_MS);
+    log(`Investment status checker scheduled to run every ${CHECK_INTERVAL_MINUTES} minutes`);
+  } // Close startBackgroundTasks()
+  
+  // Graceful shutdown handler
+  let isShuttingDown = false;
+  let forceShutdownTimer: NodeJS.Timeout | null = null;
+  
+  function gracefulShutdown(signal: string) {
+    // Prevent multiple shutdown attempts
+    if (isShuttingDown) {
+      return;
+    }
+    isShuttingDown = true;
+    
+    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    
+    // Clear the interval timer if it exists
+    if (statusCheckInterval) {
+      clearInterval(statusCheckInterval);
+      log('Background tasks stopped');
+    }
+    
+    // Close the server with error handling
+    try {
+      server.close(() => {
+        log('Server closed successfully');
+        if (forceShutdownTimer) {
+          clearTimeout(forceShutdownTimer);
+        }
+        process.exit(0);
+      });
+    } catch (error: any) {
+      // Handle ERR_SERVER_NOT_RUNNING gracefully
+      if (error.code === 'ERR_SERVER_NOT_RUNNING') {
+        log('Server already stopped');
+        if (forceShutdownTimer) {
+          clearTimeout(forceShutdownTimer);
+        }
+        process.exit(0);
+      } else {
+        console.error('❌ Error closing server:', error);
+        process.exit(1);
+      }
+    }
+    
+    // Force close after 10 seconds if graceful shutdown fails
+    forceShutdownTimer = setTimeout(() => {
+      console.error('❌ Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  }
+  
+  // Listen for termination signals
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  
+  // Global error handlers
+  process.on('uncaughtException', (error: any) => {
+    console.error('❌ Uncaught Exception:', error);
+    
+    // Special handling for EADDRINUSE - let server.once('error') handle it
+    if (error.code === 'EADDRINUSE' || error.syscall === 'listen') {
+      // Don't double-handle listen errors - they're caught by server.once('error')
+      return;
+    }
+    
+    // For other uncaught exceptions, trigger shutdown only if server started
+    if (serverStarted && statusCheckInterval !== null) {
+      gracefulShutdown('uncaughtException');
+    } else {
+      // Server not started yet, exit immediately
+      console.error('❌ Server not started, exiting');
+      process.exit(1);
+    }
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    // Log but don't exit - let the app continue
+  });
 })();
