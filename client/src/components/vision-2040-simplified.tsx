@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/language-provider";
 import { useVision2040Controller } from "@/hooks/use-vision2040-controller";
 import { UnifiedProgressChart } from "./unified-progress-chart";
-import { HistoricalDataTable } from "./historical-data-table";
 import { 
   Target, 
   ChevronDown, 
@@ -247,14 +246,6 @@ export function Vision2040Simplified({ isCollapsed = false, onToggle }: Vision20
                   scenarioInputs={controller.scenarioInputs}
                   yearsTo2040={controller.yearsTo2040}
                 />
-              </div>
-
-              {/* Historical Data Table */}
-              <div className="space-y-2">
-                <h3 className="text-sm sm:text-base font-semibold">
-                  {t("vision2040.historicalData")}
-                </h3>
-                <HistoricalDataTable />
               </div>
             </CardContent>
           </motion.div>

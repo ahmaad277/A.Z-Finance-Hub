@@ -82,9 +82,9 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
 
   // Custom labelLine renderer for status chart - only show lines for small slices
   const renderStatusLabelLine = (props: any) => {
-    const { payload, points } = props;
-    // payload.value is the count, we need to calculate percentage
-    const pct = statusTotal > 0 ? ((payload?.value || 0) / statusTotal) * 100 : 0;
+    const { payload, points, percent } = props;
+    // Use Recharts percent (0-1 range) to match renderStatusLabel logic
+    const pct = (percent || 0) * 100;
     
     // Only render connector line for small slices (<15%)
     if (pct > 15) {
