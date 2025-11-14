@@ -21,7 +21,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Analytics:** Includes monthly returns trends, platform allocation, and performance comparisons against Vision 2040 targets, separating principal from profit.
 - **Alerts System:** Smart, user-configurable alerts with severity classification.
 - **Platform Management:** Dedicated pages for platform details, statistics, and filtered investment lists.
-- **Vision 2040 Progress Calculator:** A unified component for goal planning and progress tracking, featuring dual progress bars, an interactive timeline, smart indicators, and saved scenarios management.
+- **Vision 2040 Progress Calculator:** Simplified unified interface at `/vision-2040` featuring a single integrated chart with three trajectory lines: Blue (current projection), Green (adaptive target from VisionTarget records), and Orange (historical actuals from PortfolioHistory). Includes editable calculation inputs, historical data table, and full responsive design with complete Arabic translations. Target capital field uses local state buffering with blur-save pattern to prevent data corruption.
 - **Reports System:** Comprehensive financial reporting with Excel (XLSX) and PDF export, customizable date ranges, and platform filtering.
 
 **Technical Implementations & Design Choices:**
