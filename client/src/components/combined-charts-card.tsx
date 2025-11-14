@@ -108,14 +108,55 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
     );
   };
 
+  // Custom labelLine renderer - only show lines for small slices
+  const renderPlatformLabelLine = (props: any) => {
+    const { payload, points } = props;
+    const pct = payload?.percentage ?? 0;
+    
+    // Only render connector line for small slices (<15%)
+    if (pct > 15) {
+      return null;
+    }
+    
+    // Convert points array to proper SVG points string
+    if (!points || points.length === 0) return null;
+    const pointsString = points.map((p: any) => `${p.x},${p.y}`).join(' ');
+    
+    return (
+      <polyline 
+        points={pointsString} 
+        stroke="hsl(var(--border))" 
+        strokeWidth={1} 
+        fill="none"
+        style={{ pointerEvents: 'none' }}
+      />
+    );
+  };
+
   const renderPlatformLabel = (props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, payload } = props;
     const count = payload?.count || 0;
     const pct = payload?.percentage ?? 0;
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    // Smart label positioning: inside for large slices (>15%), outside for small ones
+    const isLargeSlice = pct > 15;
+    
+    let x, y, textAnchor;
+    if (isLargeSlice) {
+      // Position inside the slice (at midpoint)
+      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+      x = cx + radius * Math.cos(-midAngle * RADIAN);
+      y = cy + radius * Math.sin(-midAngle * RADIAN);
+      textAnchor = "middle";
+    } else {
+      // Position outside the slice
+      const radius = outerRadius + 20; // 20px outside
+      x = cx + radius * Math.cos(-midAngle * RADIAN);
+      y = cy + radius * Math.sin(-midAngle * RADIAN);
+      // Adjust textAnchor based on which side of the chart
+      textAnchor = x > cx ? "start" : "end";
+    }
 
     const displayText = showPlatformPercentage 
       ? `${pct.toFixed(0)}%` 
@@ -125,12 +166,12 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
       <text
         x={x}
         y={y}
-        fill="white"
-        textAnchor="middle"
+        fill={isLargeSlice ? "white" : "hsl(var(--foreground))"}
+        textAnchor={textAnchor}
         dominantBaseline="central"
         className="font-bold text-[11px]"
         style={{ 
-          textShadow: '0 0 3px rgba(0,0,0,0.8)',
+          textShadow: isLargeSlice ? '0 0 3px rgba(0,0,0,0.8)' : 'none',
           pointerEvents: 'none'
         }}
       >
@@ -176,15 +217,19 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
                       data={platformData}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
+                      labelLine={renderPlatformLabelLine}
                       label={renderPlatformLabel}
                       outerRadius={50}
                       fill="#8884d8"
                       dataKey="value"
-                      stroke="none"
                     >
                       {platformData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.color} 
+                          stroke="hsl(var(--border))" 
+                          strokeWidth={1.5}
+                        />
                       ))}
                     </Pie>
                     <Tooltip
