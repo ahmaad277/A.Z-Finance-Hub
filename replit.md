@@ -8,6 +8,7 @@ A.Z Finance Hub is a personal investment management platform for tracking and an
 - Default language: English (supports Arabic)
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
+- **Number Format:** All numbers display in English digits (0-9) across both English and Arabic interfaces, using `Intl.NumberFormat('en-US')` consistently throughout the application
 - Layout Direction: **Permanent RTL** - Application uses right-to-left layout for both English and Arabic, optimized for right-hand mobile usage
 - Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
 
@@ -21,13 +22,14 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Analytics:** Includes monthly returns trends, platform allocation with interactive three-mode switching (All Value/Active Value/Count), and performance comparisons against Vision 2040 targets, separating principal from profit.
 - **Alerts System:** Smart, user-configurable alerts with severity classification.
 - **Platform Management:** Dedicated pages for platform details, statistics, and filtered investment lists.
-- **Vision 2040 Progress Calculator:** Simplified unified interface at `/vision-2040` featuring a single integrated chart with three trajectory lines: Blue (current projection), Green (adaptive target from VisionTarget records), and Orange (historical actuals from PortfolioHistory). Includes editable calculation inputs, historical data table, and full responsive design. **Complete bilingual support (English/Arabic)** with 29 translation keys covering all UI elements: tabs (Overview/Progress/Targets), buttons, table headers, chart labels, source badges (manual/generated/auto), time indicators, status messages, error messages, and user-facing copy. Target capital field uses local state buffering with blur-save pattern to prevent data corruption.
+- **Vision 2040 Progress Calculator:** Simplified unified interface at `/vision-2040` featuring a single integrated chart with three trajectory lines: Blue (current projection), Green (adaptive target from VisionTarget records), and Orange (historical actuals from PortfolioHistory). Includes editable calculation inputs, historical data table, and full responsive design. **Complete bilingual support (English/Arabic)** with 29 translation keys covering all UI elements: tabs (Overview/Progress/Targets), buttons, table headers, chart labels, source badges (manual/generated/auto), time indicators, status messages, error messages, and user-facing copy. Target capital field uses local state buffering with blur-save pattern to prevent data corruption. **Compact spacing design** with reduced padding and margins for optimal space utilization while maintaining readability (pb-4→pb-2, space-y-6→space-y-4, gap-4→gap-3).
 - **Reports System:** Comprehensive financial reporting with Excel (XLSX) and PDF export, customizable date ranges, and platform filtering.
 
 **Technical Implementations & Design Choices:**
 - **Frontend:** React, TypeScript, Tailwind CSS, Shadcn UI, Recharts, Wouter, TanStack Query.
 - **Backend:** Express.js and Node.js.
 - **Styling:** Tailwind CSS with custom design tokens, dark/light mode, and full bilingual support (English/Arabic) with RTL typography.
+- **Number Formatting:** Unified `Intl.NumberFormat('en-US')` across all components ensures consistent English digit display (0-9) in both English and Arabic interfaces, applied to currency values, percentages, dates, and all numeric displays throughout the application.
 - **Design System Unification:** Standardized reusable primitives, consistent spacing, typography, card padding, grid gaps, icon sizing, and motion variants across all pages and components.
 - **Mobile Chart Optimization:** Universal edge-to-edge chart pattern for optimal mobile viewing across all chart components, with self-contained responsive patterns and optimized heights.
 - **Cashflow Forecast Chart Redesign:** Rebuilt as a horizontal stacked bar chart for enhanced readability of 40-month forecasts, separating principal and profit. Features inline numeric labels, dynamic height calculation, and mobile edge-to-edge rendering.
