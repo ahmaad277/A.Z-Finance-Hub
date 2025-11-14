@@ -20,7 +20,7 @@ export function PlatformFilterButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline" 
+          variant="ghost" 
           size="sm" 
           data-testid="button-platform-filter" 
           className="h-8 w-8 p-0"
