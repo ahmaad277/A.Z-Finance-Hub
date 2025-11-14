@@ -23,7 +23,6 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Platform Management:** Dedicated pages for platform details, statistics, and filtered investment lists.
 - **Vision 2040 Progress Calculator:** A unified component for goal planning and progress tracking, featuring dual progress bars, an interactive timeline, smart indicators, and saved scenarios management.
 - **Reports System:** Comprehensive financial reporting with Excel (XLSX) and PDF export, customizable date ranges, and platform filtering.
-- **Bulk Import:** Excel/CSV file upload interface for importing multiple investments at once with drag-and-drop support, smart column matching (bilingual), validation preview table, risk score auto-calculation, and batch creation.
 
 **Technical Implementations & Design Choices:**
 - **Frontend:** React, TypeScript, Tailwind CSS, Shadcn UI, Recharts, Wouter, TanStack Query.
@@ -42,9 +41,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Atomic Cash Transaction Automation System:** Production-ready automatic cash movement tracking integrated throughout the investment lifecycle with three-layer protection for `createInvestment`, `updateCashflow`, and `completeAllPendingPayments`. All operations are wrapped in `db.transaction()` for ACID compliance.
 - **Cash Balance Calculation:** Platform-specific balance aggregation using signed CASE logic, supporting legacy transactions via investment linkage.
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality, allowing users to save and restore complete portfolio states with metadata tracking, using transaction-safe operations.
-- **Bulk Import System:** Excel/CSV bulk import functionality for adding multiple investment opportunities at once. Features smart column mapping engine supporting bilingual field names (English/Arabic variations with normalization), automatic risk score calculation (IRR-based formula), validation system with errors/warnings, platform selector, and bulk create API endpoint.
 
 ## External Dependencies
 - **Charting:** Recharts for data visualization.
 - **Database:** Currently uses in-memory storage (MemStorage).
-- **Excel/CSV Parsing:** xlsx library for bulk import functionality.
