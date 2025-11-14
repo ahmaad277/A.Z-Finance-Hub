@@ -57,7 +57,8 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
     },
   ].filter(item => item.value > 0);
 
-  const platformData = metrics.platformDistribution.map((platform, index) => ({
+  // Use platformDistributionAll for default view (all investments by value)
+  const platformData = metrics.platformDistributionAll.map((platform, index) => ({
     name: platform.platformName,
     value: platform.value,
     count: platform.count,

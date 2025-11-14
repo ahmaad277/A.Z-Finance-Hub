@@ -32,6 +32,12 @@ const translations = {
     "app.subtitle": "Vision 2040",
     "app.copyright": "© 2025 A.Z Finance",
     "common.sar": "SAR",
+    "common.investments": "Investments",
+    
+    // Platform Allocation Modes
+    "platformAllocation.allValue": "All Investments (Value)",
+    "platformAllocation.activeValue": "Active Only (Value)",
+    "platformAllocation.count": "All Investments (Count)",
     
     // Forecast
     "forecast.title": "Cashflow Forecast",
@@ -955,6 +961,12 @@ const translations = {
     "app.subtitle": "رؤية 2040",
     "app.copyright": "© 2025 A.Z المالية",
     "common.sar": "ريال",
+    "common.investments": "الاستثمارات",
+    
+    // Platform Allocation Modes
+    "platformAllocation.allValue": "جميع الاستثمارات (بالقيمة)",
+    "platformAllocation.activeValue": "النشطة فقط (بالقيمة)",
+    "platformAllocation.count": "جميع الاستثمارات (بالعدد)",
     
     // Forecast
     "forecast.title": "توقعات التدفقات النقدية",

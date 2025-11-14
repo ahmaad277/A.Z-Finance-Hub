@@ -51,7 +51,7 @@ const PLATFORM_COLORS: PlatformColors = {
     chartColor: '#FACC15', // yellow-400
   },
   // ترميز - Green
-  'tarmeem': {
+  'tarmeez': {
     badgeLight: 'bg-green-500 text-white border-green-600',
     badgeDark: 'dark:bg-green-600 dark:text-white dark:border-green-700',
     borderLeft: 'border-l-green-500 dark:border-l-green-600',
@@ -161,7 +161,7 @@ export function getPlatformTextClasses(platformName?: string | null): string {
     'manfaa': 'text-gray-900 dark:text-gray-200',
     'manfa_a': 'text-gray-900 dark:text-gray-200',
     'safqa': 'text-yellow-900 dark:text-yellow-400',
-    'tarmeem': 'text-green-700 dark:text-green-400',
+    'tarmeez': 'text-green-700 dark:text-green-400',
     'dinar': 'text-sky-700 dark:text-sky-400',
     'tameed': 'text-blue-700 dark:text-blue-400',
     'ta_meed': 'text-blue-700 dark:text-blue-400',

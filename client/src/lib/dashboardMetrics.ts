@@ -45,6 +45,31 @@ export interface DashboardMetrics {
     count: number;
     percentage: number;
   }[];
+  
+  // Three modes of platform distribution
+  platformDistributionAll: {
+    platformId: string;
+    platformName: string;
+    value: number;
+    count: number;
+    percentage: number;
+  }[];
+  
+  platformDistributionActive: {
+    platformId: string;
+    platformName: string;
+    value: number;
+    count: number;
+    percentage: number;
+  }[];
+  
+  platformDistributionCount: {
+    platformId: string;
+    platformName: string;
+    value: number;
+    count: number;
+    percentage: number;
+  }[];
 }
 
 /**
@@ -289,27 +314,72 @@ export function calculateDashboardMetrics(
     defaulted: defaultedInvestments,
   };
   
-  // 9. Calculate platform distribution
+  // 9. Calculate platform distribution - Three modes
   const platformMap = new Map(platforms.map(p => [p.id, p]));
-  const platformStats = new Map<string, { value: number; count: number }>();
+  
+  // Collect stats for all investments
+  const platformStatsAll = new Map<string, { value: number; count: number }>();
+  const platformStatsActive = new Map<string, { value: number; count: number }>();
   
   filteredInvestments.forEach(inv => {
-    const current = platformStats.get(inv.platformId) || { value: 0, count: 0 };
-    current.value += parseFloat(inv.faceValue);
-    current.count += 1;
-    platformStats.set(inv.platformId, current);
+    // All investments stats
+    const currentAll = platformStatsAll.get(inv.platformId) || { value: 0, count: 0 };
+    currentAll.value += parseFloat(inv.faceValue);
+    currentAll.count += 1;
+    platformStatsAll.set(inv.platformId, currentAll);
+    
+    // Active only stats
+    if (inv.status === 'active') {
+      const currentActive = platformStatsActive.get(inv.platformId) || { value: 0, count: 0 };
+      currentActive.value += parseFloat(inv.faceValue);
+      currentActive.count += 1;
+      platformStatsActive.set(inv.platformId, currentActive);
+    }
   });
   
-  const platformDistribution = Array.from(platformStats.entries()).map(([platformId, stats]) => {
+  // Calculate totals for percentage calculation
+  const totalAllInvestmentsValue = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
+  const totalActiveInvestmentsValue = activeInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
+  const totalAllCount = filteredInvestments.length;
+  
+  // Mode 1: All investments by value (percentage from total value of ALL investments)
+  const platformDistributionAll = Array.from(platformStatsAll.entries()).map(([platformId, stats]) => {
     const platform = platformMap.get(platformId);
     return {
       platformId,
       platformName: platform?.name || 'Unknown',
       value: stats.value,
       count: stats.count,
-      percentage: totalInvestmentValue > 0 ? (stats.value / totalInvestmentValue) * 100 : 0,
+      percentage: totalAllInvestmentsValue > 0 ? (stats.value / totalAllInvestmentsValue) * 100 : 0,
     };
   }).sort((a, b) => b.value - a.value);
+  
+  // Mode 2: Active investments by value (percentage from total value of ACTIVE investments)
+  const platformDistributionActive = Array.from(platformStatsActive.entries()).map(([platformId, stats]) => {
+    const platform = platformMap.get(platformId);
+    return {
+      platformId,
+      platformName: platform?.name || 'Unknown',
+      value: stats.value,
+      count: stats.count,
+      percentage: totalActiveInvestmentsValue > 0 ? (stats.value / totalActiveInvestmentsValue) * 100 : 0,
+    };
+  }).sort((a, b) => b.value - a.value);
+  
+  // Mode 3: All investments by count (percentage from total COUNT)
+  const platformDistributionCount = Array.from(platformStatsAll.entries()).map(([platformId, stats]) => {
+    const platform = platformMap.get(platformId);
+    return {
+      platformId,
+      platformName: platform?.name || 'Unknown',
+      value: stats.value,
+      count: stats.count,
+      percentage: totalAllCount > 0 ? (stats.count / totalAllCount) * 100 : 0,
+    };
+  }).sort((a, b) => b.count - a.count);
+  
+  // Legacy compatibility: keep platformDistribution as alias to platformDistributionAll
+  const platformDistribution = platformDistributionAll;
   
   return {
     portfolioValue,
@@ -332,6 +402,9 @@ export function calculateDashboardMetrics(
     defaultedInvestments,
     statusDistribution,
     platformDistribution,
+    platformDistributionAll,
+    platformDistributionActive,
+    platformDistributionCount,
   };
 }
 
