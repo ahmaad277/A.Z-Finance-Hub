@@ -17,7 +17,6 @@ import { RecentInvestments } from "@/components/recent-investments";
 import { PlatformCard } from "@/components/platform-card";
 import { CashTransactionDialog } from "@/components/cash-transaction-dialog";
 import { Vision2040CalculatorRefactored } from "@/components/vision-2040-calculator-refactored";
-import { PortfolioHistorySection } from "@/components/portfolio-history-section";
 import { DateRangeFilter } from "@/components/date-range-filter";
 import { FinancialMetricsOnly } from "@/components/financial-metrics-only";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -448,16 +447,6 @@ export default function Dashboard() {
         isCollapsed={isSectionCollapsed('vision-2040')}
         onToggle={() => toggleSection('vision-2040')}
       />
-
-      {/* 3. Portfolio History Tracker */}
-      {dashboardMetrics && (
-        <motion.div
-          key="portfolio-history"
-          {...fadeInUp}
-        >
-          <PortfolioHistorySection currentPortfolioValue={dashboardMetrics.portfolioValue} />
-        </motion.div>
-      )}
 
       {/* Platform-Specific Cash Balance Card */}
       {selectedPlatform !== "all" && cashBalance?.byPlatform && platforms && (
