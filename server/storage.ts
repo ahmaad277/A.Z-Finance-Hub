@@ -2302,7 +2302,7 @@ export class DatabaseStorage implements IStorage {
         if (existing.actualValue !== null) {
           existing.variance = existing.actualValue - targetValue;
           existing.variancePercent = targetValue !== 0 ? 
-            ((existing.actualValue - targetValue) / targetValue) * 100 : null;
+            ((existing.actualValue - targetValue) / targetValue) * 100 : 0;
         }
         progressMap.set(monthKey, existing);
       } else {
