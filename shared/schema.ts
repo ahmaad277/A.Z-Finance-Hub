@@ -196,6 +196,34 @@ export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapsho
 export type InsertPortfolioSnapshot = z.infer<typeof insertPortfolioSnapshotSchema>;
 export type PortfolioSnapshot = typeof portfolioSnapshots.$inferSelect;
 
+// Portfolio History - Track monthly portfolio values for historical analysis
+export const portfolioHistory = pgTable("portfolio_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  month: timestamp("month").notNull().unique(), // First day of the month (YYYY-MM-01)
+  totalValue: numeric("total_value", { precision: 15, scale: 2 }).notNull(), // Total portfolio value for that month
+  source: text("source").notNull().default("manual"), // 'manual' | 'auto'
+  notes: text("notes"), // Optional notes for the entry
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertPortfolioHistorySchema = createInsertSchema(portfolioHistory).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  month: z.coerce.date().refine((date) => {
+    // Ensure the date is the first day of the month
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    return date.getTime() === firstDay.getTime();
+  }, { message: "Month must be the first day of the month (YYYY-MM-01)" }),
+  totalValue: z.coerce.number().nonnegative({ message: "Portfolio value cannot be negative" }),
+  source: z.enum(['manual', 'auto']).optional().default('manual'),
+  notes: z.string().max(500).optional(),
+});
+export type InsertPortfolioHistory = z.infer<typeof insertPortfolioHistorySchema>;
+export type PortfolioHistory = typeof portfolioHistory.$inferSelect;
+
 // Roles - Define user roles (Owner, Admin, Advanced Analyst, etc.)
 export const roles = pgTable("roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

@@ -8,6 +8,7 @@ import {
   cashTransactions,
   savedScenarios,
   portfolioSnapshots,
+  portfolioHistory,
   users,
   roles,
   permissions,
@@ -34,6 +35,8 @@ import {
   type InsertSavedScenario,
   type PortfolioSnapshot,
   type InsertPortfolioSnapshot,
+  type PortfolioHistory,
+  type InsertPortfolioHistory,
   type User,
   type InsertUser,
   type Role,
@@ -126,6 +129,12 @@ export interface IStorage {
   createSnapshot(name: string): Promise<PortfolioSnapshot>;
   restoreSnapshot(id: string): Promise<{ success: boolean; entitiesRestored: any }>;
   deleteSnapshot(id: string): Promise<boolean>;
+
+  // Portfolio History
+  getPortfolioHistory(startDate?: Date, endDate?: Date): Promise<PortfolioHistory[]>;
+  getPortfolioHistoryEntry(month: Date): Promise<PortfolioHistory | undefined>;
+  upsertPortfolioHistory(entry: InsertPortfolioHistory): Promise<PortfolioHistory>;
+  deletePortfolioHistory(id: string): Promise<boolean>;
 
   // Users
   getUsers(): Promise<UserWithRole[]>;
@@ -2075,6 +2084,83 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(portfolioSnapshots)
       .where(eq(portfolioSnapshots.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Portfolio History
+  async getPortfolioHistory(startDate?: Date, endDate?: Date): Promise<PortfolioHistory[]> {
+    let query = db.select().from(portfolioHistory);
+    
+    // Apply date filters if provided
+    if (startDate && endDate) {
+      query = query.where(
+        and(
+          gte(portfolioHistory.month, startDate),
+          lte(portfolioHistory.month, endDate)
+        )
+      ) as any;
+    } else if (startDate) {
+      query = query.where(gte(portfolioHistory.month, startDate)) as any;
+    } else if (endDate) {
+      query = query.where(lte(portfolioHistory.month, endDate)) as any;
+    }
+    
+    return await query.orderBy(portfolioHistory.month);
+  }
+
+  async getPortfolioHistoryEntry(month: Date): Promise<PortfolioHistory | undefined> {
+    // Normalize to first day of month
+    const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    
+    const [entry] = await db
+      .select()
+      .from(portfolioHistory)
+      .where(eq(portfolioHistory.month, firstDayOfMonth))
+      .limit(1);
+    
+    return entry || undefined;
+  }
+
+  async upsertPortfolioHistory(entry: InsertPortfolioHistory): Promise<PortfolioHistory> {
+    // Normalize to first day of month
+    const firstDayOfMonth = new Date(entry.month.getFullYear(), entry.month.getMonth(), 1);
+    
+    // Check if entry exists for this month
+    const existing = await this.getPortfolioHistoryEntry(firstDayOfMonth);
+    
+    if (existing) {
+      // Update existing entry
+      const [updated] = await db
+        .update(portfolioHistory)
+        .set({
+          totalValue: entry.totalValue.toString(),
+          source: entry.source || 'manual',
+          notes: entry.notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(portfolioHistory.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new entry
+      const [created] = await db
+        .insert(portfolioHistory)
+        .values({
+          month: firstDayOfMonth,
+          totalValue: entry.totalValue.toString(),
+          source: entry.source || 'manual',
+          notes: entry.notes,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async deletePortfolioHistory(id: string): Promise<boolean> {
+    const result = await db
+      .delete(portfolioHistory)
+      .where(eq(portfolioHistory.id, id))
       .returning();
     return result.length > 0;
   }

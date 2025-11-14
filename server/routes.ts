@@ -11,6 +11,7 @@ import {
   insertCashTransactionSchema,
   insertSavedScenarioSchema,
   insertPortfolioSnapshotSchema,
+  insertPortfolioHistorySchema,
   apiCustomDistributionSchema,
   type ApiCustomDistribution,
 } from "@shared/schema";
@@ -687,6 +688,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Delete snapshot error:", error);
       res.status(500).json({ error: "Failed to delete snapshot" });
+    }
+  });
+
+  // Portfolio History
+  app.get("/api/portfolio-history", async (req, res) => {
+    try {
+      // Parse query params for date range filtering
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+      
+      const history = await storage.getPortfolioHistory(start, end);
+      res.json(history);
+    } catch (error: any) {
+      console.error("Fetch portfolio history error:", error);
+      res.status(500).json({ error: "Failed to fetch portfolio history" });
+    }
+  });
+
+  app.get("/api/portfolio-history/:month", async (req, res) => {
+    try {
+      const { month } = req.params;
+      const monthDate = new Date(month);
+      
+      if (isNaN(monthDate.getTime())) {
+        return res.status(400).json({ error: "Invalid month format" });
+      }
+      
+      const entry = await storage.getPortfolioHistoryEntry(monthDate);
+      
+      if (!entry) {
+        return res.status(404).json({ error: "No portfolio history entry for this month" });
+      }
+      
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Fetch portfolio history entry error:", error);
+      res.status(500).json({ error: "Failed to fetch portfolio history entry" });
+    }
+  });
+
+  app.post("/api/portfolio-history", async (req, res) => {
+    try {
+      // Parse and validate the request body
+      const data = insertPortfolioHistorySchema.parse(req.body);
+      
+      const entry = await storage.upsertPortfolioHistory(data);
+      res.status(201).json(entry);
+    } catch (error: any) {
+      console.error("Create portfolio history error:", error);
+      if (error.errors) {
+        res.status(400).json({ error: error.errors[0]?.message || "Invalid portfolio history data" });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid portfolio history data" });
+      }
+    }
+  });
+
+  app.put("/api/portfolio-history", async (req, res) => {
+    try {
+      // Parse and validate the request body
+      const data = insertPortfolioHistorySchema.parse(req.body);
+      
+      const entry = await storage.upsertPortfolioHistory(data);
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Update portfolio history error:", error);
+      if (error.errors) {
+        res.status(400).json({ error: error.errors[0]?.message || "Invalid portfolio history data" });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid portfolio history data" });
+      }
+    }
+  });
+
+  app.delete("/api/portfolio-history/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deletePortfolioHistory(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Portfolio history entry not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete portfolio history error:", error);
+      res.status(500).json({ error: "Failed to delete portfolio history entry" });
     }
   });
 
