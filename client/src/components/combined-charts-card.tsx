@@ -186,7 +186,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
       data-testid="card-combined-charts"
     >
       <div className="py-4 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-6">
           {/* Platform Distribution Chart - Right (RTL) */}
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-sm font-semibold text-center">
