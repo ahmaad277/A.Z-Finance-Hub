@@ -80,26 +80,75 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
 
   const statusTotal = metrics.totalInvestments;
 
+  // Custom labelLine renderer for status chart - only show lines for small slices
+  const renderStatusLabelLine = (props: any) => {
+    const { payload, points } = props;
+    // payload.value is the count, we need to calculate percentage
+    const pct = statusTotal > 0 ? ((payload?.value || 0) / statusTotal) * 100 : 0;
+    
+    // Only render connector line for small slices (<15%)
+    if (pct > 15) {
+      return <></>;
+    }
+    
+    // Convert points array to proper SVG points string
+    if (!points || points.length === 0) return <></>;
+    const pointsString = points.map((p: any) => `${p.x},${p.y}`).join(' ');
+    
+    return (
+      <polyline 
+        points={pointsString} 
+        stroke="hsl(var(--border))" 
+        strokeWidth={1} 
+        fill="none"
+        style={{ pointerEvents: 'none' }}
+      />
+    );
+  };
+
   const renderStatusLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const pct = percent * 100; // Convert to 0-100 range
+    
+    // Smart label positioning: inside for large slices (>15%), outside for small ones
+    const isLargeSlice = pct > 15;
+    
+    let x, y, textAnchor;
+    if (isLargeSlice) {
+      // Position inside the slice (at midpoint)
+      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+      x = cx + radius * Math.cos(-midAngle * RADIAN);
+      y = cy + radius * Math.sin(-midAngle * RADIAN);
+      textAnchor = "middle";
+    } else {
+      // Position outside the slice, very close to edge
+      const radius = outerRadius + 8; // 8px outside, very close to circle edge
+      const baseX = cx + radius * Math.cos(-midAngle * RADIAN);
+      const baseY = cy + radius * Math.sin(-midAngle * RADIAN);
+      
+      // Add horizontal offset to prevent text from touching slice edges
+      const dx = baseX > cx ? 8 : -8;
+      x = baseX + dx;
+      y = baseY;
+      
+      // Adjust textAnchor based on which side of the chart
+      textAnchor = x > cx ? "start" : "end";
+    }
 
     const displayText = showStatusPercentage 
-      ? `${(percent * 100).toFixed(0)}%` 
+      ? `${pct.toFixed(0)}%` 
       : `${value}`;
 
     return (
       <text
         x={x}
         y={y}
-        fill="white"
-        textAnchor="middle"
+        fill={isLargeSlice ? "white" : "hsl(var(--foreground))"}
+        textAnchor={textAnchor}
         dominantBaseline="central"
         className="font-bold text-[11px]"
         style={{ 
-          textShadow: '0 0 3px rgba(0,0,0,0.8)',
+          textShadow: isLargeSlice ? '0 0 3px rgba(0,0,0,0.8)' : 'none',
           pointerEvents: 'none'
         }}
       >
@@ -300,7 +349,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
                       data={statusData}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
+                      labelLine={renderStatusLabelLine}
                       label={renderStatusLabel}
                       outerRadius={65}
                       fill="#8884d8"
