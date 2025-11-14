@@ -34,6 +34,7 @@ export const investments = pgTable("investments", {
   profitPaymentStructure: text("profit_payment_structure").notNull().default("periodic"), // 'periodic' = profits during term, 'at_maturity' = profits with principal at end
   isReinvestment: integer("is_reinvestment").notNull().default(0), // 0 = new investment, 1 = reinvestment from profits
   fundedFromCash: integer("funded_from_cash").notNull().default(0), // 0 = external funding, 1 = funded from cash balance
+  needsReview: integer("needs_review").notNull().default(0), // 0 = no review needed, 1 = needs review (Check! indicator)
   lateDate: timestamp("late_date"), // Date when investment status became 'late'
   defaultedDate: timestamp("defaulted_date"), // Date when investment status became 'defaulted'
 });

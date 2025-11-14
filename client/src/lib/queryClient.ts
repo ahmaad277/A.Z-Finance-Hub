@@ -112,13 +112,17 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Auto-save cache periodically and on page unload
+// Auto-save cache on page unload only (removed periodic save to prevent UI freezing)
 if (typeof window !== 'undefined') {
-  // Save cache every 30 seconds
-  setInterval(saveCache, 30000);
-  
   // Save cache before page unload
   window.addEventListener('beforeunload', saveCache);
+  
+  // Save cache when visibility changes (tab switch/minimize)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      saveCache();
+    }
+  });
   
   // Load cache on startup
   loadCache();
