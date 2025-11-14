@@ -150,8 +150,8 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
       y = cy + radius * Math.sin(-midAngle * RADIAN);
       textAnchor = "middle";
     } else {
-      // Position outside the slice with increased spacing for clarity
-      const radius = outerRadius + 50; // 50px outside for better visibility
+      // Position outside the slice, touching the edge of the circle
+      const radius = outerRadius + 22; // 22px outside, touching the circle edge
       const baseX = cx + radius * Math.cos(-midAngle * RADIAN);
       const baseY = cy + radius * Math.sin(-midAngle * RADIAN);
       

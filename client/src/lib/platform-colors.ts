@@ -28,7 +28,7 @@ const PLATFORM_COLORS: PlatformColors = {
     badgeLight: 'bg-gray-100 text-gray-900 border-gray-300',
     badgeDark: 'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600',
     borderLeft: 'border-l-gray-300 dark:border-l-gray-600',
-    chartColor: '#E5E7EB', // gray-200 (light gray, visible on light backgrounds)
+    chartColor: '#D1D5DB', // gray-300 (slightly darker gray for better visibility)
   },
   // منافع - Black/Dark
   'manfaa': {

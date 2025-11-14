@@ -64,11 +64,11 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
     
     // Only render connector line for small slices (<15%)
     if (pct > 15) {
-      return null;
+      return <></>;
     }
     
     // Convert points array to proper SVG points string
-    if (!points || points.length === 0) return null;
+    if (!points || points.length === 0) return <></>;
     const pointsString = points.map((p: any) => `${p.x},${p.y}`).join(' ');
     
     return (
@@ -101,10 +101,16 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
       y = cy + radius * Math.sin(-midAngle * RADIAN);
       textAnchor = "middle";
     } else {
-      // Position outside the slice
-      const radius = outerRadius + 35; // 35px outside for better spacing
-      x = cx + radius * Math.cos(-midAngle * RADIAN);
-      y = cy + radius * Math.sin(-midAngle * RADIAN);
+      // Position outside the slice, touching the edge of the circle
+      const radius = outerRadius + 22; // 22px outside, touching the circle edge
+      const baseX = cx + radius * Math.cos(-midAngle * RADIAN);
+      const baseY = cy + radius * Math.sin(-midAngle * RADIAN);
+      
+      // Add horizontal offset to prevent text from touching slice edges
+      const dx = baseX > cx ? 8 : -8;
+      x = baseX + dx;
+      y = baseY;
+      
       // Adjust textAnchor based on which side of the chart
       textAnchor = x > cx ? "start" : "end";
     }
