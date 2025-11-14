@@ -14,6 +14,7 @@ import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
 import { PlatformFilterButton } from "@/components/platform-filter-button";
 import Dashboard from "@/pages/dashboard";
 import Investments from "@/pages/investments";
+import BulkImport from "@/pages/bulk-import";
 import CashflowsUnified from "@/pages/cashflows-unified";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/investments" component={Investments} />
+      <Route path="/bulk-import" component={BulkImport} />
       <Route path="/cashflows" component={CashflowsUnified} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />

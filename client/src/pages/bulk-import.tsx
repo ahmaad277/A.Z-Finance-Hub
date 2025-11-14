@@ -1,0 +1,457 @@
+import { useState, useRef } from "react";
+import { useLanguage } from "@/lib/language-provider";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Upload, FileSpreadsheet, X, Check, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
+
+interface ParsedInvestment {
+  id: string;
+  name: string;
+  platformId: string;
+  faceValue: number;
+  totalExpectedProfit: number;
+  expectedIrr: number;
+  riskScore: number;
+  startDate: string;
+  endDate: string;
+  durationMonths: number;
+  distributionFrequency: string;
+  profitPaymentStructure: string;
+  status: string;
+  isReinvestment: number;
+  fundedFromCash: number;
+  warnings: string[];
+  errors: string[];
+}
+
+export default function BulkImport() {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [parsedData, setParsedData] = useState<ParsedInvestment[]>([]);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleFileSelect = async (file: File) => {
+    // Validate file type
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+      toast({
+        title: t("bulkImport.parseError"),
+        description: t("bulkImport.supportedFormats"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: t("bulkImport.parseError"),
+        description: t("bulkImport.maxFileSize"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setIsProcessing(true);
+
+    try {
+      const data = await parseExcelFile(file);
+      setParsedData(data);
+      
+      // Auto-select all valid rows
+      const validIds = data.filter(d => d.errors.length === 0).map(d => d.id);
+      setSelectedRows(new Set(validIds));
+
+      toast({
+        title: t("bulkImport.fileSelected"),
+        description: `${data.length} ${t("investments.title").toLowerCase()} found`,
+      });
+    } catch (error) {
+      console.error('Error parsing file:', error);
+      toast({
+        title: t("bulkImport.parseError"),
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
+      setSelectedFile(null);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const parseExcelFile = async (file: File): Promise<ParsedInvestment[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { raw: false });
+
+          if (jsonData.length === 0) {
+            reject(new Error(t("bulkImport.noDataFound")));
+            return;
+          }
+
+          const parsedInvestments: ParsedInvestment[] = jsonData.map((row: any, index) => {
+            return parseRowData(row, index);
+          });
+
+          resolve(parsedInvestments);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Smart column mapping - supports multiple column name variations
+  const findColumnValue = (row: any, possibleNames: string[]): string => {
+    for (const name of possibleNames) {
+      const value = row[name];
+      if (value !== undefined && value !== null && value !== '') {
+        return String(value).trim();
+      }
+    }
+    return '';
+  };
+
+  const parseRowData = (row: any, index: number): ParsedInvestment => {
+    const warnings: string[] = [];
+    const errors: string[] = [];
+    const id = `temp-${index}`;
+
+    // Smart column extraction with multiple name variants
+    const name = findColumnValue(row, [
+      'Name', 'اسم الفرصة', 'Investment Name', 'الاسم', 'اسم', 'الفرصة',
+      'name', 'investment_name', 'opportunity_name'
+    ]);
+    
+    const faceValueStr = findColumnValue(row, [
+      'Face Value', 'القيمة الاسمية', 'Amount', 'Principal', 'المبلغ', 'رأس المال',
+      'face_value', 'principal_amount', 'amount', 'value'
+    ]);
+    const faceValue = parseFloat(faceValueStr.replace(/[,\s]/g, '')) || 0;
+    
+    const irrStr = findColumnValue(row, [
+      'IRR', 'Expected IRR', 'معدل العائد', 'IRR%', 'Return', 'العائد',
+      'expected_irr', 'return_rate', 'irr_percent'
+    ]);
+    const expectedIrr = parseFloat(irrStr.replace(/[%\s]/g, '')) || 0;
+    
+    const profitStr = findColumnValue(row, [
+      'Profit', 'Expected Profit', 'Total Profit', 'الأرباح', 'الأرباح المتوقعة',
+      'profit', 'expected_profit', 'total_profit', 'returns'
+    ]);
+    const totalExpectedProfit = parseFloat(profitStr.replace(/[,\s]/g, '')) || 0;
+    
+    const startDate = findColumnValue(row, [
+      'Start Date', 'تاريخ البداية', 'Begin Date', 'تاريخ البدء', 'تاريخ الاستثمار',
+      'start_date', 'begin_date', 'investment_date'
+    ]);
+    
+    const endDate = findColumnValue(row, [
+      'End Date', 'تاريخ النهاية', 'Maturity Date', 'تاريخ الاستحقاق', 'تاريخ الانتهاء',
+      'end_date', 'maturity_date', 'expiry_date'
+    ]);
+    
+    const durationStr = findColumnValue(row, [
+      'Duration', 'المدة', 'Months', 'Term', 'الأشهر', 'مدة الاستثمار',
+      'duration', 'months', 'term', 'period'
+    ]);
+    const duration = parseInt(durationStr.replace(/[^\d]/g, '')) || 0;
+
+    // Calculate risk score: (IRR / 30) × 100
+    const riskScore = Math.min(100, Math.round((expectedIrr / 30) * 100));
+
+    // Validation
+    if (!name) {
+      warnings.push(t("bulkImport.missingField") + ": Name");
+    }
+    if (faceValue <= 0) {
+      errors.push(t("bulkImport.required") + ": Face Value");
+    }
+    if (expectedIrr < 0 || expectedIrr > 100) {
+      errors.push(t("bulkImport.invalidValue") + ": IRR");
+    }
+    if (!startDate) {
+      warnings.push(t("bulkImport.missingField") + ": Start Date");
+    }
+    if (!endDate && duration <= 0) {
+      warnings.push(t("bulkImport.missingField") + ": End Date or Duration");
+    }
+
+    return {
+      id,
+      name: name || `Investment ${index + 1}`,
+      platformId: '', // Will be selected by user
+      faceValue,
+      totalExpectedProfit,
+      expectedIrr,
+      riskScore,
+      startDate,
+      endDate,
+      durationMonths: duration,
+      distributionFrequency: 'quarterly',
+      profitPaymentStructure: 'periodic',
+      status: warnings.length > 0 || errors.length > 0 ? 'pending' : 'active',
+      isReinvestment: 0,
+      fundedFromCash: 0,
+      warnings,
+      errors,
+    };
+  };
+
+  const handleReset = () => {
+    setSelectedFile(null);
+    setParsedData([]);
+    setSelectedRows(new Set());
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRows.size === parsedData.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(parsedData.map(d => d.id)));
+    }
+  };
+
+  const toggleRowSelection = (id: string) => {
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedRows(newSelected);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold" data-testid="text-title">{t("bulkImport.title")}</h1>
+        <p className="text-muted-foreground mt-2" data-testid="text-subtitle">
+          {t("bulkImport.subtitle")}
+        </p>
+      </div>
+
+      {!selectedFile ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("bulkImport.dropzone")}</CardTitle>
+            <CardDescription>
+              {t("bulkImport.supportedFormats")} • {t("bulkImport.maxFileSize")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`
+                border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
+                transition-all hover-elevate active-elevate-2
+                ${isDragging ? 'border-primary bg-primary/5' : 'border-border'}
+              `}
+              data-testid="dropzone-upload"
+            >
+              <FileSpreadsheet className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg font-medium mb-2">{t("bulkImport.dropzone")}</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {t("bulkImport.supportedFormats")}
+              </p>
+              <Button variant="outline" data-testid="button-browse">
+                <Upload className="w-4 h-4 mr-2" />
+                Browse Files
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileInputChange}
+                className="hidden"
+                data-testid="input-file"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {/* File Info */}
+          <Card>
+            <CardContent className="flex items-center justify-between pt-6">
+              <div className="flex items-center gap-3">
+                <FileSpreadsheet className="w-8 h-8 text-primary" />
+                <div>
+                  <p className="font-medium">{selectedFile.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {(selectedFile.size / 1024).toFixed(2)} KB • {parsedData.length} investments found
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  data-testid="button-upload-another"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  {t("bulkImport.uploadAnother")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preview Table */}
+          {parsedData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{t("bulkImport.preview")}</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">
+                      {selectedRows.size} {t("bulkImport.selectedCount")}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                      data-testid="button-toggle-select-all"
+                    >
+                      {selectedRows.size === parsedData.length
+                        ? t("bulkImport.deselectAll")
+                        : t("bulkImport.selectAll")}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-start p-2 font-medium">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.size === parsedData.length}
+                            onChange={toggleSelectAll}
+                            data-testid="checkbox-select-all"
+                          />
+                        </th>
+                        <th className="text-start p-2 font-medium">Status</th>
+                        <th className="text-start p-2 font-medium">Name</th>
+                        <th className="text-start p-2 font-medium">Face Value</th>
+                        <th className="text-start p-2 font-medium">IRR %</th>
+                        <th className="text-start p-2 font-medium">Risk Score</th>
+                        <th className="text-start p-2 font-medium">Start Date</th>
+                        <th className="text-start p-2 font-medium">End Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parsedData.map((investment) => (
+                        <tr
+                          key={investment.id}
+                          className="border-b hover-elevate"
+                          data-testid={`row-investment-${investment.id}`}
+                        >
+                          <td className="p-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedRows.has(investment.id)}
+                              onChange={() => toggleRowSelection(investment.id)}
+                              data-testid={`checkbox-row-${investment.id}`}
+                            />
+                          </td>
+                          <td className="p-2">
+                            {investment.errors.length > 0 ? (
+                              <AlertCircle className="w-4 h-4 text-destructive" />
+                            ) : investment.warnings.length > 0 ? (
+                              <AlertCircle className="w-4 h-4 text-warning" />
+                            ) : (
+                              <Check className="w-4 h-4 text-success" />
+                            )}
+                          </td>
+                          <td className="p-2 font-medium">{investment.name}</td>
+                          <td className="p-2">{investment.faceValue.toLocaleString()}</td>
+                          <td className="p-2">{investment.expectedIrr}%</td>
+                          <td className="p-2">
+                            <span className="text-xs text-muted-foreground">
+                              {investment.riskScore}/100
+                            </span>
+                          </td>
+                          <td className="p-2">{investment.startDate || '—'}</td>
+                          <td className="p-2">{investment.endDate || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    size="lg"
+                    disabled={selectedRows.size === 0}
+                    data-testid="button-save-selected"
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    {t("bulkImport.saveSelected")} ({selectedRows.size})
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
