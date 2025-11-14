@@ -107,6 +107,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk create investments
+  app.post("/api/investments/bulk", async (req, res) => {
+    try {
+      const bulkSchema = z.object({
+        investments: z.array(apiInvestmentSchema),
+      });
+      
+      const { investments } = bulkSchema.parse(req.body);
+      
+      // Validate all investments before creating any
+      const results = {
+        created: [] as any[],
+        errors: [] as { index: number; error: string }[],
+      };
+      
+      for (let i = 0; i < investments.length; i++) {
+        try {
+          const investmentData = investments[i];
+          
+          // Extract customDistributions if provided
+          const { customDistributions, durationMonths: clientDurationMonths, ...rawInvestmentData } = investmentData;
+          
+          // Auto-calculate financial fields (similar to single investment creation)
+          const { validateInvestmentFinancials } = await import("@shared/profit-calculator");
+          const validatedFinancials = validateInvestmentFinancials({
+            faceValue: rawInvestmentData.faceValue,
+            expectedIrr: rawInvestmentData.expectedIrr,
+            startDate: rawInvestmentData.startDate,
+            endDate: rawInvestmentData.endDate,
+            durationMonths: clientDurationMonths,
+            totalExpectedProfit: rawInvestmentData.totalExpectedProfit,
+          });
+          
+          // Merge validated fields with rest of investment data
+          const finalInvestmentData = {
+            ...rawInvestmentData,
+            ...validatedFinancials,
+          };
+
+          // Create investment (this also creates cashflows automatically)
+          const created = await storage.createInvestment(finalInvestmentData, customDistributions);
+
+          results.created.push(created);
+        } catch (error) {
+          console.error(`Error creating investment ${i}:`, error);
+          results.errors.push({
+            index: i,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+
+      res.status(201).json(results);
+    } catch (error) {
+      console.error("Bulk investment creation error:", error);
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid request" });
+    }
+  });
+
   app.post("/api/investments", async (req, res) => {
     try {
       const data = apiInvestmentSchema.parse(req.body);
