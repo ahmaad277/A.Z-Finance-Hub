@@ -779,6 +779,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Monthly Progress (Vision Targets + Portfolio History)
+  app.get("/api/monthly-progress", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+      
+      const progress = await storage.getMonthlyProgress(start, end);
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Fetch monthly progress error:", error);
+      res.status(500).json({ error: "Failed to fetch monthly progress" });
+    }
+  });
+
+  // Vision Targets
+  app.get("/api/vision-targets", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+      
+      const targets = await storage.getVisionTargets(start, end);
+      res.json(targets);
+    } catch (error: any) {
+      console.error("Fetch vision targets error:", error);
+      res.status(500).json({ error: "Failed to fetch vision targets" });
+    }
+  });
+
+  app.post("/api/vision-targets", async (req, res) => {
+    try {
+      const { insertVisionTargetSchema } = await import("@shared/schema");
+      const data = insertVisionTargetSchema.parse(req.body);
+      
+      const target = await storage.upsertVisionTarget(data);
+      res.status(201).json(target);
+    } catch (error: any) {
+      console.error("Create vision target error:", error);
+      if (error.errors) {
+        res.status(400).json({ error: error.errors[0]?.message || "Invalid vision target data" });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid vision target data" });
+      }
+    }
+  });
+
+  app.post("/api/vision-targets/bulk", async (req, res) => {
+    try {
+      const { targets } = req.body;
+      if (!Array.isArray(targets)) {
+        return res.status(400).json({ error: "Targets must be an array" });
+      }
+      
+      const { insertVisionTargetSchema } = await import("@shared/schema");
+      const validTargets = targets.map(t => insertVisionTargetSchema.parse(t));
+      
+      const results = await storage.bulkUpsertVisionTargets(validTargets);
+      res.status(201).json(results);
+    } catch (error: any) {
+      console.error("Bulk create vision targets error:", error);
+      if (error.errors) {
+        res.status(400).json({ error: error.errors[0]?.message || "Invalid vision targets data" });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid vision targets data" });
+      }
+    }
+  });
+
+  app.put("/api/vision-targets", async (req, res) => {
+    try {
+      const { insertVisionTargetSchema } = await import("@shared/schema");
+      const data = insertVisionTargetSchema.parse(req.body);
+      
+      const target = await storage.upsertVisionTarget(data);
+      res.json(target);
+    } catch (error: any) {
+      console.error("Update vision target error:", error);
+      if (error.errors) {
+        res.status(400).json({ error: error.errors[0]?.message || "Invalid vision target data" });
+      } else {
+        res.status(400).json({ error: error.message || "Invalid vision target data" });
+      }
+    }
+  });
+
+  app.delete("/api/vision-targets/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteVisionTarget(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Vision target not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete vision target error:", error);
+      res.status(500).json({ error: "Failed to delete vision target" });
+    }
+  });
+
   // Investment Status Check Trigger
   app.post("/api/investments/check-status", async (_req, res) => {
     try {
