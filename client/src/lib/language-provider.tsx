@@ -447,6 +447,8 @@ const translations = {
     "common.save": "Save",
     "common.saving": "Saving...",
     "common.error": "Error",
+    "common.source": "Source",
+    "common.actions": "Actions",
     
     // Dialog
     "dialog.addInvestment": "Add New Investment",
@@ -1394,6 +1396,8 @@ const translations = {
     "common.save": "حفظ",
     "common.saving": "جاري الحفظ...",
     "common.error": "خطأ",
+    "common.source": "المصدر",
+    "common.actions": "الإجراءات",
     
     // Dialog
     "dialog.addInvestment": "إضافة استثمار جديد",

@@ -76,15 +76,15 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="overview" className="flex items-center gap-2">
                     <Calculator className="h-4 w-4" />
-                    Overview
+                    {t("vision2040.overview")}
                   </TabsTrigger>
                   <TabsTrigger value="progress" className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" />
-                    Progress
+                    {t("vision2040.progressTab")}
                   </TabsTrigger>
                   <TabsTrigger value="targets" className="flex items-center gap-2">
                     <TableProperties className="h-4 w-4" />
-                    Targets
+                    {t("vision2040.targetsTab")}
                   </TabsTrigger>
                 </TabsList>
 
@@ -103,7 +103,7 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
                         data-testid="button-generate-targets-progress"
                       >
                         <Calculator className="h-4 w-4 mr-2" />
-                        Generate Monthly Targets
+                        {t("vision2040.generateMonthlyTargets")}
                       </Button>
                     </div>
                     <MonthlyProgressChart

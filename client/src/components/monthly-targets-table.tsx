@@ -25,6 +25,7 @@ import { Pencil, Save, X, Trash2, Calculator } from "lucide-react";
 import type { MonthlyProgress } from "@shared/schema";
 import { formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/language-provider";
 
 interface MonthlyTargetsTableProps {
   startDate?: Date;
@@ -41,6 +42,7 @@ export function MonthlyTargetsTable({
   currentValue,
   onGenerateTargets,
 }: MonthlyTargetsTableProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{
@@ -76,15 +78,15 @@ export function MonthlyTargetsTable({
       queryClient.invalidateQueries({ queryKey: ["/api/monthly-progress"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio-history"] });
       toast({
-        title: "Success",
-        description: "Actual value updated successfully.",
+        title: t("vision2040.success"),
+        description: t("vision2040.dataUpdated"),
       });
       setEditingId(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to update actual value.",
+        title: t("vision2040.error"),
+        description: t("vision2040.updateFailed"),
         variant: "destructive",
       });
     },
@@ -104,15 +106,15 @@ export function MonthlyTargetsTable({
       queryClient.invalidateQueries({ queryKey: ["/api/monthly-progress"] });
       queryClient.invalidateQueries({ queryKey: ["/api/vision-targets"] });
       toast({
-        title: "Success",
-        description: "Target value updated successfully.",
+        title: t("vision2040.success"),
+        description: t("vision2040.dataUpdated"),
       });
       setEditingId(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to update target value.",
+        title: t("vision2040.error"),
+        description: t("vision2040.updateFailed"),
         variant: "destructive",
       });
     },
@@ -155,14 +157,14 @@ export function MonthlyTargetsTable({
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio-history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/vision-targets"] });
       toast({
-        title: "Success",
-        description: "Entry deleted successfully.",
+        title: t("vision2040.success"),
+        description: t("vision2040.dataUpdated"),
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to delete entry.",
+        title: t("vision2040.error"),
+        description: t("vision2040.updateFailed"),
         variant: "destructive",
       });
     },
@@ -227,10 +229,10 @@ export function MonthlyTargetsTable({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-primary" />
-            Monthly Targets & Progress
+            {t("vision2040.monthlyTargetsProgress")}
           </CardTitle>
           <CardDescription>
-            Loading monthly targets and actual values...
+            {t("vision2040.trackProgress")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -247,10 +249,10 @@ export function MonthlyTargetsTable({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Calculator className="h-5 w-5 text-primary" />
-              Monthly Targets & Progress
+              {t("vision2040.monthlyTargetsProgress")}
             </CardTitle>
             <CardDescription>
-              Track your progress towards Vision 2040 goals
+              {t("vision2040.trackProgress")}
             </CardDescription>
           </div>
           {onGenerateTargets && (
@@ -261,7 +263,7 @@ export function MonthlyTargetsTable({
               data-testid="button-generate-targets"
             >
               <Calculator className="h-4 w-4 mr-2" />
-              Generate Targets
+              {t("vision2040.generateTargets")}
             </Button>
           )}
         </div>
@@ -271,12 +273,12 @@ export function MonthlyTargetsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Target</TableHead>
-                <TableHead className="text-right">Actual</TableHead>
-                <TableHead className="text-right">Variance</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead>{t("vision2040.date")}</TableHead>
+                <TableHead className="text-right">{t("vision2040.targetValue")}</TableHead>
+                <TableHead className="text-right">{t("vision2040.actualColumn")}</TableHead>
+                <TableHead className="text-right">{t("vision2040.latestVariance")}</TableHead>
+                <TableHead>{t("common.source")}</TableHead>
+                <TableHead className="text-center">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
