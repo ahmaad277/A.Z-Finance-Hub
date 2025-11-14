@@ -169,7 +169,8 @@ export function MonthlyTargetsTable({
   });
 
   const handleEdit = (row: MonthlyProgress) => {
-    const monthKey = `${row.month.getFullYear()}-${(row.month.getMonth() + 1).toString().padStart(2, "0")}`;
+    const monthDate = row.month instanceof Date ? row.month : new Date(row.month);
+    const monthKey = `${monthDate.getFullYear()}-${(monthDate.getMonth() + 1).toString().padStart(2, "0")}`;
     setEditingId(monthKey);
     setEditValues({
       targetValue: row.targetValue?.toString() || "",
@@ -178,13 +179,14 @@ export function MonthlyTargetsTable({
   };
 
   const handleSave = async (row: MonthlyProgress) => {
+    const monthDate = row.month instanceof Date ? row.month : new Date(row.month);
     const promises = [];
     
     // Update target if changed
     if (editValues.targetValue && editValues.targetValue !== row.targetValue?.toString()) {
       promises.push(
         updateTargetMutation.mutateAsync({
-          month: row.month,
+          month: monthDate,
           targetValue: parseFloat(editValues.targetValue),
         })
       );
@@ -194,7 +196,7 @@ export function MonthlyTargetsTable({
     if (editValues.actualValue && editValues.actualValue !== row.actualValue?.toString()) {
       promises.push(
         updateActualMutation.mutateAsync({
-          month: row.month,
+          month: monthDate,
           totalValue: parseFloat(editValues.actualValue),
         })
       );
@@ -214,7 +216,8 @@ export function MonthlyTargetsTable({
 
   const handleDelete = (row: MonthlyProgress) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
-      deleteMutation.mutate(row.month);
+      const monthDate = row.month instanceof Date ? row.month : new Date(row.month);
+      deleteMutation.mutate(monthDate);
     }
   };
 
@@ -285,7 +288,9 @@ export function MonthlyTargetsTable({
                 </TableRow>
               ) : (
                 monthlyProgress.map((row) => {
-                  const monthKey = `${row.month.getFullYear()}-${(row.month.getMonth() + 1).toString().padStart(2, "0")}`;
+                  // Ensure month is a Date object
+                  const monthDate = row.month instanceof Date ? row.month : new Date(row.month);
+                  const monthKey = `${monthDate.getFullYear()}-${(monthDate.getMonth() + 1).toString().padStart(2, "0")}`;
                   const isEditing = editingId === monthKey;
                   const variance = row.variance || 0;
                   const variancePercent = row.variancePercent || 0;
@@ -293,7 +298,7 @@ export function MonthlyTargetsTable({
                   return (
                     <TableRow key={monthKey} data-testid={`row-progress-${monthKey}`}>
                       <TableCell className="font-medium">
-                        {format(row.month, "MM/dd/yyyy")}
+                        {format(monthDate, "MM/dd/yyyy")}
                       </TableCell>
                       <TableCell className="text-right">
                         {isEditing ? (

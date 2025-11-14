@@ -227,13 +227,13 @@ export type PortfolioHistory = typeof portfolioHistory.$inferSelect;
 // Vision Targets - Monthly target values for Vision 2040 calculator
 export const visionTargets = pgTable("vision_targets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  month: timestamp("month").notNull().unique(), // First day of month
+  month: timestamp("month", { withTimezone: true }).notNull().unique(), // First day of month
   targetValue: numeric("target_value", { precision: 15, scale: 2 }).notNull(),
   scenarioId: varchar("scenario_id"), // Optional link to saved scenario
   generated: integer("generated").notNull().default(1), // 1 if auto-calculated, 0 if manually edited
   notes: text("notes"),
-  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const insertVisionTargetSchema = createInsertSchema(visionTargets).omit({

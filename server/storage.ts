@@ -2216,8 +2216,8 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getVisionTargetEntry(firstDayOfMonth);
     
     if (existing) {
-      // Update existing entry
-      const [updated] = await db
+      // Update existing entry - DO NOT update month field (it's unique and shouldn't change)
+      await db
         .update(visionTargets)
         .set({
           targetValue: target.targetValue.toString(),
@@ -2226,8 +2226,15 @@ export class DatabaseStorage implements IStorage {
           notes: target.notes,
           updatedAt: new Date(),
         })
+        .where(eq(visionTargets.id, existing.id));
+      
+      // Fetch the updated record to ensure all fields are properly returned
+      const [updated] = await db
+        .select()
+        .from(visionTargets)
         .where(eq(visionTargets.id, existing.id))
-        .returning();
+        .limit(1);
+      
       return updated;
     } else {
       // Create new entry
@@ -2277,9 +2284,15 @@ export class DatabaseStorage implements IStorage {
 
     // Add actuals from portfolio history
     for (const entry of history) {
-      const monthKey = entry.month.toISOString().substring(0, 7); // YYYY-MM
+      // Ensure month is a valid Date
+      const monthDate = entry.month instanceof Date ? entry.month : new Date(entry.month);
+      if (isNaN(monthDate.getTime())) {
+        console.error('Invalid date in portfolio history:', entry.month);
+        continue;
+      }
+      const monthKey = monthDate.toISOString().substring(0, 7); // YYYY-MM
       progressMap.set(monthKey, {
-        month: entry.month,
+        month: monthDate, // Use the validated date object
         targetValue: null,
         actualValue: parseFloat(entry.totalValue),
         variance: null,
@@ -2291,7 +2304,19 @@ export class DatabaseStorage implements IStorage {
 
     // Add or merge targets
     for (const target of targets) {
-      const monthKey = target.month.toISOString().substring(0, 7); // YYYY-MM
+      // Skip if month is null or undefined
+      if (!target.month) {
+        console.warn('Skipping vision target with null/undefined month');
+        continue;
+      }
+      
+      // Ensure month is a valid Date
+      const monthDate = target.month instanceof Date ? target.month : new Date(target.month);
+      if (isNaN(monthDate.getTime())) {
+        console.error('Invalid date in vision targets:', target.month);
+        continue;
+      }
+      const monthKey = monthDate.toISOString().substring(0, 7); // YYYY-MM
       const existing = progressMap.get(monthKey);
       const targetValue = parseFloat(target.targetValue);
       
@@ -2308,7 +2333,7 @@ export class DatabaseStorage implements IStorage {
       } else {
         // Add target-only entry
         progressMap.set(monthKey, {
-          month: target.month,
+          month: monthDate, // Use the validated date object
           targetValue: targetValue,
           actualValue: null,
           variance: null,

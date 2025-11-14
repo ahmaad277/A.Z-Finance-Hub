@@ -833,8 +833,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Targets must be an array" });
       }
       
+      // Convert string dates to Date objects before validation
+      const convertedTargets = targets.map(t => ({
+        ...t,
+        month: new Date(t.month)
+      }));
+      
       const { insertVisionTargetSchema } = await import("@shared/schema");
-      const validTargets = targets.map(t => insertVisionTargetSchema.parse(t));
+      const validTargets = convertedTargets.map(t => insertVisionTargetSchema.parse(t));
       
       const results = await storage.bulkUpsertVisionTargets(validTargets);
       res.status(201).json(results);
@@ -850,8 +856,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/vision-targets", async (req, res) => {
     try {
+      // Convert string date to Date object before validation
+      const convertedData = {
+        ...req.body,
+        month: new Date(req.body.month)
+      };
+      
       const { insertVisionTargetSchema } = await import("@shared/schema");
-      const data = insertVisionTargetSchema.parse(req.body);
+      const data = insertVisionTargetSchema.parse(convertedData);
       
       const target = await storage.upsertVisionTarget(data);
       res.json(target);

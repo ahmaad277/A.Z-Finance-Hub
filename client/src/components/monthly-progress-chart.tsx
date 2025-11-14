@@ -85,12 +85,16 @@ export function MonthlyProgressChart({
 
   // Transform data for chart
   const chartData = useMemo(() => {
-    return monthlyProgress.map(entry => ({
-      month: format(entry.month, "MMM yyyy"),
-      targetValue: entry.targetValue || null,
-      actualValue: entry.actualValue || null,
-      variance: entry.variance || null,
-    }));
+    return monthlyProgress.map(entry => {
+      // Ensure month is a Date object
+      const monthDate = entry.month instanceof Date ? entry.month : new Date(entry.month);
+      return {
+        month: format(monthDate, "MMM yyyy"),
+        targetValue: entry.targetValue || null,
+        actualValue: entry.actualValue || null,
+        variance: entry.variance || null,
+      };
+    });
   }, [monthlyProgress]);
 
   // Calculate summary statistics
