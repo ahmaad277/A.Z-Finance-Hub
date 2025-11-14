@@ -164,7 +164,7 @@ export function useVision2040Controller() {
   // Helper to update target capital
   const updateTargetCapital = async (value: number) => {
     try {
-      await apiRequest("/api/settings", "PATCH", {
+      await apiRequest("/api/settings", "PUT", {
         targetCapital2040: value.toString(),
       });
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });

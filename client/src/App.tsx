@@ -20,6 +20,7 @@ import Alerts from "@/pages/alerts";
 import Help from "@/pages/help";
 import Settings from "@/pages/settings";
 import PlatformDetails from "@/pages/platform-details";
+import Vision2040 from "@/pages/vision-2040";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/cashflows" component={CashflowsUnified} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />
+      <Route path="/vision-2040" component={Vision2040} />
       <Route path="/help" component={Help} />
       <Route path="/settings" component={Settings} />
       <Route path="/platform/:id" component={PlatformDetails} />

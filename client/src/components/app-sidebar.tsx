@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText, DollarSign } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText, DollarSign, Target } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -40,6 +40,11 @@ const menuItems = [
     key: "alerts",
     url: "/alerts",
     icon: Bell,
+  },
+  {
+    key: "vision2040",
+    url: "/vision-2040",
+    icon: Target,
   },
   {
     key: "help",
