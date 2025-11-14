@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
+import multer from "multer";
+import OpenAI from "openai";
 import { storage } from "./storage";
 import {
   insertPlatformSchema,
@@ -15,6 +17,30 @@ import {
   type ApiCustomDistribution,
 } from "@shared/schema";
 import { generateCashflows, type DistributionFrequency, type ProfitPaymentStructure } from "@shared/cashflow-generator";
+
+// Configure multer for image upload (store in memory as buffer)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+  },
+  fileFilter: (_req, file, cb) => {
+    // Accept image files only
+    const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.'));
+    }
+  },
+});
+
+// Initialize OpenAI client using Replit AI Integrations
+// This internally uses Replit AI Integrations for OpenAI access, does not require your own API key, and charges are billed to your credits
+const openai = new OpenAI({
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
+});
 
 // API schema that accepts date strings and coerces to Date objects with validation
 const apiInvestmentSchema = insertInvestmentSchema.extend({
@@ -176,6 +202,256 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Bulk investment creation error:", error);
       res.status(400).json({ error: error instanceof Error ? error.message : "Invalid request" });
+    }
+  });
+
+  // Extract investments from image using OpenAI Vision (gpt-4o)
+  app.post("/api/investments/extract-from-image", upload.single('image'), async (req, res) => {
+    try {
+      // Validate image upload
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided" });
+      }
+
+      // Convert buffer to base64
+      const base64Image = req.file.buffer.toString('base64');
+      const mimeType = req.file.mimetype;
+
+      // Get all platforms for matching
+      const allPlatforms = await storage.getPlatforms();
+
+      // Craft prompt for GPT-4o Vision to extract investment data
+      const prompt = `You are a financial data extraction expert. Analyze this image which contains an Excel table or spreadsheet showing investment data.
+
+Extract ALL investment rows from the table and return them as a JSON array. Each investment should have these fields:
+
+- name: Investment name or opportunity name (string)
+- platformName: Platform or source name if visible (string, can be null)
+- faceValue: Face value, principal amount, or investment amount (number, no commas)
+- irr: Expected IRR percentage (number, just the number without % symbol)
+- profit: Total expected profit if visible (number, can be null)
+- startDate: Start date in ISO format YYYY-MM-DD (string)
+- endDate: End date or maturity date in ISO format YYYY-MM-DD (string)
+- duration: Duration in months if visible (number, can be null)
+- status: Status code if visible - examples: PAID, Waiting, Check, Active, Completed, etc. (string, can be null)
+
+Important instructions:
+1. The table may contain Arabic or English text - extract both
+2. Column names might be in Arabic (اسم الفرصة, المنصة, القيمة الاسمية, معدل العائد, تاريخ البداية, تاريخ النهاية, المدة, الحالة) or English
+3. Extract ALL rows that appear to be investment data (skip header rows)
+4. For dates, be lenient with formats and convert to YYYY-MM-DD
+5. Remove commas and currency symbols from numbers
+6. If IRR has a % symbol, remove it and keep just the number
+7. If a field is not visible or unclear, use null
+8. Return ONLY valid JSON array, no markdown formatting
+
+Example output format:
+[
+  {
+    "name": "Investment Opportunity 1",
+    "platformName": "Platform A",
+    "faceValue": 10000,
+    "irr": 15.5,
+    "profit": 1550,
+    "startDate": "2024-01-15",
+    "endDate": "2024-12-15",
+    "duration": 11,
+    "status": "Active"
+  }
+]`;
+
+      // Call OpenAI Vision API
+      // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      // However, for vision tasks with images, we use gpt-4o which has excellent vision capabilities
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // gpt-4o has excellent vision capabilities for image analysis
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Image}`,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 4096,
+        temperature: 0.1, // Low temperature for more deterministic/accurate extraction
+      });
+
+      const responseText = completion.choices[0]?.message?.content || "";
+      
+      // Parse JSON response
+      let extractedData: any[];
+      try {
+        // Remove markdown code blocks if present
+        const cleanedResponse = responseText
+          .replace(/```json\n?/g, '')
+          .replace(/```\n?/g, '')
+          .trim();
+        
+        extractedData = JSON.parse(cleanedResponse);
+        
+        if (!Array.isArray(extractedData)) {
+          throw new Error("Response is not an array");
+        }
+      } catch (parseError) {
+        console.error("Failed to parse OpenAI response:", responseText);
+        return res.status(500).json({ 
+          error: "Failed to parse investment data from image. Please try a clearer image.",
+          details: parseError instanceof Error ? parseError.message : "Unknown error"
+        });
+      }
+
+      // Normalize column name helper (same as bulk-import)
+      const normalizeColumnName = (name: string): string => {
+        return name
+          .toLowerCase()
+          .trim()
+          .replace(/[\u064B-\u065F\u0670]/g, '') // Remove Arabic diacritics
+          .replace(/\u0640/g, '') // Remove Arabic tatweel
+          .replace(/[%_\-\s]+/g, '_')
+          .replace(/^_+|_+$/g, '');
+      };
+
+      // Transform extracted data to ParsedInvestment structure
+      const parsedInvestments = extractedData.map((row: any, index: number) => {
+        const warnings: string[] = [];
+        const errors: string[] = [];
+        const id = `image-temp-${Date.now()}-${index}`;
+
+        // Extract fields from AI response
+        const name = row.name || '';
+        const platformNameFromAI = row.platformName;
+        const faceValue = typeof row.faceValue === 'number' ? row.faceValue : parseFloat(String(row.faceValue || '0').replace(/[,\s]/g, ''));
+        const expectedIrr = typeof row.irr === 'number' ? row.irr : parseFloat(String(row.irr || '0').replace(/[%\s]/g, ''));
+        const totalExpectedProfit = typeof row.profit === 'number' ? row.profit : parseFloat(String(row.profit || '0').replace(/[,\s]/g, ''));
+        const startDate = row.startDate || '';
+        const endDate = row.endDate || '';
+        const duration = typeof row.duration === 'number' ? row.duration : parseInt(String(row.duration || '0').replace(/[^\d]/g, ''));
+        const statusFromAI = row.status;
+
+        // Match platform name to existing platforms (case/diacritics insensitive)
+        let matchedPlatformId: string | null = null;
+        if (platformNameFromAI && allPlatforms.length > 0) {
+          const normalizedInput = normalizeColumnName(platformNameFromAI);
+          const matchedPlatform = allPlatforms.find(p => 
+            normalizeColumnName(p.name) === normalizedInput || 
+            normalizeColumnName(p.id) === normalizedInput
+          );
+          
+          if (matchedPlatform) {
+            matchedPlatformId = matchedPlatform.id;
+          } else {
+            warnings.push(`Platform "${platformNameFromAI}" not found. Please select manually.`);
+          }
+        }
+
+        // Calculate duration if we have both dates but no duration
+        let calculatedDuration = duration;
+        if ((!calculatedDuration || calculatedDuration <= 0) && startDate && endDate) {
+          try {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            calculatedDuration = Math.round(diffDays / 30); // Approximate months
+          } catch (e) {
+            // If date parsing fails, leave duration as is
+          }
+        }
+        
+        // Validation: Required fields
+        if (!name) {
+          errors.push("Missing required field: Name");
+        }
+        
+        if (!faceValue || faceValue <= 0 || isNaN(faceValue)) {
+          errors.push("Missing or invalid Face Value (must be > 0)");
+        }
+        
+        if (!expectedIrr || isNaN(expectedIrr)) {
+          errors.push("Missing or invalid IRR (required for risk calculation)");
+        } else if (expectedIrr < 0 || expectedIrr > 100) {
+          errors.push("Invalid IRR value (must be 0-100%)");
+        }
+        
+        if (!startDate) {
+          warnings.push("Missing Start Date");
+        }
+        
+        // Only warn if we have neither endDate nor calculated duration
+        if (!endDate && (!calculatedDuration || calculatedDuration <= 0)) {
+          warnings.push("Missing End Date and Duration - please add manually");
+        }
+
+        // Calculate risk score: (IRR / 30) × 100
+        const riskScore = expectedIrr && !isNaN(expectedIrr)
+          ? Math.min(100, Math.round((expectedIrr / 30) * 100))
+          : 0;
+
+        // Determine status
+        let status = 'active';
+        if (statusFromAI) {
+          const normalizedStatus = normalizeColumnName(statusFromAI);
+          if (normalizedStatus.includes('paid') || normalizedStatus.includes('completed')) {
+            status = 'completed';
+          } else if (normalizedStatus.includes('wait') || normalizedStatus.includes('pending')) {
+            status = 'active';
+          }
+        }
+
+        return {
+          id,
+          name: name || `Investment ${index + 1}`,
+          platformId: matchedPlatformId,
+          faceValue: faceValue || 0,
+          totalExpectedProfit: totalExpectedProfit || 0,
+          expectedIrr: expectedIrr || 0,
+          riskScore,
+          startDate,
+          endDate,
+          durationMonths: calculatedDuration || 0,
+          distributionFrequency: 'quarterly',
+          profitPaymentStructure: 'periodic',
+          status,
+          isReinvestment: 0,
+          fundedFromCash: 0,
+          warnings,
+          errors,
+        };
+      });
+
+      // Collect global warnings
+      const globalWarnings: string[] = [];
+      if (parsedInvestments.length === 0) {
+        globalWarnings.push("No investment data found in the image. Please ensure the image contains a clear table with investment data.");
+      }
+
+      res.json({
+        investments: parsedInvestments,
+        warnings: globalWarnings,
+      });
+
+    } catch (error: any) {
+      console.error("Image extraction error:", error);
+      
+      // Handle specific OpenAI errors
+      if (error.message?.includes('rate limit') || error.message?.includes('quota')) {
+        return res.status(429).json({ 
+          error: "Rate limit exceeded. Please try again in a moment.",
+          details: error.message 
+        });
+      }
+      
+      res.status(500).json({ 
+        error: "Failed to extract investment data from image",
+        details: error.message || "Unknown error"
+      });
     }
   });
 

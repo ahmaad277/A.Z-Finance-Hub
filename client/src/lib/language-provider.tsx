@@ -60,6 +60,7 @@ const translations = {
     "nav.dashboard": "Dashboard",
     "nav.investments": "Investments",
     "nav.bulkImport": "Bulk Import",
+    "nav.imageImport": "Image Import",
     "nav.cashflows": "Cashflows",
     "nav.cash": "Cash Management",
     "nav.analytics": "Analytics",
@@ -283,6 +284,21 @@ const translations = {
     "bulkImport.riskCalculated": "Risk score calculated automatically from IRR",
     "bulkImport.noDataFound": "No data found in file",
     "bulkImport.uploadAnother": "Upload Another File",
+    
+    // Image Import
+    "imageImport.title": "Image Import with AI",
+    "imageImport.subtitle": "Extract investment data from screenshots using AI Vision",
+    "imageImport.dropzone": "Drop image file here, or click to browse",
+    "imageImport.supportedFormats": "Supported formats: PNG, JPG, JPEG, WEBP",
+    "imageImport.maxFileSize": "Maximum file size: 10MB",
+    "imageImport.fileSelected": "Image uploaded",
+    "imageImport.extracting": "Extracting data with AI...",
+    "imageImport.extractionError": "Failed to extract data",
+    "imageImport.preview": "Image Preview",
+    "imageImport.extracted": "Extracted Investments",
+    "imageImport.uploadAnother": "Upload Another Image",
+    "imageImport.analyzing": "Analyzing image with AI Vision...",
+    "imageImport.pleaseWait": "This may take a few seconds",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -991,6 +1007,7 @@ const translations = {
     "nav.dashboard": "لوحة التحكم",
     "nav.investments": "الاستثمارات",
     "nav.bulkImport": "استيراد جماعي",
+    "nav.imageImport": "استيراد من صورة",
     "nav.cashflows": "التدفقات النقدية",
     "nav.cash": "إدارة النقدية",
     "nav.analytics": "التحليلات",
@@ -1213,6 +1230,21 @@ const translations = {
     "bulkImport.riskCalculated": "نقاط المخاطرة محسوبة تلقائياً من IRR",
     "bulkImport.noDataFound": "لم يتم العثور على بيانات في الملف",
     "bulkImport.uploadAnother": "رفع ملف آخر",
+    
+    // Image Import
+    "imageImport.title": "استيراد من الصور بالذكاء الاصطناعي",
+    "imageImport.subtitle": "استخراج بيانات الاستثمار من لقطات الشاشة باستخدام الذكاء الاصطناعي",
+    "imageImport.dropzone": "أسقط ملف الصورة هنا، أو انقر للتصفح",
+    "imageImport.supportedFormats": "الصيغ المدعومة: PNG, JPG, JPEG, WEBP",
+    "imageImport.maxFileSize": "الحد الأقصى لحجم الملف: 10 ميجابايت",
+    "imageImport.fileSelected": "تم رفع الصورة",
+    "imageImport.extracting": "جاري استخراج البيانات بالذكاء الاصطناعي...",
+    "imageImport.extractionError": "فشل في استخراج البيانات",
+    "imageImport.preview": "معاينة الصورة",
+    "imageImport.extracted": "الاستثمارات المستخرجة",
+    "imageImport.uploadAnother": "رفع صورة أخرى",
+    "imageImport.analyzing": "جاري تحليل الصورة بالذكاء الاصطناعي...",
+    "imageImport.pleaseWait": "قد يستغرق هذا بضع ثوانٍ",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",
