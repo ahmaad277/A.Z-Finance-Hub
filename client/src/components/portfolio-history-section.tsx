@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2, Edit2, Save, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2, Edit2, Save, X, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,7 +193,10 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
           <CardHeader className="cursor-pointer hover-elevate">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <CardTitle data-testid="text-portfolio-history-title">📈 Portfolio History Tracker</CardTitle>
+                <CardTitle data-testid="text-portfolio-history-title" className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Portfolio History Tracker
+                </CardTitle>
                 <CardDescription data-testid="text-portfolio-history-description">
                   Track and visualize your portfolio value over time
                 </CardDescription>
@@ -222,8 +225,15 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
 
         <CollapsibleContent>
           <CardContent className="space-y-6">
+            {/* Loading state */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-muted-foreground">Loading portfolio history...</div>
+              </div>
+            )}
+            
             {/* Chart */}
-            {chartData.length > 0 && (
+            {!isLoading && chartData.length > 0 && (
               <div className="w-full h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -269,31 +279,34 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
             )}
 
             {/* Quick Actions */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={handleAddCurrentMonth}
-                variant="default"
-                size="sm"
-                data-testid="button-add-current-month"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Current Month ({formatCurrency(currentPortfolioValue)})
-              </Button>
-              <Button
-                onClick={() => setIsAddingNew(true)}
-                variant="outline"
-                size="sm"
-                disabled={isAddingNew}
-                data-testid="button-add-custom-month"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Custom Month
-              </Button>
-            </div>
+            {!isLoading && (
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={handleAddCurrentMonth}
+                  variant="default"
+                  size="sm"
+                  data-testid="button-add-current-month"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Current Month ({formatCurrency(currentPortfolioValue)})
+                </Button>
+                <Button
+                  onClick={() => setIsAddingNew(true)}
+                  variant="outline"
+                  size="sm"
+                  disabled={isAddingNew}
+                  data-testid="button-add-custom-month"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Custom Month
+                </Button>
+              </div>
+            )}
 
             {/* Data Table */}
-            <div className="rounded-md border">
-              <Table>
+            {!isLoading && (
+              <div className="rounded-md border">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Month</TableHead>
@@ -496,6 +509,7 @@ export function PortfolioHistorySection({ currentPortfolioValue }: { currentPort
                 </TableBody>
               </Table>
             </div>
+            )}
 
             {/* Summary Statistics */}
             {stats && chartData.length > 0 && (
