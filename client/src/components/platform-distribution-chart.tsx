@@ -102,7 +102,7 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
       textAnchor = "middle";
     } else {
       // Position outside the slice
-      const radius = outerRadius + 20; // 20px outside
+      const radius = outerRadius + 35; // 35px outside for better spacing
       x = cx + radius * Math.cos(-midAngle * RADIAN);
       y = cy + radius * Math.sin(-midAngle * RADIAN);
       // Adjust textAnchor based on which side of the chart
@@ -174,7 +174,7 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
           </div>
           
           {/* Pie Chart - centered */}
-          <div className="w-[120px] h-[120px]">
+          <div className="w-full max-w-[170px] aspect-square mx-auto">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -183,7 +183,7 @@ export function PlatformDistributionChart({ metrics }: PlatformDistributionChart
                   cy="50%"
                   labelLine={renderLabelLine}
                   label={renderLabel}
-                  outerRadius={50}
+                  outerRadius={65}
                   fill="#8884d8"
                   dataKey="value"
                 >

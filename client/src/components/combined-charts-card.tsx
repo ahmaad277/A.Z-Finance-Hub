@@ -151,7 +151,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
       textAnchor = "middle";
     } else {
       // Position outside the slice
-      const radius = outerRadius + 20; // 20px outside
+      const radius = outerRadius + 35; // 35px outside for better spacing
       x = cx + radius * Math.cos(-midAngle * RADIAN);
       y = cy + radius * Math.sin(-midAngle * RADIAN);
       // Adjust textAnchor based on which side of the chart
@@ -186,7 +186,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
       data-testid="card-combined-charts"
     >
       <div className="py-4 px-4">
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Platform Distribution Chart - Right (RTL) */}
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-sm font-semibold text-center">
@@ -195,7 +195,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
             <div 
               role="button"
               tabIndex={0}
-              className="w-[120px] h-[120px] cursor-pointer hover-elevate active-elevate-2 rounded-full transition-all"
+              className="w-full max-w-[170px] aspect-square cursor-pointer hover-elevate active-elevate-2 rounded-full transition-all"
               onClick={() => setShowPlatformPercentage(!showPlatformPercentage)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -219,7 +219,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
                       cy="50%"
                       labelLine={renderPlatformLabelLine}
                       label={renderPlatformLabel}
-                      outerRadius={50}
+                      outerRadius={65}
                       fill="#8884d8"
                       dataKey="value"
                     >
@@ -272,7 +272,7 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
             <div 
               role="button"
               tabIndex={0}
-              className="w-[120px] h-[120px] cursor-pointer hover-elevate active-elevate-2 rounded-full transition-all"
+              className="w-full max-w-[170px] aspect-square cursor-pointer hover-elevate active-elevate-2 rounded-full transition-all"
               onClick={() => setShowStatusPercentage(!showStatusPercentage)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -296,13 +296,17 @@ export function CombinedChartsCard({ metrics }: CombinedChartsCardProps) {
                       cy="50%"
                       labelLine={false}
                       label={renderStatusLabel}
-                      outerRadius={50}
+                      outerRadius={65}
                       fill="#8884d8"
                       dataKey="value"
-                      stroke="none"
                     >
                       {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.color} 
+                          stroke="hsl(var(--border))" 
+                          strokeWidth={1.5}
+                        />
                       ))}
                     </Pie>
                     <Tooltip
