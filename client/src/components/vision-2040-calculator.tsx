@@ -9,9 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { 
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useLanguage } from "@/lib/language-provider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { MonthlyTargetsTable } from "./monthly-targets-table";
+import { MonthlyProgressChart } from "./monthly-progress-chart";
 import { 
   Target, 
   TrendingUp, 
@@ -24,7 +32,8 @@ import {
   CheckCircle2,
   ArrowUp,
   ArrowDown,
-  Clock
+  Clock,
+  Calculator
 } from "lucide-react";
 import { 
   AreaChart, 
