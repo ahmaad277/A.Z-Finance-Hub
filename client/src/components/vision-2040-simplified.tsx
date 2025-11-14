@@ -47,7 +47,7 @@ export function Vision2040Simplified({ isCollapsed = false, onToggle }: Vision20
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,

@@ -297,9 +297,9 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
   // Calculate monthly gap
   const monthlyGap = Math.max(0, requiredMonthlyDeposit - scenarioInputs.monthlyDeposit);
 
-  // Format currency
+  // Format currency - Always use English numbers
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,

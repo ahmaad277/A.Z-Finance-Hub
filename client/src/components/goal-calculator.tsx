@@ -121,7 +121,7 @@ export function GoalCalculator({ isCollapsed = false, onToggle }: GoalCalculator
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,

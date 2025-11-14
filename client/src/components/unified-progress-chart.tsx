@@ -115,9 +115,9 @@ export function UnifiedProgressChart({
     return dataPoints;
   }, [currentPortfolioValue, targetCapital2040, currentInputs, scenarioInputs, yearsTo2040, monthlyTargets, portfolioHistory, isRTL]);
 
-  // Format currency for tooltip
+  // Format currency for tooltip - Always use English numbers
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,

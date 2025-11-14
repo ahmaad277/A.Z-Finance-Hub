@@ -797,7 +797,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                       <div className="flex items-center gap-2 mt-1">
                         <Wallet className="w-4 h-4" />
                         <span>
-                          {language === 'ar' ? 'الرصيد المتاح' : 'Available'}: {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US').format(cashBalance)} {t("common.sar")}
+                          {language === 'ar' ? 'الرصيد المتاح' : 'Available'}: {new Intl.NumberFormat('en-US').format(cashBalance)} {t("common.sar")}
                         </span>
                       </div>
                     </FormDescription>
@@ -831,7 +831,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                   <div>
                     <p className="text-xs text-muted-foreground">{t("dialog.paymentValue")}</p>
                     <p className="text-base font-semibold" data-testid="text-calculated-payment-value">
-                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                      {new Intl.NumberFormat('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                       }).format(calculatedMetrics.paymentValue)} {t("common.sar")}
@@ -840,7 +840,7 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
                   <div>
                     <p className="text-xs text-muted-foreground">{t("dialog.totalExpectedReturn")}</p>
                     <p className="text-base font-semibold" data-testid="text-calculated-total-return">
-                      {new Intl.NumberFormat(language === 'ar' ? 'ar-SA' : 'en-US', {
+                      {new Intl.NumberFormat('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                       }).format(calculatedMetrics.totalExpectedReturn)} {t("common.sar")}

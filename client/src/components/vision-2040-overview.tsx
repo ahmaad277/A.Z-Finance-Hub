@@ -38,9 +38,9 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
   const { t, language } = useLanguage();
   const isRTL = language === "ar";
 
-  // Format currency
+  // Format currency - Always use English numbers
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,
@@ -108,9 +108,9 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Current Portfolio Summary */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground mb-1">
@@ -155,10 +155,10 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
       </div>
 
       {/* Dual Progress Bars */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 bg-chart-1 rounded-full"></div>
               <span className="text-sm font-medium">{t("vision2040.currentPath")}</span>
             </div>
@@ -177,8 +177,8 @@ export function Vision2040Overview({ controller }: Vision2040OverviewProps) {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 bg-chart-2 rounded-full"></div>
               <span className="text-sm font-medium">{t("vision2040.scenarioPath")}</span>
             </div>

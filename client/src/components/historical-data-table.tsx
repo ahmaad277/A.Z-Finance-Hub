@@ -71,7 +71,7 @@ export function HistoricalDataTable() {
   const formatCurrency = (value: string | null) => {
     if (!value) return "-";
     const num = parseFloat(value);
-    return new Intl.NumberFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'SAR',
       minimumFractionDigits: 0,
@@ -81,7 +81,7 @@ export function HistoricalDataTable() {
 
   const formatDate = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat(isRTL ? 'ar-SA' : 'en-US', {
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
     }).format(dateObj);

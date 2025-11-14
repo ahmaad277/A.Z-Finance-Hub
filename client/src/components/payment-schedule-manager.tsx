@@ -58,7 +58,7 @@ export function PaymentScheduleManager({
   // Get tooltip text for payment box
   const getPaymentTooltip = (cashflow: CashflowWithInvestment, index: number) => {
     const dueDate = new Date(cashflow.dueDate).toLocaleDateString(
-      language === "ar" ? "ar-SA" : "en-US",
+      "en-US",
       { year: 'numeric', month: 'short', day: 'numeric' }
     );
     const amount = formatCurrency(parseFloat(cashflow.amount || "0"));

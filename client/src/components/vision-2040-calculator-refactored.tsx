@@ -32,13 +32,13 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
 
   return (
     <Card data-testid="card-vision-2040-calculator">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-1.5 text-lg">
             <Target className="h-5 w-5 text-primary" />
             {t("vision2040.title")}
           </CardTitle>
-          <CardDescription className="mt-1.5">
+          <CardDescription className="mt-1">
             {t("vision2040.subtitle")}
           </CardDescription>
         </div>
@@ -67,33 +67,33 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
             transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{ overflow: "hidden" }}
           >
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <Tabs 
                 value={controller.selectedTab} 
                 onValueChange={controller.setSelectedTab}
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview" className="flex items-center gap-2">
+                  <TabsTrigger value="overview" className="flex items-center gap-1.5">
                     <Calculator className="h-4 w-4" />
                     {t("vision2040.overview")}
                   </TabsTrigger>
-                  <TabsTrigger value="progress" className="flex items-center gap-2">
+                  <TabsTrigger value="progress" className="flex items-center gap-1.5">
                     <TrendingUp className="h-4 w-4" />
                     {t("vision2040.progressTab")}
                   </TabsTrigger>
-                  <TabsTrigger value="targets" className="flex items-center gap-2">
+                  <TabsTrigger value="targets" className="flex items-center gap-1.5">
                     <TableProperties className="h-4 w-4" />
                     {t("vision2040.targetsTab")}
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overview" className="mt-6">
+                <TabsContent value="overview" className="mt-4">
                   <Vision2040Overview controller={controller} />
                 </TabsContent>
 
-                <TabsContent value="progress" className="mt-6">
-                  <div className="space-y-6">
+                <TabsContent value="progress" className="mt-4">
+                  <div className="space-y-4">
                     <div className="flex justify-end">
                       <Button
                         onClick={() => controller.generateTargets()}
@@ -102,7 +102,7 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
                         size="sm"
                         data-testid="button-generate-targets-progress"
                       >
-                        <Calculator className="h-4 w-4 mr-2" />
+                        <Calculator className="h-4 w-4 mr-1.5" />
                         {t("vision2040.generateMonthlyTargets")}
                       </Button>
                     </div>
@@ -113,7 +113,7 @@ export function Vision2040CalculatorRefactored({ isCollapsed = false, onToggle }
                   </div>
                 </TabsContent>
 
-                <TabsContent value="targets" className="mt-6">
+                <TabsContent value="targets" className="mt-4">
                   <MonthlyTargetsTable
                     startDate={controller.dateRange.start}
                     endDate={controller.dateRange.end}
