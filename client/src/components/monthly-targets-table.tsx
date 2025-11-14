@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -65,14 +65,12 @@ export function MonthlyTargetsTable({
   // Update portfolio history (actual value)
   const updateActualMutation = useMutation({
     mutationFn: async (data: { month: Date; totalValue: number }) => {
-      return apiRequest("/api/portfolio-history", {
-        method: "PUT",
-        body: JSON.stringify({
-          month: data.month.toISOString(),
-          totalValue: data.totalValue,
-          source: "manual",
-        }),
+      const response = await apiRequest("PUT", "/api/portfolio-history", {
+        month: data.month.toISOString(),
+        totalValue: data.totalValue,
+        source: "manual",
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/monthly-progress"] });
@@ -95,14 +93,12 @@ export function MonthlyTargetsTable({
   // Update vision target (target value)
   const updateTargetMutation = useMutation({
     mutationFn: async (data: { month: Date; targetValue: number }) => {
-      return apiRequest("/api/vision-targets", {
-        method: "PUT",
-        body: JSON.stringify({
-          month: data.month.toISOString(),
-          targetValue: data.targetValue,
-          generated: 0, // Mark as manual
-        }),
+      const response = await apiRequest("PUT", "/api/vision-targets", {
+        month: data.month.toISOString(),
+        targetValue: data.targetValue,
+        generated: 0, // Mark as manual
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/monthly-progress"] });
@@ -134,9 +130,7 @@ export function MonthlyTargetsTable({
         const history = await historyResponse.json();
         if (history.length > 0) {
           promises.push(
-            apiRequest(`/api/portfolio-history/${history[0].id}`, {
-              method: "DELETE",
-            })
+            apiRequest("DELETE", `/api/portfolio-history/${history[0].id}`)
           );
         }
       }
@@ -147,9 +141,7 @@ export function MonthlyTargetsTable({
         const targets = await targetResponse.json();
         if (targets.length > 0) {
           promises.push(
-            apiRequest(`/api/vision-targets/${targets[0].id}`, {
-              method: "DELETE",
-            })
+            apiRequest("DELETE", `/api/vision-targets/${targets[0].id}`)
           );
         }
       }
