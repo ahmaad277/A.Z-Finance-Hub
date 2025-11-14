@@ -224,6 +224,41 @@ export const insertPortfolioHistorySchema = createInsertSchema(portfolioHistory)
 export type InsertPortfolioHistory = z.infer<typeof insertPortfolioHistorySchema>;
 export type PortfolioHistory = typeof portfolioHistory.$inferSelect;
 
+// Vision Targets - Monthly target values for Vision 2040 calculator
+export const visionTargets = pgTable("vision_targets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  month: timestamp("month").notNull().unique(), // First day of month
+  targetValue: numeric("target_value", { precision: 15, scale: 2 }).notNull(),
+  scenarioId: varchar("scenario_id"), // Optional link to saved scenario
+  generated: boolean("generated").notNull().default(true), // true if auto-calculated, false if manually edited
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertVisionTargetSchema = createInsertSchema(visionTargets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  month: z.coerce.date(),
+  targetValue: z.coerce.number().nonnegative({ message: "Target value cannot be negative" }),
+});
+
+export type InsertVisionTarget = z.infer<typeof insertVisionTargetSchema>;
+export type VisionTarget = typeof visionTargets.$inferSelect;
+
+// Monthly Progress - Combined view of targets and actuals
+export type MonthlyProgress = {
+  month: Date;
+  targetValue: number | null;
+  actualValue: number | null;
+  variance: number | null; // actualValue - targetValue
+  variancePercent: number | null;
+  targetSource: 'generated' | 'manual' | null;
+  actualSource: 'manual' | 'auto' | null;
+};
+
 // Roles - Define user roles (Owner, Admin, Advanced Analyst, etc.)
 export const roles = pgTable("roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
