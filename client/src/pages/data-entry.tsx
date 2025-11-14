@@ -333,6 +333,7 @@ export default function DataEntry() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         investment={editingInvestment}
+        dataEntryToken={token}
       />
 
       <InvestmentDetailsDrawer

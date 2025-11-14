@@ -60,9 +60,10 @@ interface InvestmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   investment?: InvestmentWithPlatform | null;
+  dataEntryToken?: string | null;
 }
 
-export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentDialogProps) {
+export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToken }: InvestmentDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
 
@@ -182,6 +183,22 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
+      if (dataEntryToken) {
+        const res = await fetch("/api/investments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Data-Entry-Token": dataEntryToken,
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(error || "Failed to create investment");
+        }
+        return res.json();
+      }
       return apiRequest("POST", "/api/investments", data);
     },
     onSuccess: () => {
@@ -207,6 +224,22 @@ export function InvestmentDialog({ open, onOpenChange, investment }: InvestmentD
 
   const updateMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
+      if (dataEntryToken) {
+        const res = await fetch(`/api/investments/${investment?.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Data-Entry-Token": dataEntryToken,
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(error || "Failed to update investment");
+        }
+        return res.json();
+      }
       return apiRequest("PATCH", `/api/investments/${investment?.id}`, data);
     },
     onSuccess: () => {
