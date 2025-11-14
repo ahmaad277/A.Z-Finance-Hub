@@ -20,6 +20,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { MonthlyTargetsTable } from "./monthly-targets-table";
 import { MonthlyProgressChart } from "./monthly-progress-chart";
+import { generateMonthlyTargets } from "@/lib/target-generator";
 import { 
   Target, 
   TrendingUp, 
@@ -72,6 +73,10 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const isRTL = language === "ar";
+  
+  // Shared state for tab integration
+  const [selectedTab, setSelectedTab] = useState("overview");
+  const [dateRange, setDateRange] = useState<{ start?: Date; end?: Date }>({});
 
   // Fetch data
   const { data: investments } = useQuery<InvestmentWithPlatform[]>({
@@ -171,6 +176,46 @@ export function Vision2040Calculator({ isCollapsed = false, onToggle }: Vision20
 
   // Scenario name for saving
   const [scenarioName, setScenarioName] = useState("");
+  
+  // Generate targets mutation
+  const generateTargetsMutation = useMutation({
+    mutationFn: async () => {
+      // Generate targets for the current scenario
+      const targets = generateMonthlyTargets(
+        scenarioInputs,
+        new Date(),
+        scenarioName || "Vision 2040"
+      );
+      
+      // Bulk upsert targets
+      const response = await apiRequest("POST", "/api/vision-targets/bulk", {
+        targets: targets.map(t => ({
+          month: t.month.toISOString(),
+          targetValue: t.targetValue,
+          scenarioId: t.scenarioId,
+          generated: t.generated,
+        }))
+      });
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/monthly-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/vision-targets"] });
+      toast({
+        title: "Success",
+        description: "Monthly targets generated successfully.",
+      });
+      setSelectedTab("progress"); // Switch to progress tab
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to generate targets.",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Calculate future value
   const calculateFutureValue = (inputs: ScenarioInputs) => {
