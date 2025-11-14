@@ -257,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Complete all pending payments for an investment
-  app.post("/api/investments/:id/complete-all-payments", async (req, res) => {
+  app.post("/api/investments/:id/complete-all-payments", withDataEntryToken, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -301,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Preview cashflows for investment (before creation)
-  app.post("/api/investments/preview-cashflows", async (req, res) => {
+  app.post("/api/investments/preview-cashflows", withDataEntryToken, async (req, res) => {
     try {
       const previewSchema = z.object({
         startDate: z.coerce.date(),
@@ -844,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/vision-targets", async (req, res) => {
+  app.post("/api/vision-targets", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { insertVisionTargetSchema } = await import("@shared/schema");
       const data = insertVisionTargetSchema.parse(req.body);
@@ -861,7 +861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/vision-targets/bulk", async (req, res) => {
+  app.post("/api/vision-targets/bulk", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { targets } = req.body;
       if (!Array.isArray(targets)) {
@@ -889,7 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/vision-targets", async (req, res) => {
+  app.put("/api/vision-targets", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       // Convert string date to Date object before validation
       const convertedData = {
@@ -912,7 +912,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/vision-targets/:id", async (req, res) => {
+  app.delete("/api/vision-targets/:id", withDataEntryToken, blockDataEntry, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteVisionTarget(id);
@@ -928,8 +928,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Investment Status Check Trigger
-  app.post("/api/investments/check-status", async (_req, res) => {
+  // Investment Status Check Trigger (owner only - background task)
+  app.post("/api/investments/check-status", withDataEntryToken, blockDataEntry, async (_req, res) => {
     try {
       const { checkAllInvestmentStatuses } = await import("@shared/status-manager");
       
