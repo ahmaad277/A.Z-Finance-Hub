@@ -116,6 +116,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { investments } = bulkSchema.parse(req.body);
       
+      // Get all platforms for validation
+      const allPlatforms = await storage.getPlatforms();
+      const platformIds = new Set(allPlatforms.map(p => p.id));
+      
       // Validate all investments before creating any
       const results = {
         created: [] as any[],
@@ -125,6 +129,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (let i = 0; i < investments.length; i++) {
         try {
           const investmentData = investments[i];
+          
+          // Validate that platformId exists and platform is valid
+          if (!investmentData.platformId) {
+            throw new Error('Platform ID is required');
+          }
+          
+          if (!platformIds.has(investmentData.platformId)) {
+            throw new Error(`Platform with ID ${investmentData.platformId} does not exist`);
+          }
           
           // Extract customDistributions if provided
           const { customDistributions, durationMonths: clientDurationMonths, ...rawInvestmentData } = investmentData;

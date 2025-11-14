@@ -143,11 +143,6 @@ export default function BulkImport() {
       // Auto-select only rows with no errors
       const validIds = data.filter(d => d.errors.length === 0).map(d => d.id);
       setSelectedRows(new Set(validIds));
-      
-      // Log column mapping results for debugging
-      console.log('[Bulk Import] Parsed', data.length, 'investments');
-      console.log('[Bulk Import] Valid rows:', validIds.length);
-      console.log('[Bulk Import] Rows with errors:', data.filter(d => d.errors.length > 0).length);
 
       toast({
         title: t("bulkImport.fileSelected"),
@@ -358,7 +353,6 @@ export default function BulkImport() {
   };
 
   const handleBulkPlatformChange = (platformId: string) => {
-    console.log('[Bulk Import] Platform selected:', platformId);
     setDefaultPlatformId(platformId);
     setParsedData(prev => prev.map(inv => ({ ...inv, platformId })));
     
@@ -378,7 +372,7 @@ export default function BulkImport() {
       return;
     }
 
-    // Prepare investments for bulk creation
+    // Prepare investments for bulk creation - filter out invalid rows and rows without platformId
     const selectedInvestments = parsedData
       .filter(inv => selectedRows.has(inv.id) && inv.errors.length === 0 && inv.platformId !== null)
       .map(inv => ({
@@ -397,6 +391,17 @@ export default function BulkImport() {
         isReinvestment: inv.isReinvestment,
         fundedFromCash: inv.fundedFromCash,
       }));
+
+    // Final validation: ensure all investments have platformId
+    const invalidInvestments = selectedInvestments.filter(inv => !inv.platformId);
+    if (invalidInvestments.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: "All investments must have a platform assigned",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (selectedInvestments.length === 0) {
       toast({
