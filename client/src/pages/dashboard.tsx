@@ -143,7 +143,7 @@ export default function Dashboard() {
       .reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
 
     const totalReturns = platformCashflows
-      .filter((cf) => cf.status === "received")
+      .filter((cf) => cf.status === "received" && cf.type === "profit")
       .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
 
     const activeInvestments = platformInvestments.filter((inv) => inv.status === "active").length;
@@ -267,7 +267,7 @@ export default function Dashboard() {
       const platformCashflows = cashflows.filter(cf => platformInvestmentIds.has(cf.investmentId));
 
       const totalReturns = platformCashflows
-        .filter(cf => cf.status === "received")
+        .filter(cf => cf.status === "received" && cf.type === "profit")
         .reduce((sum, cf) => sum + parseFloat(cf.amount), 0);
 
       const activeInvestments = platformInvestments.filter(inv => inv.status === "active");
