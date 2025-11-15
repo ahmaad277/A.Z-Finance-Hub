@@ -38,20 +38,34 @@ export function PaymentScheduleManager({
     ? expectedProfit / profitPayments.length
     : 0;
   
-  // Get payment box color based on status and due date
+  // Get payment box color based on status, due date, and type (profit vs principal)
   const getPaymentBoxColor = (cashflow: CashflowWithInvestment) => {
     const now = new Date();
     const dueDate = new Date(cashflow.dueDate);
     const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const isPrincipal = cashflow.type === "principal";
     
-    if (cashflow.status === "received") {
-      return "bg-chart-2 border-chart-2"; // Green - received
-    } else if (daysUntilDue < 0) {
+    // Overdue takes priority regardless of type
+    if (daysUntilDue < 0 && cashflow.status !== "received") {
       return "bg-destructive border-destructive"; // Red - overdue
-    } else if (daysUntilDue <= 7) {
+    }
+    
+    // Due soon takes second priority
+    if (daysUntilDue <= 7 && daysUntilDue >= 0 && cashflow.status !== "received") {
       return "bg-yellow-500 border-yellow-500"; // Yellow - due soon
+    }
+    
+    // Then apply type-based colors
+    if (cashflow.status === "received") {
+      // Solid colors for received payments
+      return isPrincipal 
+        ? "bg-blue-500 border-blue-500"   // Blue - principal received
+        : "bg-chart-2 border-chart-2";     // Green - profit received
     } else {
-      return "bg-muted-foreground/30 border-muted-foreground/30"; // Gray - upcoming
+      // Light colors for upcoming payments
+      return isPrincipal
+        ? "bg-blue-500/30 border-blue-500/30"    // Light blue - principal upcoming
+        : "bg-chart-2/30 border-chart-2/30";     // Light green - profit upcoming
     }
   };
   
@@ -62,20 +76,23 @@ export function PaymentScheduleManager({
       { year: 'numeric', month: 'short', day: 'numeric' }
     );
     const amount = formatCurrency(parseFloat(cashflow.amount || "0"));
+    const typeLabel = cashflow.type === "principal" 
+      ? (language === "ar" ? "قيمة أسمية" : "Principal")
+      : (language === "ar" ? "ربح" : "Profit");
     
     if (cashflow.status === "received") {
-      return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${amount} - ${language === "ar" ? "مستلمة" : "Received"} (${dueDate})`;
+      return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${typeLabel} - ${amount} - ${language === "ar" ? "مستلمة" : "Received"} (${dueDate})`;
     } else {
       const now = new Date();
       const dueDateObj = new Date(cashflow.dueDate);
       const daysUntilDue = Math.floor((dueDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       
       if (daysUntilDue < 0) {
-        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${amount} - ${language === "ar" ? "متأخرة" : "Overdue"} (${dueDate})`;
+        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${typeLabel} - ${amount} - ${language === "ar" ? "متأخرة" : "Overdue"} (${dueDate})`;
       } else if (daysUntilDue <= 7) {
-        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${amount} - ${language === "ar" ? "مستحقة قريباً" : "Due soon"} (${dueDate})`;
+        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${typeLabel} - ${amount} - ${language === "ar" ? "مستحقة قريباً" : "Due soon"} (${dueDate})`;
       } else {
-        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${amount} - ${language === "ar" ? "قادمة" : "Upcoming"} (${dueDate})`;
+        return `${language === "ar" ? "دفعة" : "Payment"} #${index + 1} - ${typeLabel} - ${amount} - ${language === "ar" ? "قادمة" : "Upcoming"} (${dueDate})`;
       }
     }
   };
@@ -213,15 +230,15 @@ export function PaymentScheduleManager({
         <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-chart-2 border-chart-2" />
-            <span>{language === "ar" ? "مستلمة" : "Received"}</span>
+            <span>{language === "ar" ? "أرباح" : "Profit"}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-sm bg-blue-500 border-blue-500" />
+            <span>{language === "ar" ? "قيمة أسمية" : "Principal"}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-yellow-500 border-yellow-500" />
             <span>{language === "ar" ? "قريبة" : "Due soon"}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-muted-foreground/30 border-muted-foreground/30" />
-            <span>{language === "ar" ? "قادمة" : "Upcoming"}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-destructive border-destructive" />
