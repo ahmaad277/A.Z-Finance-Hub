@@ -244,10 +244,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
       
-      const investment = await storage.updateInvestment(id, investmentData, customDistributions);
+      // Check if status is changing to 'completed'
+      const currentInvestment = investmentData.status 
+        ? await storage.getInvestment(id) 
+        : null;
+      
+      const isCompletingInvestment = currentInvestment 
+        && currentInvestment.status !== 'completed' 
+        && investmentData.status === 'completed';
+      
+      let investment = await storage.updateInvestment(id, investmentData, customDistributions);
       
       if (!investment) {
         return res.status(404).json({ error: "Investment not found" });
+      }
+
+      // If status changed to 'completed', automatically mark all pending cashflows as received
+      if (isCompletingInvestment) {
+        try {
+          await storage.completeAllPendingPayments(
+            id,
+            new Date(), // fallback date (not used when useDueDates=true)
+            { 
+              clearLateStatus: true, // Clear late status when marking as completed
+              useDueDates: true // Use each cashflow's dueDate as receivedDate
+            }
+          );
+          
+          // Refetch investment with platform to get the latest state after completing payments
+          const allInvestments = await storage.getInvestments();
+          const refreshedInvestment = allInvestments.find(inv => inv.id === id);
+          if (refreshedInvestment) {
+            investment = refreshedInvestment;
+          }
+        } catch (error) {
+          console.error("Error completing pending payments:", error);
+          // Don't fail the entire update if this fails
+        }
       }
 
       res.json(investment);

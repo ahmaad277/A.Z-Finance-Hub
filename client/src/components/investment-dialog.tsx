@@ -885,6 +885,18 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               />
             </div>
 
+            {/* Auto-Complete Cashflows Alert */}
+            {form.watch("status") === "completed" && (
+              <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-blue-800 dark:text-blue-300">
+                  {language === 'ar' 
+                    ? 'عند تحديد الحالة كـ "مكتمل"، سيتم تسجيل جميع التوزيعات المعلقة تلقائياً كمستلمة في تواريخها المجدولة.' 
+                    : 'When marking as "Completed", all pending distributions will automatically be recorded as received on their scheduled dates.'}
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Funding from Cash */}
             <FormField
               control={form.control}

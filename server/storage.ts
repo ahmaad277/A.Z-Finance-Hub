@@ -99,7 +99,7 @@ export interface IStorage {
   updateInvestmentStatus(id: string, status: 'active' | 'late' | 'defaulted' | 'completed' | 'pending', lateDate?: Date | null, defaultedDate?: Date | null): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
   getCustomDistributions(investmentId: string): Promise<ApiCustomDistribution[]>;
-  completeAllPendingPayments(investmentId: string, receivedDate: Date, options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number } }): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null>;
+  completeAllPendingPayments(investmentId: string, receivedDate: Date, options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number }; useDueDates?: boolean }): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null>;
 
   // Cashflows
   getCashflows(): Promise<CashflowWithInvestment[]>;
@@ -662,7 +662,7 @@ export class DatabaseStorage implements IStorage {
   async completeAllPendingPayments(
     investmentId: string,
     receivedDate: Date,
-    options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number } }
+    options?: { clearLateStatus?: boolean; updateLateInfo?: { lateDays: number }; useDueDates?: boolean }
   ): Promise<{ investment: Investment; updatedCount: number; totalAmount: number } | null> {
     // Wrap entire operation in transaction for atomicity
     return await db.transaction(async (tx) => {
@@ -673,7 +673,13 @@ export class DatabaseStorage implements IStorage {
         .where(eq(investments.id, investmentId))
         .for('update');
       
-      if (!investment || investment.status === 'completed' || investment.status === 'pending') {
+      if (!investment || investment.status === 'pending') {
+        return null;
+      }
+      
+      // Allow processing if status is 'completed' but only if useDueDates is true
+      // This handles the case where investment was just marked as completed
+      if (investment.status === 'completed' && !options?.useDueDates) {
         return null;
       }
 
@@ -704,12 +710,15 @@ export class DatabaseStorage implements IStorage {
 
       // Update all pending cashflows to received and create cash transactions
       for (const cashflow of pendingCashflows) {
+        // Use dueDate if useDueDates option is true, otherwise use receivedDate
+        const actualReceivedDate = options?.useDueDates ? new Date(cashflow.dueDate) : receivedDate;
+        
         // Update cashflow status
         await tx
           .update(cashflows)
           .set({
             status: 'received',
-            receivedDate: receivedDate,
+            receivedDate: actualReceivedDate,
           })
           .where(eq(cashflows.id, cashflow.id));
 
@@ -729,7 +738,7 @@ export class DatabaseStorage implements IStorage {
             type: 'distribution',
             source: transactionSource,
             notes: transactionNotes,
-            date: receivedDate,
+            date: actualReceivedDate,
             investmentId: investmentId,
             cashflowId: cashflow.id,
             platformId: investment.platformId,
@@ -738,42 +747,53 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      // Handle late status management
-      if (investment.status === 'late' || investment.status === 'defaulted') {
-        if (options?.clearLateStatus) {
-          // Clear late/defaulted dates
-          await tx
-            .update(investments)
-            .set({
-              status: 'completed',
-              lateDate: null,
-              defaultedDate: null,
-            })
-            .where(eq(investments.id, investmentId));
-        } else if (options?.updateLateInfo?.lateDays) {
-          // Update late date based on custom late days
-          const now = new Date();
-          const customLateDate = new Date(now.getTime() - (options.updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
-          await tx
-            .update(investments)
-            .set({
-              status: 'completed',
-              lateDate: customLateDate,
-              defaultedDate: investment.defaultedDate ? new Date(investment.defaultedDate) : null,
-            })
-            .where(eq(investments.id, investmentId));
+      // Handle late status management and mark as completed if not already
+      if (investment.status !== 'completed') {
+        if (investment.status === 'late' || investment.status === 'defaulted') {
+          if (options?.clearLateStatus) {
+            // Clear late/defaulted dates
+            await tx
+              .update(investments)
+              .set({
+                status: 'completed',
+                lateDate: null,
+                defaultedDate: null,
+              })
+              .where(eq(investments.id, investmentId));
+          } else if (options?.updateLateInfo?.lateDays) {
+            // Update late date based on custom late days
+            const now = new Date();
+            const customLateDate = new Date(now.getTime() - (options.updateLateInfo.lateDays * 24 * 60 * 60 * 1000));
+            await tx
+              .update(investments)
+              .set({
+                status: 'completed',
+                lateDate: customLateDate,
+                defaultedDate: investment.defaultedDate ? new Date(investment.defaultedDate) : null,
+              })
+              .where(eq(investments.id, investmentId));
+          } else {
+            // Keep existing late status info but mark as completed
+            await tx
+              .update(investments)
+              .set({ status: 'completed' })
+              .where(eq(investments.id, investmentId));
+          }
         } else {
-          // Keep existing late status
+          // Mark investment as completed (for active status)
           await tx
             .update(investments)
             .set({ status: 'completed' })
             .where(eq(investments.id, investmentId));
         }
-      } else {
-        // Mark investment as completed
+      } else if ((investment.status === 'completed') && options?.clearLateStatus && (investment.lateDate || investment.defaultedDate)) {
+        // Investment already completed but late dates need clearing
         await tx
           .update(investments)
-          .set({ status: 'completed' })
+          .set({
+            lateDate: null,
+            defaultedDate: null,
+          })
           .where(eq(investments.id, investmentId));
       }
 
