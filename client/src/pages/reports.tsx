@@ -378,8 +378,8 @@ export default function Reports() {
         head: [[tr("report.metric"), tr("report.value")]],
         body: summaryData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
-        headStyles: { fillColor: [41, 128, 185], halign: isArabic ? 'right' : 'left' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
+        headStyles: { fillColor: [41, 128, 185], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -404,8 +404,8 @@ export default function Reports() {
         head: [[tr("report.statusColumn"), tr("report.countColumn")]],
         body: statusData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
-        headStyles: { fillColor: [52, 152, 219], halign: isArabic ? 'right' : 'left' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
+        headStyles: { fillColor: [52, 152, 219], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -434,8 +434,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.value"), tr("report.countColumn"), tr("report.percentageColumn")]],
         body: platformData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
-        headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
+        headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
       });
     }
 
@@ -466,8 +466,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.nameColumn"), tr("report.amountColumn"), tr("report.startDateColumn"), tr("report.expectedIRRColumn"), tr("report.statusColumn")]],
         body: invData,
         theme: 'striped',
-        styles: { fontSize: 8, halign: isArabic ? 'right' : 'left' },
-        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left' },
+        styles: { fontSize: 8, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
+        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
       });
     }
 
