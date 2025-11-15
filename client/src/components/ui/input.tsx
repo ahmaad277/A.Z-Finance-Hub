@@ -1,6 +1,46 @@
 import * as React from "react"
+import { ControllerRenderProps } from "react-hook-form"
 
 import { cn, normalizeNumberInput } from "@/lib/utils"
+
+export function useNormalizedNumberField(
+  field: ControllerRenderProps<any, any>,
+  defaultValue: number | null = 0
+) {
+  const initialValue = field.value === null || field.value === undefined || field.value === 0
+    ? ""
+    : field.value.toString();
+  
+  const [stringValue, setStringValue] = React.useState(initialValue);
+
+  const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setStringValue(e.target.value);
+  }, []);
+
+  const handleBlur = React.useCallback(() => {
+    const trimmed = stringValue.replace(/[\.\-]+$/, '');
+    if (trimmed === "" || trimmed === "-") {
+      field.onChange(defaultValue);
+      setStringValue(defaultValue === null || defaultValue === 0 ? "" : defaultValue.toString());
+      return;
+    }
+    
+    const num = parseFloat(trimmed);
+    if (!isNaN(num)) {
+      field.onChange(num);
+      setStringValue(num.toString());
+    } else {
+      field.onChange(defaultValue);
+      setStringValue(defaultValue === null || defaultValue === 0 ? "" : defaultValue.toString());
+    }
+  }, [stringValue, field, defaultValue]);
+
+  return {
+    value: stringValue,
+    onChange: handleChange,
+    onBlur: handleBlur,
+  };
+}
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, onChange, onBeforeInput, inputMode, ...props }, ref) => {

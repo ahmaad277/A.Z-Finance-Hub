@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import { Input, useNormalizedNumberField } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -590,33 +590,26 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               <FormField
                 control={form.control}
                 name="expectedIrr"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
-                        placeholder="12.5" 
-                        {...field}
-                        value={field.value === 0 ? "" : field.value}
-                        onChange={(e) => {
-                          const normalized = normalizeNumberInput(e.target.value);
-                          if (normalized === "") {
-                            field.onChange(0);
-                          } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
-                            return;
-                          } else {
-                            const val = parseFloat(normalized);
-                            field.onChange(isNaN(val) ? 0 : val);
-                          }
-                        }}
-                        data-testid="input-irr" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const normalizedField = useNormalizedNumberField(field, 0);
+                  return (
+                    <FormItem>
+                      <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="12.5" 
+                          value={normalizedField.value}
+                          onChange={normalizedField.onChange}
+                          onBlur={normalizedField.onBlur}
+                          data-testid="input-irr" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
