@@ -52,6 +52,12 @@ const formSchema = insertInvestmentSchema.extend({
   endDate: z.string(),
   actualEndDate: z.string().optional(),
   durationMonths: z.number().int().nonnegative().optional(),
+}).refine((data) => data.faceValue > 0, {
+  message: "Face value must be greater than 0",
+  path: ["faceValue"],
+}).refine((data) => data.expectedIrr > 0, {
+  message: "Expected IRR must be greater than 0",
+  path: ["expectedIrr"],
 });
 
 type DurationMode = 'months' | 'dates';
@@ -180,6 +186,46 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       }
     }
   }, [distributionFrequency, form]);
+
+  // Auto-calculate risk score based on expected IRR
+  const expectedIrr = useWatch({
+    control: form.control,
+    name: "expectedIrr",
+  });
+
+  useEffect(() => {
+    if (isResettingRef.current) return;
+    
+    // Convert to number if string
+    const irrValue = typeof expectedIrr === 'string' ? parseFloat(expectedIrr) : expectedIrr;
+    
+    // Check if we have a valid IRR value (treat 0 as empty/not set)
+    const hasValidIrr = expectedIrr !== undefined && 
+                        expectedIrr !== null && 
+                        expectedIrr !== 0 &&
+                        String(expectedIrr) !== "" && 
+                        !isNaN(irrValue) &&
+                        irrValue > 0;
+    
+    if (hasValidIrr) {
+      // Calculate risk score: (expectedIrr / 30) * 100
+      // 0% IRR = treated as empty, 30% IRR = 100 risk
+      const calculatedRisk = Math.min(100, Math.max(0, (irrValue / 30) * 100));
+      const roundedRisk = Math.round(calculatedRisk);
+      
+      const currentRiskScore = form.getValues('riskScore');
+      
+      if (currentRiskScore !== roundedRisk) {
+        form.setValue('riskScore', roundedRisk);
+      }
+    } else {
+      // Reset to default midpoint when IRR is empty/0/invalid
+      const currentRiskScore = form.getValues('riskScore');
+      if (currentRiskScore !== 50) {
+        form.setValue('riskScore', 50);
+      }
+    }
+  }, [expectedIrr, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
@@ -498,14 +544,33 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                     <FormLabel>
                       {t("dialog.faceValue")}
                     </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="100000" 
-                        {...field} 
-                        data-testid="input-face-value" 
-                      />
-                    </FormControl>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="100000" 
+                          {...field}
+                          value={field.value === 0 ? "" : field.value}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                            field.onChange(isNaN(val) ? 0 : val);
+                          }}
+                          data-testid="input-face-value" 
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const currentValue = field.value || 0;
+                          field.onChange(currentValue + 5000);
+                        }}
+                        data-testid="button-add-5000"
+                      >
+                        +5K
+                      </Button>
+                    </div>
                     <FormDescription>
                       {t("dialog.faceValueDesc")}
                     </FormDescription>
@@ -521,7 +586,18 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                   <FormItem>
                     <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" placeholder="12.5" {...field} data-testid="input-irr" />
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="12.5" 
+                        {...field}
+                        value={field.value === 0 ? "" : field.value}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                          field.onChange(isNaN(val) ? 0 : val);
+                        }}
+                        data-testid="input-irr" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

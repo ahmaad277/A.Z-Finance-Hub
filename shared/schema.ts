@@ -55,7 +55,7 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   durationMonths: z.number().int().positive(),
   faceValue: z.coerce.number().positive(),
   totalExpectedProfit: z.coerce.number().nonnegative(),
-  expectedIrr: z.coerce.number().min(0).max(100),
+  expectedIrr: z.coerce.number().positive().max(100),
   distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity', 'custom']),
   profitPaymentStructure: z.enum(['periodic', 'at_maturity']),
   status: z.enum(['active', 'late', 'defaulted', 'completed', 'pending']).optional(),

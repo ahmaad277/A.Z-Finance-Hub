@@ -37,19 +37,23 @@ export function generateCashflows(params: GenerateCashflowsParams): GeneratedCas
   const cashflows: GeneratedCashflow[] = [];
 
   if (distributionFrequency === "at_maturity") {
-    if (profitPaymentStructure === "periodic") {
+    // Create separate cashflows for profit and principal for better tracking
+    // This allows automatic cash transaction creation when profit is received
+    if (totalExpectedProfit > 0) {
       cashflows.push({
         dueDate: endDate,
-        amount: totalExpectedProfit + faceValue,
-        type: "principal",
-      });
-    } else {
-      cashflows.push({
-        dueDate: endDate,
-        amount: totalExpectedProfit + faceValue,
-        type: "principal",
+        amount: totalExpectedProfit,
+        type: "profit",
       });
     }
+    
+    // Keep principal on same endDate for maturity consistency
+    cashflows.push({
+      dueDate: endDate,
+      amount: faceValue,
+      type: "principal",
+    });
+    
     return cashflows;
   }
 
