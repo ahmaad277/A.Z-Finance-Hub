@@ -45,6 +45,8 @@ export default function Settings() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [isRegisteringBiometric, setIsRegisteringBiometric] = useState(false);
   const [platformToDelete, setPlatformToDelete] = useState<Platform | null>(null);
+  const [platformToEdit, setPlatformToEdit] = useState<Platform | null>(null);
+  const [editPlatformName, setEditPlatformName] = useState("");
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetConfirmation, setResetConfirmation] = useState("");
 
@@ -114,6 +116,15 @@ export default function Settings() {
     check();
   }, []);
 
+  // Populate edit platform name when dialog opens
+  useEffect(() => {
+    if (platformToEdit) {
+      setEditPlatformName(platformToEdit.name);
+    } else {
+      setEditPlatformName("");
+    }
+  }, [platformToEdit]);
+
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<UserSettings>) => {
       return apiRequest("PUT", "/api/settings", data);
@@ -155,6 +166,28 @@ export default function Settings() {
     },
   });
 
+  const updatePlatformMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string }) => {
+      return apiRequest("PUT", `/api/platforms/${data.id}`, { name: data.name });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      setPlatformToEdit(null);
+      setEditPlatformName("");
+      toast({
+        title: t("settings.platformUpdated"),
+        description: t("settings.platformUpdatedDesc"),
+      });
+    },
+    onError: () => {
+      toast({
+        title: t("dialog.error"),
+        description: t("settings.platformUpdateError"),
+        variant: "destructive",
+      });
+    },
+  });
 
   const deletePlatformMutation = useMutation({
     mutationFn: async (platformId: string) => {
@@ -685,13 +718,7 @@ export default function Settings() {
                         size="icon"
                         className="h-7 w-7"
                         data-testid={`button-edit-platform-${platform.id}`}
-                        onClick={() => {
-                          // Edit platform functionality will be added
-                          toast({
-                            title: t("settings.editPlatform"),
-                            description: t("settings.editPlatformComingSoon"),
-                          });
-                        }}
+                        onClick={() => setPlatformToEdit(platform)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -998,6 +1025,47 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Platform Dialog */}
+      <AlertDialog open={!!platformToEdit} onOpenChange={(open) => !open && setPlatformToEdit(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              <AlertDialogTitle>{t("settings.editPlatform")}</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>{t("settings.editPlatformDesc")}</p>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("settings.platformName")}</Label>
+                  <Input
+                    value={editPlatformName}
+                    onChange={(e) => setEditPlatformName(e.target.value)}
+                    placeholder={t("settings.platformNamePlaceholder")}
+                    data-testid="input-edit-platform-name"
+                  />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-edit-platform">
+              {t("dialog.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => platformToEdit && updatePlatformMutation.mutate({ 
+                id: platformToEdit.id, 
+                name: editPlatformName 
+              })}
+              disabled={updatePlatformMutation.isPending || !editPlatformName.trim()}
+              data-testid="button-confirm-edit-platform"
+            >
+              {updatePlatformMutation.isPending ? t("dialog.saving") : t("dialog.save")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Platform Confirmation Dialog */}
       <AlertDialog open={!!platformToDelete} onOpenChange={(open) => !open && setPlatformToDelete(null)}>

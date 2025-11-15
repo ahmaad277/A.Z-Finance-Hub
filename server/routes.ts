@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { withDataEntryToken, blockDataEntry } from "./data-entry-middleware";
 import {
   insertPlatformSchema,
+  updatePlatformSchema,
   insertInvestmentSchema,
   insertCashflowSchema,
   insertAlertSchema,
@@ -75,6 +76,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = insertPlatformSchema.parse(req.body);
       const platform = await storage.createPlatform(data);
       res.status(201).json(platform);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid platform data" });
+    }
+  });
+
+  app.put("/api/platforms/:id", withDataEntryToken, blockDataEntry, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = updatePlatformSchema.parse(req.body);
+      const platform = await storage.updatePlatform(id, data);
+      
+      if (!platform) {
+        return res.status(404).json({ error: "Platform not found" });
+      }
+
+      res.json(platform);
     } catch (error) {
       res.status(400).json({ error: "Invalid platform data" });
     }

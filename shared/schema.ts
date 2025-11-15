@@ -12,7 +12,11 @@ export const platforms = pgTable("platforms", {
 });
 
 export const insertPlatformSchema = createInsertSchema(platforms).omit({ id: true });
+export const updatePlatformSchema = z.object({
+  name: z.string().trim().min(1, "Platform name is required"),
+});
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
+export type UpdatePlatform = z.infer<typeof updatePlatformSchema>;
 export type Platform = typeof platforms.$inferSelect;
 
 // Investment opportunities (Sukuk-optimized)

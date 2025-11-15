@@ -88,6 +88,7 @@ export interface IStorage {
   // Platforms
   getPlatforms(): Promise<Platform[]>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
+  updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined>;
   deletePlatform(id: string): Promise<boolean>;
 
   // Investments
@@ -249,6 +250,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertPlatform)
       .returning();
     return platform;
+  }
+
+  async updatePlatform(id: string, updatePlatform: Partial<InsertPlatform>): Promise<Platform | undefined> {
+    const [platform] = await db
+      .update(platforms)
+      .set(updatePlatform)
+      .where(eq(platforms.id, id))
+      .returning();
+    return platform || undefined;
   }
 
   async deletePlatform(id: string): Promise<boolean> {

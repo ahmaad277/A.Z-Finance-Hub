@@ -22,25 +22,26 @@ export default function Reports() {
 
   // Fetch data
   const { data: investments = [] } = useQuery<InvestmentWithPlatform[]>({
-    queryKey: ["/api/v2/investments"],
+    queryKey: ["/api/investments"],
   });
 
   const { data: cashflows = [] } = useQuery<CashflowWithInvestment[]>({
-    queryKey: ["/api/v2/cashflows"],
+    queryKey: ["/api/cashflows"],
   });
 
   const { data: platforms = [] } = useQuery<Platform[]>({
-    queryKey: ["/api/v2/platforms"],
+    queryKey: ["/api/platforms"],
   });
 
   const { data: cashTransactions = [] } = useQuery<CashTransaction[]>({
-    queryKey: ["/api/v2/cash-transactions"],
+    queryKey: ["/api/cash/transactions"],
   });
 
   // Report configuration
   const [reportType, setReportType] = useState<"summary" | "detailed" | "custom">("summary");
   const [dateRange, setDateRange] = useState<"all" | "ytd" | "lastYear" | "lastQuarter" | "lastMonth">("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [reportLanguage, setReportLanguage] = useState<"en" | "ar">(language as "en" | "ar");
   const [includeCharts, setIncludeCharts] = useState(true);
   const [includeInvestments, setIncludeInvestments] = useState(true);
   const [includeCashflows, setIncludeCashflows] = useState(true);
@@ -95,37 +96,38 @@ export default function Reports() {
     if (!metrics) return;
 
     const workbook = XLSX.utils.book_new();
+    const isAr = reportLanguage === "ar";
 
     // Summary Sheet
     if (includeMetrics) {
       const summaryData = [
-        ["A.Z Finance Hub - Portfolio Report"],
-        ["Generated:", new Date().toLocaleDateString()],
-        ["Date Range:", getDateRangeLabel()],
-        ["Platform:", platformFilter === "all" ? "All Platforms" : platforms.find(p => p.id === platformFilter)?.name || ""],
+        [isAr ? "مركز أ.ز المالي - تقرير المحفظة" : "A.Z Finance Hub - Portfolio Report"],
+        [isAr ? "تاريخ الإنشاء:" : "Generated:", new Date().toLocaleDateString()],
+        [isAr ? "الفترة الزمنية:" : "Date Range:", getDateRangeLabel()],
+        [isAr ? "المنصة:" : "Platform:", platformFilter === "all" ? (isAr ? "جميع المنصات" : "All Platforms") : platforms.find(p => p.id === platformFilter)?.name || ""],
         [],
-        ["Portfolio Summary"],
-        ["Metric", "Value"],
-        ["Portfolio Value", formatCurrency(metrics.portfolioValue)],
-        ["Total Cash", formatCurrency(metrics.totalCash)],
-        ["Cash Ratio", formatPercentage(metrics.cashRatio)],
-        ["Expected Returns", formatCurrency(metrics.expectedReturns)],
-        ["Actual Returns", formatCurrency(metrics.actualReturns)],
-        ["Active Annual Return", formatPercentage(metrics.activeAPR)],
-        ["Historical Average APR", formatPercentage(metrics.weightedAPR)],
-        ["Portfolio ROI", formatPercentage(metrics.portfolioROI)],
+        [isAr ? "ملخص المحفظة" : "Portfolio Summary"],
+        [isAr ? "المقياس" : "Metric", isAr ? "القيمة" : "Value"],
+        [isAr ? "قيمة المحفظة" : "Portfolio Value", formatCurrency(metrics.portfolioValue)],
+        [isAr ? "إجمالي النقد" : "Total Cash", formatCurrency(metrics.totalCash)],
+        [isAr ? "نسبة النقد" : "Cash Ratio", formatPercentage(metrics.cashRatio)],
+        [isAr ? "العوائد المتوقعة" : "Expected Returns", formatCurrency(metrics.expectedReturns)],
+        [isAr ? "العوائد الفعلية" : "Actual Returns", formatCurrency(metrics.actualReturns)],
+        [isAr ? "العائد السنوي النشط" : "Active Annual Return", formatPercentage(metrics.activeAPR)],
+        [isAr ? "متوسط العائد السنوي التاريخي" : "Historical Average APR", formatPercentage(metrics.weightedAPR)],
+        [isAr ? "ROI" : "Portfolio ROI", formatPercentage(metrics.portfolioROI)],
         [],
-        ["Investment Status"],
-        ["Total Investments", metrics.totalInvestments],
-        ["Active", metrics.activeInvestments],
-        ["Completed", metrics.completedInvestments],
-        ["Late", metrics.lateInvestments],
-        ["Defaulted", metrics.defaultedInvestments],
+        [isAr ? "حالة الاستثمارات" : "Investment Status"],
+        [isAr ? "إجمالي الاستثمارات" : "Total Investments", metrics.totalInvestments],
+        [isAr ? "نشطة" : "Active", metrics.activeInvestments],
+        [isAr ? "مكتملة" : "Completed", metrics.completedInvestments],
+        [isAr ? "متأخرة" : "Late", metrics.lateInvestments],
+        [isAr ? "متعثرة" : "Defaulted", metrics.defaultedInvestments],
         [],
-        ["Averages"],
-        ["Average Duration (months)", metrics.avgDuration?.toFixed(1) || "0"],
-        ["Average Amount", formatCurrency(metrics.avgAmount)],
-        ["Average Payment", formatCurrency(metrics.avgPaymentAmount)],
+        [isAr ? "المتوسطات" : "Averages"],
+        [isAr ? "متوسط المدة (أشهر)" : "Average Duration (months)", metrics.avgDuration?.toFixed(1) || "0"],
+        [isAr ? "متوسط المبلغ" : "Average Amount", formatCurrency(metrics.avgAmount)],
+        [isAr ? "متوسط الدفعة" : "Average Payment", formatCurrency(metrics.avgPaymentAmount)],
       ];
       
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -135,7 +137,17 @@ export default function Reports() {
     // Investments Sheet
     if (includeInvestments && investments.length > 0) {
       const investmentData = [
-        ["Platform", "Name", "Amount (SAR)", "Start Date", "End Date", "Expected IRR (%)", "Status", "Risk Score", "Frequency"]
+        [
+          isAr ? "المنصة" : "Platform",
+          isAr ? "الاسم" : "Name",
+          isAr ? "المبلغ (ريال)" : "Amount (SAR)",
+          isAr ? "تاريخ البدء" : "Start Date",
+          isAr ? "تاريخ الانتهاء" : "End Date",
+          isAr ? "العائد المتوقع (%)" : "Expected IRR (%)",
+          isAr ? "الحالة" : "Status",
+          isAr ? "درجة المخاطرة" : "Risk Score",
+          isAr ? "التكرار" : "Frequency"
+        ]
       ];
       
       const filteredInvs = platformFilter === "all" 
@@ -163,7 +175,15 @@ export default function Reports() {
     // Cashflows Sheet
     if (includeCashflows && cashflows.length > 0) {
       const cashflowData = [
-        ["Investment", "Platform", "Due Date", "Amount (SAR)", "Received Date", "Status", "Type"]
+        [
+          isAr ? "الاستثمار" : "Investment",
+          isAr ? "المنصة" : "Platform",
+          isAr ? "تاريخ الاستحقاق" : "Due Date",
+          isAr ? "المبلغ (ريال)" : "Amount (SAR)",
+          isAr ? "تاريخ الاستلام" : "Received Date",
+          isAr ? "الحالة" : "Status",
+          isAr ? "النوع" : "Type"
+        ]
       ];
 
       const filteredCfs = platformFilter === "all"
@@ -189,7 +209,12 @@ export default function Reports() {
     // Platform Distribution Sheet
     if (metrics.platformDistribution.length > 0) {
       const platformData = [
-        ["Platform", "Total Value (SAR)", "Investment Count", "Percentage (%)"]
+        [
+          isAr ? "المنصة" : "Platform",
+          isAr ? "إجمالي القيمة (ريال)" : "Total Value (SAR)",
+          isAr ? "عدد الاستثمارات" : "Investment Count",
+          isAr ? "النسبة المئوية (%)" : "Percentage (%)"
+        ]
       ];
 
       metrics.platformDistribution.forEach(p => {
@@ -215,24 +240,25 @@ export default function Reports() {
     if (!metrics) return;
 
     const doc = new jsPDF();
+    const isAr = reportLanguage === "ar";
     
-    // Add Arabic font support (optional - requires custom font)
-    // For now, we'll use default fonts
+    // Note: Arabic text in PDF requires custom font configuration
+    // Using English for Arabic reports to ensure compatibility
     
     let yPos = 15;
 
     // Title
     doc.setFontSize(18);
-    doc.text("A.Z Finance Hub - Portfolio Report", 15, yPos);
+    doc.text(isAr ? "A.Z Finance Hub - Portfolio Report" : "A.Z Finance Hub - Portfolio Report", 15, yPos);
     yPos += 10;
 
     // Metadata
     doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 15, yPos);
+    doc.text(`${isAr ? "Generated" : "Generated"}: ${new Date().toLocaleDateString()}`, 15, yPos);
     yPos += 5;
-    doc.text(`Date Range: ${getDateRangeLabel()}`, 15, yPos);
+    doc.text(`${isAr ? "Date Range" : "Date Range"}: ${getDateRangeLabel()}`, 15, yPos);
     yPos += 5;
-    doc.text(`Platform: ${platformFilter === "all" ? "All Platforms" : platforms.find(p => p.id === platformFilter)?.name || ""}`, 15, yPos);
+    doc.text(`${isAr ? "Platform" : "Platform"}: ${platformFilter === "all" ? (isAr ? "All Platforms" : "All Platforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, 15, yPos);
     yPos += 10;
 
     // Portfolio Summary
@@ -354,13 +380,13 @@ export default function Reports() {
     doc.save(filename);
   };
 
-  const getDateRangeLabel = () => {
+  const getDateRangeLabel = (lang: "en" | "ar" = reportLanguage) => {
     switch (dateRange) {
-      case "all": return language === "ar" ? "الكل" : "All Time";
-      case "ytd": return language === "ar" ? "من بداية السنة" : "Year to Date";
-      case "lastYear": return language === "ar" ? "السنة الماضية" : "Last Year";
-      case "lastQuarter": return language === "ar" ? "الربع الأخير" : "Last Quarter";
-      case "lastMonth": return language === "ar" ? "الشهر الماضي" : "Last Month";
+      case "all": return lang === "ar" ? "الكل" : "All Time";
+      case "ytd": return lang === "ar" ? "من بداية السنة" : "Year to Date";
+      case "lastYear": return lang === "ar" ? "السنة الماضية" : "Last Year";
+      case "lastQuarter": return lang === "ar" ? "الربع الأخير" : "Last Quarter";
+      case "lastMonth": return lang === "ar" ? "الشهر الماضي" : "Last Month";
       default: return "All Time";
     }
   };
@@ -435,6 +461,20 @@ export default function Reports() {
                   {platforms.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Report Language */}
+            <div className="space-y-2">
+              <Label>{language === "ar" ? "لغة التقرير" : "Report Language"}</Label>
+              <Select value={reportLanguage} onValueChange={(v: "en" | "ar") => setReportLanguage(v)}>
+                <SelectTrigger data-testid="select-report-language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ar">العربية</SelectItem>
                 </SelectContent>
               </Select>
             </div>
