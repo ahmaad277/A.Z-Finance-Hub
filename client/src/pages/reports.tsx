@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/lib/language-provider";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import autoTable from 'jspdf-autotable';
 
 export default function Reports() {
   const { t, language } = useLanguage();
+  const { toast } = useToast();
   const isRtl = language === "ar";
 
   // Fetch data
@@ -275,33 +277,66 @@ export default function Reports() {
   };
 
   // Export to PDF
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     if (!metrics) return;
 
     const doc = new jsPDF();
-    // Note: jsPDF has limited Arabic font support, using English only
-    const tr = (key: string) => getReportTranslation(key, "en");
+    const isArabic = reportLanguage === "ar";
+    const tr = (key: string) => getReportTranslation(key, reportLanguage);
+    
+    // Load Arabic font if needed
+    if (isArabic) {
+      try {
+        const response = await fetch('/fonts/Amiri-Regular.ttf');
+        const arrayBuffer = await response.arrayBuffer();
+        const base64Font = btoa(
+          new Uint8Array(arrayBuffer).reduce((data, byte) => 
+            data + String.fromCharCode(byte), '')
+        );
+        
+        doc.addFileToVFS("Amiri-Regular.ttf", base64Font);
+        doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+        doc.setFont("Amiri");
+      } catch (error) {
+        console.error('Failed to load Arabic font:', error);
+        // Fallback to English if font loading fails
+        toast({
+          title: language === "ar" ? "خطأ" : "Error",
+          description: language === "ar" ? "فشل تحميل الخط العربي، سيتم التصدير بالإنجليزية" : "Failed to load Arabic font, exporting in English",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
     
     let yPos = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
 
     // Title
     doc.setFontSize(18);
-    doc.text(tr("report.portfolioReport"), 15, yPos);
+    if (isArabic) {
+      doc.text(tr("report.portfolioReport"), pageWidth - 15, yPos, { align: 'right' });
+    } else {
+      doc.text(tr("report.portfolioReport"), 15, yPos);
+    }
     yPos += 10;
 
     // Metadata
     doc.setFontSize(10);
-    doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, 15, yPos);
+    const xPos = isArabic ? pageWidth - 15 : 15;
+    const textAlign = isArabic ? { align: 'right' as const } : undefined;
+    
+    doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel("en")}`, 15, yPos);
+    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel(reportLanguage)}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.platform")}: ${platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, 15, yPos);
+    doc.text(`${tr("report.platform")}: ${platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, xPos, yPos, textAlign);
     yPos += 10;
 
     // Portfolio Summary
     if (includeMetrics) {
       doc.setFontSize(14);
-      doc.text(tr("report.portfolioSummary"), 15, yPos);
+      doc.text(tr("report.portfolioSummary"), xPos, yPos, textAlign);
       yPos += 7;
 
       const summaryData = [
@@ -329,7 +364,7 @@ export default function Reports() {
     // Investment Status
     if (includeMetrics && yPos < 250) {
       doc.setFontSize(14);
-      doc.text(tr("report.investmentStatus"), 15, yPos);
+      doc.text(tr("report.investmentStatus"), xPos, yPos, textAlign);
       yPos += 7;
 
       const statusData = [
@@ -360,7 +395,7 @@ export default function Reports() {
 
     if (metrics.platformDistribution.length > 0) {
       doc.setFontSize(14);
-      doc.text(tr("report.platformDistribution"), 15, yPos);
+      doc.text(tr("report.platformDistribution"), xPos, yPos, textAlign);
       yPos += 7;
 
       const platformData = metrics.platformDistribution.map(p => [
@@ -386,7 +421,7 @@ export default function Reports() {
       yPos = 15;
 
       doc.setFontSize(14);
-      doc.text(tr("report.investmentDetails"), 15, yPos);
+      doc.text(tr("report.investmentDetails"), xPos, yPos, textAlign);
       yPos += 7;
 
       const filteredInvs = platformFilter === "all" 
@@ -586,21 +621,16 @@ export default function Reports() {
                 {language === "ar" ? "تصدير Excel" : "Export to Excel"}
               </Button>
 
-              <div className="space-y-1">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={exportToPDF}
-                  disabled={!metrics}
-                  data-testid="button-export-pdf"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  {language === "ar" ? "تصدير PDF" : "Export to PDF"}
-                </Button>
-                <p className="text-xs text-muted-foreground px-1">
-                  {language === "ar" ? "* PDF بالإنجليزية فقط" : "* PDF exports in English only"}
-                </p>
-              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={exportToPDF}
+                disabled={!metrics}
+                data-testid="button-export-pdf"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تصدير PDF" : "Export to PDF"}
+              </Button>
             </div>
           </CardContent>
         </Card>
