@@ -45,6 +45,7 @@ import {
   calculateDurationMonths, 
   calculateEndDate 
 } from "@shared/profit-calculator";
+import { normalizeNumberInput } from "@/lib/utils";
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
@@ -95,12 +96,12 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
     defaultValues: {
       platformId: "",
       name: "",
-      faceValue: 0,
-      totalExpectedProfit: 0,
+      faceValue: undefined,
+      totalExpectedProfit: undefined,
       startDate: new Date().toISOString().split("T")[0],
       endDate: "",
       durationMonths: 0,
-      expectedIrr: 0,
+      expectedIrr: undefined,
       status: "active",
       riskScore: 50,
       distributionFrequency: "quarterly",
@@ -144,12 +145,12 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       form.reset({
         platformId: "",
         name: "",
-        faceValue: 0,
-        totalExpectedProfit: 0,
+        faceValue: undefined,
+        totalExpectedProfit: undefined,
         startDate: new Date().toISOString().split("T")[0],
         endDate: "",
         durationMonths: 0,
-        expectedIrr: 0,
+        expectedIrr: undefined,
         status: "active",
         riskScore: 50,
         distributionFrequency: "quarterly",
@@ -552,7 +553,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           {...field}
                           value={field.value === 0 ? "" : field.value}
                           onChange={(e) => {
-                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                            const normalized = normalizeNumberInput(e.target.value);
+                            const val = normalized === "" ? 0 : parseFloat(normalized);
                             field.onChange(isNaN(val) ? 0 : val);
                           }}
                           data-testid="input-face-value" 
@@ -593,7 +595,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         {...field}
                         value={field.value === 0 ? "" : field.value}
                         onChange={(e) => {
-                          const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                          const normalized = normalizeNumberInput(e.target.value);
+                          const val = normalized === "" ? 0 : parseFloat(normalized);
                           field.onChange(isNaN(val) ? 0 : val);
                         }}
                         data-testid="input-irr" 
@@ -644,7 +647,10 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                       type="number" 
                       placeholder={t("dialog.enterMonths")}
                       value={durationMonthsInput || ''}
-                      onChange={(e) => setDurationMonthsInput(parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const normalized = normalizeNumberInput(e.target.value);
+                        setDurationMonthsInput(parseInt(normalized) || 0);
+                      }}
                       data-testid="input-duration-months"
                       className="mt-2"
                     />
@@ -724,7 +730,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           placeholder="12500" 
                           {...field}
                           onChange={(e) => {
-                            field.onChange(e);
+                            const normalized = normalizeNumberInput(e.target.value);
+                            const val = normalized === "" ? undefined : parseFloat(normalized);
+                            field.onChange(isNaN(val as number) ? undefined : val);
                             if (!isResettingRef.current) {
                               setUserEditedProfit(true);
                             }
@@ -873,6 +881,11 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         placeholder="50" 
                         {...field}
                         value={field.value ?? ""}
+                        onChange={(e) => {
+                          const normalized = normalizeNumberInput(e.target.value);
+                          const val = normalized === "" ? null : parseInt(normalized);
+                          field.onChange(isNaN(val as number) ? null : val);
+                        }}
                         data-testid="input-risk-score"
                       />
                     </FormControl>

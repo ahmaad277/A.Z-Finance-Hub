@@ -2051,6 +2051,18 @@ export class DatabaseStorage implements IStorage {
 
     const data = snapshot.snapshotData as any;
 
+    // Helper function to convert date strings to Date objects
+    const convertDates = (obj: any, dateFields: string[]) => {
+      if (!obj) return obj;
+      const converted = { ...obj };
+      for (const field of dateFields) {
+        if (converted[field] && typeof converted[field] === 'string') {
+          converted[field] = new Date(converted[field]);
+        }
+      }
+      return converted;
+    };
+
     // Restore data in transaction
     const entitiesRestored = await db.transaction(async (tx) => {
       // Delete existing data in reverse dependency order
@@ -2067,24 +2079,36 @@ export class DatabaseStorage implements IStorage {
         await tx.insert(platforms).values(data.platforms);
       }
 
-      // Restore investments (preserve original IDs)
+      // Restore investments (preserve original IDs) - convert dates
       if (data.investments && data.investments.length > 0) {
-        await tx.insert(investments).values(data.investments);
+        const investmentsWithDates = data.investments.map((inv: any) =>
+          convertDates(inv, ['startDate', 'endDate', 'actualEndDate'])
+        );
+        await tx.insert(investments).values(investmentsWithDates);
       }
 
-      // Restore cashflows (preserve original IDs)
+      // Restore cashflows (preserve original IDs) - convert dates
       if (data.cashflows && data.cashflows.length > 0) {
-        await tx.insert(cashflows).values(data.cashflows);
+        const cashflowsWithDates = data.cashflows.map((cf: any) =>
+          convertDates(cf, ['dueDate', 'receivedDate'])
+        );
+        await tx.insert(cashflows).values(cashflowsWithDates);
       }
 
-      // Restore custom distributions (preserve original IDs)
+      // Restore custom distributions (preserve original IDs) - convert dates
       if (data.customDistributions && data.customDistributions.length > 0) {
-        await tx.insert(customDistributions).values(data.customDistributions);
+        const distributionsWithDates = data.customDistributions.map((cd: any) =>
+          convertDates(cd, ['dueDate'])
+        );
+        await tx.insert(customDistributions).values(distributionsWithDates);
       }
 
-      // Restore cash transactions (preserve original IDs)
+      // Restore cash transactions (preserve original IDs) - convert dates
       if (data.cashTransactions && data.cashTransactions.length > 0) {
-        await tx.insert(cashTransactions).values(data.cashTransactions);
+        const transactionsWithDates = data.cashTransactions.map((ct: any) =>
+          convertDates(ct, ['transactionDate'])
+        );
+        await tx.insert(cashTransactions).values(transactionsWithDates);
       }
 
       // Restore alerts (preserve original IDs)
