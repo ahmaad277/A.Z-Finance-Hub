@@ -281,11 +281,11 @@ export default function Reports() {
     if (!metrics) return;
 
     const doc = new jsPDF();
-    const isArabic = reportLanguage === "ar";
-    const tr = (key: string) => getReportTranslation(key, reportLanguage);
+    let effectiveLang: "en" | "ar" = reportLanguage;
+    const tr = (key: string) => getReportTranslation(key, effectiveLang);
     
     // Load Arabic font if needed
-    if (isArabic) {
+    if (reportLanguage === "ar") {
       try {
         const response = await fetch('/fonts/NotoSansArabic.ttf');
         const arrayBuffer = await response.arrayBuffer();
@@ -300,14 +300,16 @@ export default function Reports() {
       } catch (error) {
         console.error('Failed to load Arabic font:', error);
         // Fallback to English if font loading fails
+        effectiveLang = "en";
         toast({
           title: language === "ar" ? "خطأ" : "Error",
           description: language === "ar" ? "فشل تحميل الخط العربي، سيتم التصدير بالإنجليزية" : "Failed to load Arabic font, exporting in English",
           variant: "destructive"
         });
-        return;
       }
     }
+    
+    const isArabic = effectiveLang === "ar";
     
     let yPos = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -328,7 +330,7 @@ export default function Reports() {
     
     doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel(reportLanguage)}`, xPos, yPos, textAlign);
+    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel(effectiveLang)}`, xPos, yPos, textAlign);
     yPos += 5;
     doc.text(`${tr("report.platform")}: ${platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, xPos, yPos, textAlign);
     yPos += 10;
@@ -354,8 +356,8 @@ export default function Reports() {
         head: [[tr("report.metric"), tr("report.value")]],
         body: summaryData,
         theme: 'grid',
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [41, 128, 185] },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
+        headStyles: { fillColor: [41, 128, 185], halign: isArabic ? 'right' : 'left' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -380,8 +382,8 @@ export default function Reports() {
         head: [[tr("report.statusColumn"), tr("report.countColumn")]],
         body: statusData,
         theme: 'grid',
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [52, 152, 219] },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
+        headStyles: { fillColor: [52, 152, 219], halign: isArabic ? 'right' : 'left' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -410,8 +412,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.value"), tr("report.countColumn"), tr("report.percentageColumn")]],
         body: platformData,
         theme: 'grid',
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [46, 204, 113] },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left' },
+        headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left' },
       });
     }
 
@@ -434,7 +436,7 @@ export default function Reports() {
         formatCurrency(parseFloat(inv.faceValue)),
         new Date(inv.startDate).toLocaleDateString(),
         formatPercentage(parseFloat(inv.expectedIrr)),
-        inv.status
+        translateValue(inv.status, effectiveLang)
       ]);
 
       autoTable(doc, {
@@ -442,8 +444,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.nameColumn"), tr("report.amountColumn"), tr("report.startDateColumn"), tr("report.expectedIRRColumn"), tr("report.statusColumn")]],
         body: invData,
         theme: 'striped',
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [231, 76, 60] },
+        styles: { fontSize: 8, halign: isArabic ? 'right' : 'left' },
+        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left' },
       });
     }
 
