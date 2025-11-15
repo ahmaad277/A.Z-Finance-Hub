@@ -37,6 +37,11 @@ export default function Reports() {
     queryKey: ["/api/cash/transactions"],
   });
 
+  // Translation helper function for reports (uses reportLanguage, not UI language)
+  const getReportTranslation = (key: string, lang: "en" | "ar" = reportLanguage): string => {
+    return t(key, lang);
+  };
+
   // Report configuration
   const [reportType, setReportType] = useState<"summary" | "detailed" | "custom">("summary");
   const [dateRange, setDateRange] = useState<"all" | "ytd" | "lastYear" | "lastQuarter" | "lastMonth">("all");
@@ -96,38 +101,38 @@ export default function Reports() {
     if (!metrics) return;
 
     const workbook = XLSX.utils.book_new();
-    const isAr = reportLanguage === "ar";
+    const tr = (key: string) => getReportTranslation(key, reportLanguage);
 
     // Summary Sheet
     if (includeMetrics) {
       const summaryData = [
-        [isAr ? "مركز أ.ز المالي - تقرير المحفظة" : "A.Z Finance Hub - Portfolio Report"],
-        [isAr ? "تاريخ الإنشاء:" : "Generated:", new Date().toLocaleDateString()],
-        [isAr ? "الفترة الزمنية:" : "Date Range:", getDateRangeLabel()],
-        [isAr ? "المنصة:" : "Platform:", platformFilter === "all" ? (isAr ? "جميع المنصات" : "All Platforms") : platforms.find(p => p.id === platformFilter)?.name || ""],
+        [tr("report.portfolioReport")],
+        [tr("report.generated") + ":", new Date().toLocaleDateString()],
+        [tr("report.dateRange") + ":", getDateRangeLabel()],
+        [tr("report.platform") + ":", platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""],
         [],
-        [isAr ? "ملخص المحفظة" : "Portfolio Summary"],
-        [isAr ? "المقياس" : "Metric", isAr ? "القيمة" : "Value"],
-        [isAr ? "قيمة المحفظة" : "Portfolio Value", formatCurrency(metrics.portfolioValue)],
-        [isAr ? "إجمالي النقد" : "Total Cash", formatCurrency(metrics.totalCash)],
-        [isAr ? "نسبة النقد" : "Cash Ratio", formatPercentage(metrics.cashRatio)],
-        [isAr ? "العوائد المتوقعة" : "Expected Returns", formatCurrency(metrics.expectedReturns)],
-        [isAr ? "العوائد الفعلية" : "Actual Returns", formatCurrency(metrics.actualReturns)],
-        [isAr ? "العائد السنوي النشط" : "Active Annual Return", formatPercentage(metrics.activeAPR)],
-        [isAr ? "متوسط العائد السنوي التاريخي" : "Historical Average APR", formatPercentage(metrics.weightedAPR)],
-        [isAr ? "ROI" : "Portfolio ROI", formatPercentage(metrics.portfolioROI)],
+        [tr("report.portfolioSummary")],
+        [tr("report.metric"), tr("report.value")],
+        [tr("report.portfolioValue"), formatCurrency(metrics.portfolioValue)],
+        [tr("report.totalCash"), formatCurrency(metrics.totalCash)],
+        [tr("report.cashRatio"), formatPercentage(metrics.cashRatio)],
+        [tr("report.expectedReturns"), formatCurrency(metrics.expectedReturns)],
+        [tr("report.actualReturns"), formatCurrency(metrics.actualReturns)],
+        [tr("report.activeAPR"), formatPercentage(metrics.activeAPR)],
+        [tr("report.historicalAPR"), formatPercentage(metrics.weightedAPR)],
+        [tr("report.portfolioROI"), formatPercentage(metrics.portfolioROI)],
         [],
-        [isAr ? "حالة الاستثمارات" : "Investment Status"],
-        [isAr ? "إجمالي الاستثمارات" : "Total Investments", metrics.totalInvestments],
-        [isAr ? "نشطة" : "Active", metrics.activeInvestments],
-        [isAr ? "مكتملة" : "Completed", metrics.completedInvestments],
-        [isAr ? "متأخرة" : "Late", metrics.lateInvestments],
-        [isAr ? "متعثرة" : "Defaulted", metrics.defaultedInvestments],
+        [tr("report.investmentStatus")],
+        [tr("report.totalInvestments"), metrics.totalInvestments],
+        [tr("report.activeInvestments"), metrics.activeInvestments],
+        [tr("report.completedInvestments"), metrics.completedInvestments],
+        [tr("report.lateInvestments"), metrics.lateInvestments],
+        [tr("report.defaultedInvestments"), metrics.defaultedInvestments],
         [],
-        [isAr ? "المتوسطات" : "Averages"],
-        [isAr ? "متوسط المدة (أشهر)" : "Average Duration (months)", metrics.avgDuration?.toFixed(1) || "0"],
-        [isAr ? "متوسط المبلغ" : "Average Amount", formatCurrency(metrics.avgAmount)],
-        [isAr ? "متوسط الدفعة" : "Average Payment", formatCurrency(metrics.avgPaymentAmount)],
+        [tr("report.averages")],
+        [tr("report.avgDuration"), metrics.avgDuration?.toFixed(1) || "0"],
+        [tr("report.avgAmount"), formatCurrency(metrics.avgAmount)],
+        [tr("report.avgPayment"), formatCurrency(metrics.avgPaymentAmount)],
       ];
       
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -138,15 +143,15 @@ export default function Reports() {
     if (includeInvestments && investments.length > 0) {
       const investmentData = [
         [
-          isAr ? "المنصة" : "Platform",
-          isAr ? "الاسم" : "Name",
-          isAr ? "المبلغ (ريال)" : "Amount (SAR)",
-          isAr ? "تاريخ البدء" : "Start Date",
-          isAr ? "تاريخ الانتهاء" : "End Date",
-          isAr ? "العائد المتوقع (%)" : "Expected IRR (%)",
-          isAr ? "الحالة" : "Status",
-          isAr ? "درجة المخاطرة" : "Risk Score",
-          isAr ? "التكرار" : "Frequency"
+          tr("report.platformColumn"),
+          tr("report.nameColumn"),
+          tr("report.amountColumn"),
+          tr("report.startDateColumn"),
+          tr("report.endDateColumn"),
+          tr("report.expectedIRRColumn"),
+          tr("report.statusColumn"),
+          tr("report.riskScoreColumn"),
+          tr("report.frequencyColumn")
         ]
       ];
       
@@ -176,13 +181,13 @@ export default function Reports() {
     if (includeCashflows && cashflows.length > 0) {
       const cashflowData = [
         [
-          isAr ? "الاستثمار" : "Investment",
-          isAr ? "المنصة" : "Platform",
-          isAr ? "تاريخ الاستحقاق" : "Due Date",
-          isAr ? "المبلغ (ريال)" : "Amount (SAR)",
-          isAr ? "تاريخ الاستلام" : "Received Date",
-          isAr ? "الحالة" : "Status",
-          isAr ? "النوع" : "Type"
+          tr("report.investmentColumn"),
+          tr("report.platformColumn"),
+          tr("report.dueDateColumn"),
+          tr("report.amountColumn"),
+          tr("report.receivedDateColumn"),
+          tr("report.statusColumn"),
+          tr("report.typeColumn")
         ]
       ];
 
@@ -210,10 +215,10 @@ export default function Reports() {
     if (metrics.platformDistribution.length > 0) {
       const platformData = [
         [
-          isAr ? "المنصة" : "Platform",
-          isAr ? "إجمالي القيمة (ريال)" : "Total Value (SAR)",
-          isAr ? "عدد الاستثمارات" : "Investment Count",
-          isAr ? "النسبة المئوية (%)" : "Percentage (%)"
+          tr("report.platformColumn"),
+          tr("report.totalValueColumn"),
+          tr("report.countColumn"),
+          tr("report.percentageColumn")
         ]
       ];
 
@@ -240,46 +245,44 @@ export default function Reports() {
     if (!metrics) return;
 
     const doc = new jsPDF();
-    const isAr = reportLanguage === "ar";
-    
-    // Note: Arabic text in PDF requires custom font configuration
-    // Using English for Arabic reports to ensure compatibility
+    // Note: jsPDF has limited Arabic font support, using English only
+    const tr = (key: string) => getReportTranslation(key, "en");
     
     let yPos = 15;
 
     // Title
     doc.setFontSize(18);
-    doc.text(isAr ? "A.Z Finance Hub - Portfolio Report" : "A.Z Finance Hub - Portfolio Report", 15, yPos);
+    doc.text(tr("report.portfolioReport"), 15, yPos);
     yPos += 10;
 
     // Metadata
     doc.setFontSize(10);
-    doc.text(`${isAr ? "Generated" : "Generated"}: ${new Date().toLocaleDateString()}`, 15, yPos);
+    doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, 15, yPos);
     yPos += 5;
-    doc.text(`${isAr ? "Date Range" : "Date Range"}: ${getDateRangeLabel()}`, 15, yPos);
+    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel("en")}`, 15, yPos);
     yPos += 5;
-    doc.text(`${isAr ? "Platform" : "Platform"}: ${platformFilter === "all" ? (isAr ? "All Platforms" : "All Platforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, 15, yPos);
+    doc.text(`${tr("report.platform")}: ${platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, 15, yPos);
     yPos += 10;
 
     // Portfolio Summary
     if (includeMetrics) {
       doc.setFontSize(14);
-      doc.text("Portfolio Summary", 15, yPos);
+      doc.text(tr("report.portfolioSummary"), 15, yPos);
       yPos += 7;
 
       const summaryData = [
-        ["Portfolio Value", formatCurrency(metrics.portfolioValue)],
-        ["Total Cash", formatCurrency(metrics.totalCash)],
-        ["Cash Ratio", formatPercentage(metrics.cashRatio)],
-        ["Expected Returns", formatCurrency(metrics.expectedReturns)],
-        ["Actual Returns", formatCurrency(metrics.actualReturns)],
-        ["Weighted APR", formatPercentage(metrics.weightedAPR)],
-        ["Portfolio ROI", formatPercentage(metrics.portfolioROI)],
+        [tr("report.portfolioValue"), formatCurrency(metrics.portfolioValue)],
+        [tr("report.totalCash"), formatCurrency(metrics.totalCash)],
+        [tr("report.cashRatio"), formatPercentage(metrics.cashRatio)],
+        [tr("report.expectedReturns"), formatCurrency(metrics.expectedReturns)],
+        [tr("report.actualReturns"), formatCurrency(metrics.actualReturns)],
+        [tr("report.historicalAPR"), formatPercentage(metrics.weightedAPR)],
+        [tr("report.portfolioROI"), formatPercentage(metrics.portfolioROI)],
       ];
 
       autoTable(doc, {
         startY: yPos,
-        head: [["Metric", "Value"]],
+        head: [[tr("report.metric"), tr("report.value")]],
         body: summaryData,
         theme: 'grid',
         styles: { fontSize: 9 },
@@ -292,20 +295,20 @@ export default function Reports() {
     // Investment Status
     if (includeMetrics && yPos < 250) {
       doc.setFontSize(14);
-      doc.text("Investment Status", 15, yPos);
+      doc.text(tr("report.investmentStatus"), 15, yPos);
       yPos += 7;
 
       const statusData = [
-        ["Total Investments", metrics.totalInvestments.toString()],
-        ["Active", metrics.activeInvestments.toString()],
-        ["Completed", metrics.completedInvestments.toString()],
-        ["Late", metrics.lateInvestments.toString()],
-        ["Defaulted", metrics.defaultedInvestments.toString()],
+        [tr("report.totalInvestments"), metrics.totalInvestments.toString()],
+        [tr("report.activeInvestments"), metrics.activeInvestments.toString()],
+        [tr("report.completedInvestments"), metrics.completedInvestments.toString()],
+        [tr("report.lateInvestments"), metrics.lateInvestments.toString()],
+        [tr("report.defaultedInvestments"), metrics.defaultedInvestments.toString()],
       ];
 
       autoTable(doc, {
         startY: yPos,
-        head: [["Status", "Count"]],
+        head: [[tr("report.statusColumn"), tr("report.countColumn")]],
         body: statusData,
         theme: 'grid',
         styles: { fontSize: 9 },
@@ -323,7 +326,7 @@ export default function Reports() {
 
     if (metrics.platformDistribution.length > 0) {
       doc.setFontSize(14);
-      doc.text("Platform Distribution", 15, yPos);
+      doc.text(tr("report.platformDistribution"), 15, yPos);
       yPos += 7;
 
       const platformData = metrics.platformDistribution.map(p => [
@@ -335,7 +338,7 @@ export default function Reports() {
 
       autoTable(doc, {
         startY: yPos,
-        head: [["Platform", "Value", "Count", "Percentage"]],
+        head: [[tr("report.platformColumn"), tr("report.value"), tr("report.countColumn"), tr("report.percentageColumn")]],
         body: platformData,
         theme: 'grid',
         styles: { fontSize: 9 },
@@ -349,7 +352,7 @@ export default function Reports() {
       yPos = 15;
 
       doc.setFontSize(14);
-      doc.text("Investments", 15, yPos);
+      doc.text(tr("report.investmentDetails"), 15, yPos);
       yPos += 7;
 
       const filteredInvs = platformFilter === "all" 
@@ -367,7 +370,7 @@ export default function Reports() {
 
       autoTable(doc, {
         startY: yPos,
-        head: [["Platform", "Name", "Amount", "Start Date", "IRR", "Status"]],
+        head: [[tr("report.platformColumn"), tr("report.nameColumn"), tr("report.amountColumn"), tr("report.startDateColumn"), tr("report.expectedIRRColumn"), tr("report.statusColumn")]],
         body: invData,
         theme: 'striped',
         styles: { fontSize: 8 },
@@ -381,13 +384,14 @@ export default function Reports() {
   };
 
   const getDateRangeLabel = (lang: "en" | "ar" = reportLanguage) => {
+    const tr = (key: string) => getReportTranslation(key, lang);
     switch (dateRange) {
-      case "all": return lang === "ar" ? "الكل" : "All Time";
-      case "ytd": return lang === "ar" ? "من بداية السنة" : "Year to Date";
-      case "lastYear": return lang === "ar" ? "السنة الماضية" : "Last Year";
-      case "lastQuarter": return lang === "ar" ? "الربع الأخير" : "Last Quarter";
-      case "lastMonth": return lang === "ar" ? "الشهر الماضي" : "Last Month";
-      default: return "All Time";
+      case "all": return tr("report.rangeAll");
+      case "ytd": return tr("report.rangeYTD");
+      case "lastYear": return tr("report.rangeLastYear");
+      case "lastQuarter": return tr("report.rangeLastQuarter");
+      case "lastMonth": return tr("report.rangeLastMonth");
+      default: return tr("report.rangeAll");
     }
   };
 
