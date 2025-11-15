@@ -10,7 +10,7 @@ type LanguageProviderProps = {
 type LanguageProviderState = {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, lang?: Language) => string;
 };
 
 const LanguageProviderContext = createContext<LanguageProviderState | undefined>(undefined);
@@ -902,6 +902,24 @@ const translations = {
     "report.rangeLastYear": "Last Year",
     "report.rangeLastQuarter": "Last Quarter",
     "report.rangeLastMonth": "Last Month",
+    
+    // Investment/Cashflow Statuses and Types for Reports
+    "report.statusActive": "Active",
+    "report.statusCompleted": "Completed",
+    "report.statusLate": "Late",
+    "report.statusDefaulted": "Defaulted",
+    "report.typePrincipal": "Principal",
+    "report.typeProfit": "Profit",
+    "report.frequencyMonthly": "Monthly",
+    "report.frequencyQuarterly": "Quarterly",
+    "report.frequencyBiAnnual": "Bi-Annual",
+    "report.frequencyAnnual": "Annual",
+    "report.frequencyAtMaturity": "At Maturity",
+    "report.frequencyCustom": "Custom",
+    "report.statusPending": "Pending",
+    "report.statusReceived": "Received",
+    "report.statusExpected": "Expected",
+    "report.statusUpcoming": "Upcoming",
     
     "help.settings": "Settings & Customization",
     "help.settingsDesc": "Personalize your investment hub experience",
@@ -1927,6 +1945,24 @@ const translations = {
     "report.rangeLastQuarter": "الربع الأخير",
     "report.rangeLastMonth": "الشهر الأخير",
     
+    // Investment/Cashflow Statuses and Types for Reports
+    "report.statusActive": "نشطة",
+    "report.statusCompleted": "مكتملة",
+    "report.statusLate": "متأخرة",
+    "report.statusDefaulted": "متعثرة",
+    "report.typePrincipal": "رأس المال",
+    "report.typeProfit": "الأرباح",
+    "report.frequencyMonthly": "شهري",
+    "report.frequencyQuarterly": "ربع سنوي",
+    "report.frequencyBiAnnual": "نصف سنوي",
+    "report.frequencyAnnual": "سنوي",
+    "report.frequencyAtMaturity": "عند الاستحقاق",
+    "report.frequencyCustom": "مخصص",
+    "report.statusPending": "معلق",
+    "report.statusReceived": "مستلم",
+    "report.statusExpected": "متوقع",
+    "report.statusUpcoming": "قادم",
+    
     "help.settings": "الإعدادات والتخصيص",
     "help.settingsDesc": "خصص تجربة مركزك الاستثماري",
     "help.appearance": "إعدادات المظهر",
@@ -2088,8 +2124,9 @@ export function LanguageProvider({ children, defaultLanguage = "en" }: LanguageP
     localStorage.setItem("language", language);
   }, [language]);
 
-  const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string, lang?: Language): string => {
+    const targetLang = lang || language;
+    return translations[targetLang][key as keyof typeof translations.en] || key;
   };
 
   return (

@@ -42,6 +42,40 @@ export default function Reports() {
     return t(key, lang);
   };
 
+  // Helper to translate status/type/frequency values (directly from schema enums)
+  const translateValue = (value: string, lang: "en" | "ar" = reportLanguage): string => {
+    // Direct mapping from schema enum literals (lowercase)
+    const valueMap: Record<string, string> = {
+      // Investment statuses (from schema: active, late, defaulted, completed, pending)
+      "active": "report.statusActive",
+      "completed": "report.statusCompleted",
+      "late": "report.statusLate",
+      "defaulted": "report.statusDefaulted",
+      "pending": "report.statusPending",
+      // Cashflow statuses (from schema: received, expected, upcoming)
+      "received": "report.statusReceived",
+      "expected": "report.statusExpected",
+      "upcoming": "report.statusUpcoming",
+      // Cashflow types (from schema: principal, profit)
+      "principal": "report.typePrincipal",
+      "profit": "report.typeProfit",
+      // Distribution frequencies (from schema: monthly, quarterly, semi_annually, annually, at_maturity, custom)
+      "monthly": "report.frequencyMonthly",
+      "quarterly": "report.frequencyQuarterly",
+      "semi_annually": "report.frequencyBiAnnual",
+      "annually": "report.frequencyAnnual",
+      "at_maturity": "report.frequencyAtMaturity",
+      "custom": "report.frequencyCustom",
+      // Legacy/alternative forms for backward compatibility
+      "bi-annual": "report.frequencyBiAnnual",
+      "annual": "report.frequencyAnnual",
+      "at maturity": "report.frequencyAtMaturity",
+    };
+    
+    const key = valueMap[value.toLowerCase()];
+    return key ? getReportTranslation(key, lang) : value;
+  };
+
   // Report configuration
   const [reportType, setReportType] = useState<"summary" | "detailed" | "custom">("summary");
   const [dateRange, setDateRange] = useState<"all" | "ytd" | "lastYear" | "lastQuarter" | "lastMonth">("all");
@@ -167,9 +201,9 @@ export default function Reports() {
           new Date(inv.startDate).toLocaleDateString(),
           new Date(inv.endDate).toLocaleDateString(),
           parseFloat(inv.expectedIrr).toString(),
-          inv.status,
+          translateValue(inv.status, reportLanguage),
           (inv.riskScore || 0).toString(),
-          inv.distributionFrequency
+          translateValue(inv.distributionFrequency, reportLanguage)
         ]);
       });
 
@@ -201,9 +235,9 @@ export default function Reports() {
           cf.investment?.platform?.name || "N/A",
           new Date(cf.dueDate).toLocaleDateString(),
           parseFloat(cf.amount).toString(),
-          cf.receivedDate ? new Date(cf.receivedDate).toLocaleDateString() : "Pending",
-          cf.status,
-          cf.type
+          cf.receivedDate ? new Date(cf.receivedDate).toLocaleDateString() : translateValue("Pending", reportLanguage),
+          translateValue(cf.status, reportLanguage),
+          translateValue(cf.type, reportLanguage)
         ]);
       });
 
@@ -541,7 +575,7 @@ export default function Reports() {
             <Separator />
 
             {/* Export Buttons */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Button 
                 className="w-full" 
                 onClick={exportToExcel}
@@ -552,16 +586,21 @@ export default function Reports() {
                 {language === "ar" ? "تصدير Excel" : "Export to Excel"}
               </Button>
 
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={exportToPDF}
-                disabled={!metrics}
-                data-testid="button-export-pdf"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                {language === "ar" ? "تصدير PDF" : "Export to PDF"}
-              </Button>
+              <div className="space-y-1">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={exportToPDF}
+                  disabled={!metrics}
+                  data-testid="button-export-pdf"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  {language === "ar" ? "تصدير PDF" : "Export to PDF"}
+                </Button>
+                <p className="text-xs text-muted-foreground px-1">
+                  {language === "ar" ? "* PDF بالإنجليزية فقط" : "* PDF exports in English only"}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
