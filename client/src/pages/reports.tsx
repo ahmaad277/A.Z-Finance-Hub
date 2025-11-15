@@ -287,16 +287,16 @@ export default function Reports() {
     // Load Arabic font if needed
     if (isArabic) {
       try {
-        const response = await fetch('/fonts/Amiri-Regular.ttf');
+        const response = await fetch('/fonts/NotoSansArabic.ttf');
         const arrayBuffer = await response.arrayBuffer();
         const base64Font = btoa(
           new Uint8Array(arrayBuffer).reduce((data, byte) => 
             data + String.fromCharCode(byte), '')
         );
         
-        doc.addFileToVFS("Amiri-Regular.ttf", base64Font);
-        doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-        doc.setFont("Amiri");
+        doc.addFileToVFS("NotoSansArabic.ttf", base64Font);
+        doc.addFont("NotoSansArabic.ttf", "NotoSansArabic", "normal");
+        doc.setFont("NotoSansArabic");
       } catch (error) {
         console.error('Failed to load Arabic font:', error);
         // Fallback to English if font loading fails
