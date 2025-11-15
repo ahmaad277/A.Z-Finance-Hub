@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ArabicReshaper from 'arabic-reshaper';
 
 export default function Reports() {
   const { t, language } = useLanguage();
@@ -282,7 +283,6 @@ export default function Reports() {
 
     const doc = new jsPDF();
     let effectiveLang: "en" | "ar" = reportLanguage;
-    const tr = (key: string) => getReportTranslation(key, effectiveLang);
     
     // Load Arabic font if needed
     if (reportLanguage === "ar") {
@@ -311,6 +311,25 @@ export default function Reports() {
     
     const isArabic = effectiveLang === "ar";
     
+    // Helper function to process Arabic text for PDF
+    const processText = (text: string): string => {
+      if (!text) return text;
+      // Check if text contains Arabic characters
+      const hasArabic = /[\u0600-\u06FF]/.test(text);
+      if (hasArabic && isArabic) {
+        try {
+          return ArabicReshaper.convertArabic(text);
+        } catch (error) {
+          console.warn('Failed to reshape Arabic text:', text, error);
+          return text;
+        }
+      }
+      return text;
+    };
+    
+    // Translation function that automatically reshapes Arabic text for PDF
+    const tr = (key: string) => processText(getReportTranslation(key, effectiveLang));
+    
     let yPos = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -330,9 +349,12 @@ export default function Reports() {
     
     doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.dateRange")}: ${getDateRangeLabel(effectiveLang)}`, xPos, yPos, textAlign);
+    doc.text(`${tr("report.dateRange")}: ${processText(getDateRangeLabel(effectiveLang))}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.platform")}: ${platformFilter === "all" ? tr("report.allPlatforms") : platforms.find(p => p.id === platformFilter)?.name || ""}`, xPos, yPos, textAlign);
+    const platformNameInMetadata = platformFilter === "all" 
+      ? tr("report.allPlatforms") 
+      : processText(platforms.find(p => p.id === platformFilter)?.name || "");
+    doc.text(`${tr("report.platform")}: ${platformNameInMetadata}`, xPos, yPos, textAlign);
     yPos += 10;
 
     // Portfolio Summary
@@ -401,7 +423,7 @@ export default function Reports() {
       yPos += 7;
 
       const platformData = metrics.platformDistribution.map(p => [
-        p.platformName,
+        processText(p.platformName),
         formatCurrency(p.value),
         p.count.toString(),
         formatPercentage(p.percentage)
@@ -431,12 +453,12 @@ export default function Reports() {
         : investments.filter(inv => inv.platformId === platformFilter);
 
       const invData = filteredInvs.slice(0, 20).map(inv => [
-        inv.platform?.name || "N/A",
-        inv.name,
+        processText(inv.platform?.name || "N/A"),
+        processText(inv.name),
         formatCurrency(parseFloat(inv.faceValue)),
         new Date(inv.startDate).toLocaleDateString(),
         formatPercentage(parseFloat(inv.expectedIrr)),
-        translateValue(inv.status, effectiveLang)
+        processText(translateValue(inv.status, effectiveLang))
       ]);
 
       autoTable(doc, {
