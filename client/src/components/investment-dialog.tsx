@@ -554,8 +554,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           value={field.value === 0 ? "" : field.value}
                           onChange={(e) => {
                             const normalized = normalizeNumberInput(e.target.value);
-                            const val = normalized === "" ? 0 : parseFloat(normalized);
-                            field.onChange(isNaN(val) ? 0 : val);
+                            if (normalized === "") {
+                              field.onChange(0);
+                            } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
+                              return;
+                            } else {
+                              const val = parseFloat(normalized);
+                              field.onChange(isNaN(val) ? 0 : val);
+                            }
                           }}
                           data-testid="input-face-value" 
                         />
@@ -596,8 +602,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         value={field.value === 0 ? "" : field.value}
                         onChange={(e) => {
                           const normalized = normalizeNumberInput(e.target.value);
-                          const val = normalized === "" ? 0 : parseFloat(normalized);
-                          field.onChange(isNaN(val) ? 0 : val);
+                          if (normalized === "") {
+                            field.onChange(0);
+                          } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
+                            return;
+                          } else {
+                            const val = parseFloat(normalized);
+                            field.onChange(isNaN(val) ? 0 : val);
+                          }
                         }}
                         data-testid="input-irr" 
                       />
@@ -731,8 +743,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           {...field}
                           onChange={(e) => {
                             const normalized = normalizeNumberInput(e.target.value);
-                            const val = normalized === "" ? undefined : parseFloat(normalized);
-                            field.onChange(isNaN(val as number) ? undefined : val);
+                            if (normalized === "") {
+                              field.onChange(undefined);
+                            } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
+                              return;
+                            } else {
+                              const val = parseFloat(normalized);
+                              field.onChange(isNaN(val) ? undefined : val);
+                            }
                             if (!isResettingRef.current) {
                               setUserEditedProfit(true);
                             }
@@ -883,8 +901,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         value={field.value ?? ""}
                         onChange={(e) => {
                           const normalized = normalizeNumberInput(e.target.value);
-                          const val = normalized === "" ? null : parseInt(normalized);
-                          field.onChange(isNaN(val as number) ? null : val);
+                          if (normalized === "") {
+                            field.onChange(null);
+                          } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
+                            return;
+                          } else {
+                            const val = parseInt(normalized);
+                            field.onChange(isNaN(val) ? null : val);
+                          }
                         }}
                         data-testid="input-risk-score"
                       />
