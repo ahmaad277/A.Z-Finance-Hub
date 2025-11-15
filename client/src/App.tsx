@@ -13,41 +13,54 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
 import { PlatformFilterButton } from "@/components/platform-filter-button";
 import { ShareDataEntryButton } from "@/components/share-data-entry-button";
-import Dashboard from "@/pages/dashboard";
-import Investments from "@/pages/investments";
-import CashflowsUnified from "@/pages/cashflows-unified";
-import Reports from "@/pages/reports";
-import Alerts from "@/pages/alerts";
-import Help from "@/pages/help";
-import Settings from "@/pages/settings";
-import PlatformDetails from "@/pages/platform-details";
-import Vision2040 from "@/pages/vision-2040";
-import DataEntry from "@/pages/data-entry";
-import NotFound from "@/pages/not-found";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const Investments = lazy(() => import("@/pages/investments"));
+const CashflowsUnified = lazy(() => import("@/pages/cashflows-unified"));
+const Reports = lazy(() => import("@/pages/reports"));
+const Alerts = lazy(() => import("@/pages/alerts"));
+const Help = lazy(() => import("@/pages/help"));
+const Settings = lazy(() => import("@/pages/settings"));
+const PlatformDetails = lazy(() => import("@/pages/platform-details"));
+const Vision2040 = lazy(() => import("@/pages/vision-2040"));
+const DataEntry = lazy(() => import("@/pages/data-entry"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 // App version - increment to force cache clear
 const APP_VERSION = "5";
 const VERSION_KEY = "azfinance-app-version";
 
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center h-full min-h-[400px]">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/investments" component={Investments} />
-      <Route path="/cashflows" component={CashflowsUnified} />
-      <Route path="/reports" component={Reports} />
-      <Route path="/alerts" component={Alerts} />
-      <Route path="/vision-2040" component={Vision2040} />
-      <Route path="/help" component={Help} />
-      <Route path="/settings" component={Settings} />
-      <Route path="/platform/:id" component={PlatformDetails} />
-      <Route path="/data-entry/:token" component={DataEntry} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<LoadingFallback />}>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/investments" component={Investments} />
+        <Route path="/cashflows" component={CashflowsUnified} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/alerts" component={Alerts} />
+        <Route path="/vision-2040" component={Vision2040} />
+        <Route path="/help" component={Help} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/platform/:id" component={PlatformDetails} />
+        <Route path="/data-entry/:token" component={DataEntry} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
@@ -108,25 +121,26 @@ function App() {
   useEffect(() => {
     const storedVersion = localStorage.getItem(VERSION_KEY);
     if (storedVersion !== APP_VERSION) {
-      console.log('[App] Version mismatch - clearing cache');
       clearCache();
       localStorage.setItem(VERSION_KEY, APP_VERSION);
     }
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark">
-        <LanguageProvider defaultLanguage="en">
-          <PlatformFilterProvider>
-            <TooltipProvider>
-              <AppContent />
-              <Toaster />
-            </TooltipProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark">
+          <LanguageProvider defaultLanguage="en">
+            <PlatformFilterProvider>
+              <TooltipProvider>
+                <AppContent />
+                <Toaster />
+              </TooltipProvider>
           </PlatformFilterProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

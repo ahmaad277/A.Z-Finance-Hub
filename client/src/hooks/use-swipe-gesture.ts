@@ -84,12 +84,10 @@ export function useSwipeGesture({
 
       // Swipe left (from right edge to left)
       if (deltaX > minSwipeDistance && onSwipeLeft) {
-        console.log('[SwipeGesture] Triggering swipe left');
         onSwipeLeft();
       }
       // Swipe right (from left to right)
       else if (deltaX < -minSwipeDistance && onSwipeRight) {
-        console.log('[SwipeGesture] Triggering swipe right');
         onSwipeRight();
       }
 

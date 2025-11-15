@@ -30,6 +30,9 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Frontend:** React, TypeScript, Tailwind CSS, Shadcn UI, Recharts, Wouter, TanStack Query.
 - **Backend:** Express.js and Node.js.
 - **Styling:** Tailwind CSS with custom design tokens, dark/light mode, and full bilingual support (English/Arabic) with RTL typography.
+- **Performance Optimizations:** Code splitting with React.lazy() for all pages (Dashboard, Reports, Vision2040, Investments, etc.), Suspense boundaries with loading states, and optimized component re-renders.
+- **Error Handling:** Global ErrorBoundary component wrapping the entire app with user-friendly error recovery UI and automatic navigation to dashboard.
+- **Code Quality:** Clean codebase with minimal console.log usage (dev-only), organized imports, and production-ready error handling.
 - **Number Formatting:** Unified `Intl.NumberFormat('en-US')` across all components ensures consistent English digit display (0-9) in both English and Arabic interfaces, applied to currency values, percentages, dates, and all numeric displays throughout the application.
 - **Mobile Swipe Gesture Navigation:** Custom `useSwipeGesture` hook enables touch-based sidebar navigation on mobile devices. Detects swipes from right edge (threshold: 50px) with minimum swipe distance of 50px. Filters out vertical scrolls and only activates on mobile devices (breakpoint: <768px). Integrates seamlessly with Shadcn sidebar system using touch events (touchstart, touchmove, touchend).
 - **Design System Unification:** Standardized reusable primitives, consistent spacing, typography, card padding, grid gaps, icon sizing, and motion variants across all pages and components.
