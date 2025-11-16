@@ -30,6 +30,19 @@ const PLATFORM_COLORS: PlatformColors = {
     borderLeft: 'border-l-gray-300 dark:border-l-gray-600',
     chartColor: '#D1D5DB', // gray-300 (slightly darker gray for better visibility)
   },
+  // صكوك 2 - Darker Gray (for distinction from Sukuk 1)
+  'sukuk 2': {
+    badgeLight: 'bg-gray-200 text-gray-900 border-gray-400',
+    badgeDark: 'dark:bg-gray-700 dark:text-gray-100 dark:border-gray-500',
+    borderLeft: 'border-l-gray-400 dark:border-l-gray-500',
+    chartColor: '#9CA3AF', // gray-400 (darker than Sukuk 1)
+  },
+  'sukuk_2': { // Alternative naming
+    badgeLight: 'bg-gray-200 text-gray-900 border-gray-400',
+    badgeDark: 'dark:bg-gray-700 dark:text-gray-100 dark:border-gray-500',
+    borderLeft: 'border-l-gray-400 dark:border-l-gray-500',
+    chartColor: '#9CA3AF', // gray-400
+  },
   // منافع - Black/Dark
   'manfaa': {
     badgeLight: 'bg-gray-900 text-white border-gray-800',
@@ -158,6 +171,8 @@ export function getPlatformTextClasses(platformName?: string | null): string {
   // Map platform-specific text colors (extracted from badge colors)
   const textColors: Record<string, string> = {
     'sukuk': 'text-gray-900 dark:text-gray-100',
+    'sukuk_2': 'text-gray-900 dark:text-gray-100',
+    'sukuk 2': 'text-gray-900 dark:text-gray-100',
     'manfaa': 'text-gray-900 dark:text-gray-200',
     'manfa_a': 'text-gray-900 dark:text-gray-200',
     'safqa': 'text-yellow-900 dark:text-yellow-400',

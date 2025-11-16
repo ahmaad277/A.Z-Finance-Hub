@@ -333,6 +333,24 @@ export default function Reports() {
       return text;
     };
     
+    // Helper function to print text with automatic font switching for Arabic
+    const printText = (text: string, x: number, y: number, options?: any) => {
+      const processedText = processText(text);
+      const hasArabic = /[\u0600-\u06FF]/.test(text);
+      
+      // Switch to Arabic font if text contains Arabic and font is loaded
+      if (hasArabic && arabicFontLoaded) {
+        doc.setFont("NotoSansArabic");
+      }
+      
+      doc.text(processedText, x, y, options);
+      
+      // Restore default font for non-Arabic reports
+      if (hasArabic && arabicFontLoaded && !isArabic) {
+        doc.setFont("helvetica");
+      }
+    };
+    
     // Translation function that automatically reshapes Arabic text for PDF
     const tr = (key: string) => processText(getReportTranslation(key, effectiveLang));
     
@@ -342,9 +360,9 @@ export default function Reports() {
     // Title
     doc.setFontSize(18);
     if (isArabic) {
-      doc.text(tr("report.portfolioReport"), pageWidth - 15, yPos, { align: 'right' });
+      printText(tr("report.portfolioReport"), pageWidth - 15, yPos, { align: 'right' });
     } else {
-      doc.text(tr("report.portfolioReport"), 15, yPos);
+      printText(tr("report.portfolioReport"), 15, yPos);
     }
     yPos += 10;
 
@@ -353,20 +371,20 @@ export default function Reports() {
     const xPos = isArabic ? pageWidth - 15 : 15;
     const textAlign = isArabic ? { align: 'right' as const } : undefined;
     
-    doc.text(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, xPos, yPos, textAlign);
+    printText(`${tr("report.generated")}: ${new Date().toLocaleDateString()}`, xPos, yPos, textAlign);
     yPos += 5;
-    doc.text(`${tr("report.dateRange")}: ${processText(getDateRangeLabel(effectiveLang))}`, xPos, yPos, textAlign);
+    printText(`${tr("report.dateRange")}: ${processText(getDateRangeLabel(effectiveLang))}`, xPos, yPos, textAlign);
     yPos += 5;
     const platformNameInMetadata = platformFilter === "all" 
       ? tr("report.allPlatforms") 
       : processText(platforms.find(p => p.id === platformFilter)?.name || "");
-    doc.text(`${tr("report.platform")}: ${platformNameInMetadata}`, xPos, yPos, textAlign);
+    printText(`${tr("report.platform")}: ${platformNameInMetadata}`, xPos, yPos, textAlign);
     yPos += 10;
 
     // Portfolio Summary
     if (includeMetrics) {
       doc.setFontSize(14);
-      doc.text(tr("report.portfolioSummary"), xPos, yPos, textAlign);
+      printText(tr("report.portfolioSummary"), xPos, yPos, textAlign);
       yPos += 7;
 
       const summaryData = [
@@ -384,8 +402,8 @@ export default function Reports() {
         head: [[tr("report.metric"), tr("report.value")]],
         body: summaryData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
-        headStyles: { fillColor: [41, 128, 185], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
+        headStyles: { fillColor: [41, 128, 185], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: arabicFontLoaded ? 'normal' : 'bold' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -394,7 +412,7 @@ export default function Reports() {
     // Investment Status
     if (includeMetrics && yPos < 250) {
       doc.setFontSize(14);
-      doc.text(tr("report.investmentStatus"), xPos, yPos, textAlign);
+      printText(tr("report.investmentStatus"), xPos, yPos, textAlign);
       yPos += 7;
 
       const statusData = [
@@ -410,8 +428,8 @@ export default function Reports() {
         head: [[tr("report.statusColumn"), tr("report.countColumn")]],
         body: statusData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
-        headStyles: { fillColor: [52, 152, 219], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
+        headStyles: { fillColor: [52, 152, 219], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: arabicFontLoaded ? 'normal' : 'bold' },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -425,7 +443,7 @@ export default function Reports() {
 
     if (metrics.platformDistribution.length > 0) {
       doc.setFontSize(14);
-      doc.text(tr("report.platformDistribution"), xPos, yPos, textAlign);
+      printText(tr("report.platformDistribution"), xPos, yPos, textAlign);
       yPos += 7;
 
       const platformData = metrics.platformDistribution.map(p => [
@@ -440,8 +458,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.value"), tr("report.countColumn"), tr("report.percentageColumn")]],
         body: platformData,
         theme: 'grid',
-        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
-        headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
+        headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: arabicFontLoaded ? 'normal' : 'bold' },
       });
     }
 
@@ -451,7 +469,7 @@ export default function Reports() {
       yPos = 15;
 
       doc.setFontSize(14);
-      doc.text(tr("report.investmentDetails"), xPos, yPos, textAlign);
+      printText(tr("report.investmentDetails"), xPos, yPos, textAlign);
       yPos += 7;
 
       const filteredInvs = platformFilter === "all" 
@@ -473,7 +491,7 @@ export default function Reports() {
         body: invData,
         theme: 'striped',
         styles: { fontSize: 8, halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
-        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: arabicFontLoaded ? 'normal' : 'bold' },
       });
     }
 
