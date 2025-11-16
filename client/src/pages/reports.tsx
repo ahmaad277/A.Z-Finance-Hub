@@ -283,23 +283,29 @@ export default function Reports() {
 
     const doc = new jsPDF();
     let effectiveLang: "en" | "ar" = reportLanguage;
+    let arabicFontLoaded = false;
     
-    // Load Arabic font if needed
-    if (reportLanguage === "ar") {
-      try {
-        const response = await fetch('/fonts/NotoSansArabic.ttf');
-        const arrayBuffer = await response.arrayBuffer();
-        const base64Font = btoa(
-          new Uint8Array(arrayBuffer).reduce((data, byte) => 
-            data + String.fromCharCode(byte), '')
-        );
-        
-        doc.addFileToVFS("NotoSansArabic.ttf", base64Font);
-        doc.addFont("NotoSansArabic.ttf", "NotoSansArabic", "normal");
+    // Always load Arabic font to support Arabic investment names even in English reports
+    try {
+      const response = await fetch('/fonts/NotoSansArabic.ttf');
+      const arrayBuffer = await response.arrayBuffer();
+      const base64Font = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => 
+          data + String.fromCharCode(byte), '')
+      );
+      
+      doc.addFileToVFS("NotoSansArabic.ttf", base64Font);
+      doc.addFont("NotoSansArabic.ttf", "NotoSansArabic", "normal");
+      arabicFontLoaded = true;
+      
+      // Set as default font only for Arabic reports
+      if (reportLanguage === "ar") {
         doc.setFont("NotoSansArabic");
-      } catch (error) {
-        console.error('Failed to load Arabic font:', error);
-        // Fallback to English if font loading fails
+      }
+    } catch (error) {
+      console.error('Failed to load Arabic font:', error);
+      // Fallback to English if font loading fails and report is in Arabic
+      if (reportLanguage === "ar") {
         effectiveLang = "en";
         toast({
           title: language === "ar" ? "خطأ" : "Error",
@@ -316,7 +322,7 @@ export default function Reports() {
       if (!text) return text;
       // Check if text contains Arabic characters
       const hasArabic = /[\u0600-\u06FF]/.test(text);
-      if (hasArabic && isArabic) {
+      if (hasArabic) {
         try {
           return ArabicReshaper.convertArabic(text);
         } catch (error) {
@@ -466,8 +472,8 @@ export default function Reports() {
         head: [[tr("report.platformColumn"), tr("report.nameColumn"), tr("report.amountColumn"), tr("report.startDateColumn"), tr("report.expectedIRRColumn"), tr("report.statusColumn")]],
         body: invData,
         theme: 'striped',
-        styles: { fontSize: 8, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'normal' },
-        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        styles: { fontSize: 8, halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
+        headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: arabicFontLoaded ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
       });
     }
 
