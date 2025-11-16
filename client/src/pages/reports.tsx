@@ -317,12 +317,16 @@ export default function Reports() {
     
     const isArabic = effectiveLang === "ar";
     
-    // Helper function to process Arabic text for PDF
+    // Helper function to check if text contains Arabic characters
+    const hasArabicText = (text: string): boolean => {
+      return /[\u0600-\u06FF]/.test(text);
+    };
+
+    // Helper function to process Arabic text for PDF (reshape for RTL)
     const processText = (text: string): string => {
       if (!text) return text;
-      // Check if text contains Arabic characters
-      const hasArabic = /[\u0600-\u06FF]/.test(text);
-      if (hasArabic && isArabic) {
+      // Reshape Arabic text only for Arabic reports (UI text)
+      if (hasArabicText(text) && isArabic) {
         try {
           return ArabicReshaper.convertArabic(text);
         } catch (error) {
@@ -331,6 +335,17 @@ export default function Reports() {
         }
       }
       return text;
+    };
+    
+    // Helper function to reshape Arabic text for mixed-language content (platform names, etc.)
+    const reshapeArabic = (text: string): string => {
+      if (!text || !hasArabicText(text)) return text;
+      try {
+        return ArabicReshaper.convertArabic(text);
+      } catch (error) {
+        console.warn('Failed to reshape Arabic text:', text, error);
+        return text;
+      }
     };
     
     // Translation function that automatically reshapes Arabic text for PDF
@@ -429,7 +444,7 @@ export default function Reports() {
       yPos += 7;
 
       const platformData = metrics.platformDistribution.map(p => [
-        processText(p.platformName),
+        reshapeArabic(p.platformName), // Reshape Arabic platform names
         formatCurrency(p.value),
         p.count.toString(),
         formatPercentage(p.percentage)
@@ -442,6 +457,16 @@ export default function Reports() {
         theme: 'grid',
         styles: { fontSize: 9, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
         headStyles: { fillColor: [46, 204, 113], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        didParseCell: (data) => {
+          // For English reports, use Arabic font for cells containing Arabic text
+          if (!isArabic && arabicFontLoaded && data.section === 'body' && data.column.index === 0) {
+            const cellText = data.cell.raw as string;
+            if (cellText && hasArabicText(cellText)) {
+              data.cell.styles.font = 'NotoSansArabic';
+              data.cell.styles.fontStyle = 'normal';
+            }
+          }
+        }
       });
     }
 
@@ -459,8 +484,8 @@ export default function Reports() {
         : investments.filter(inv => inv.platformId === platformFilter);
 
       const invData = filteredInvs.slice(0, 20).map(inv => [
-        processText(inv.platform?.name || "N/A"),
-        processText(inv.name),
+        reshapeArabic(inv.platform?.name || "N/A"), // Reshape Arabic platform names
+        reshapeArabic(inv.name), // Reshape Arabic investment names
         formatCurrency(parseFloat(inv.faceValue)),
         new Date(inv.startDate).toLocaleDateString(),
         formatPercentage(parseFloat(inv.expectedIrr)),
@@ -474,6 +499,16 @@ export default function Reports() {
         theme: 'striped',
         styles: { fontSize: 8, halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: 'normal' },
         headStyles: { fillColor: [231, 76, 60], halign: isArabic ? 'right' : 'left', font: isArabic ? 'NotoSansArabic' : 'helvetica', fontStyle: isArabic ? 'normal' : 'bold' },
+        didParseCell: (data) => {
+          // For English reports, use Arabic font for cells containing Arabic text (platform and investment names)
+          if (!isArabic && arabicFontLoaded && data.section === 'body' && (data.column.index === 0 || data.column.index === 1)) {
+            const cellText = data.cell.raw as string;
+            if (cellText && hasArabicText(cellText)) {
+              data.cell.styles.font = 'NotoSansArabic';
+              data.cell.styles.fontStyle = 'normal';
+            }
+          }
+        }
       });
     }
 
