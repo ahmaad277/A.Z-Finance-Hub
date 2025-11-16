@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatDate, formatPercentage } from "@/lib/utils";
+import { formatCurrency, formatDate, formatPercentage, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Wallet } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
@@ -47,7 +47,7 @@ export function RecentInvestments() {
               data-testid={`recent-investment-${investment.id}`}
             >
               <td className="py-3">
-                <div className="font-medium line-clamp-1">{investment.name}</div>
+                <div className="font-medium line-clamp-1">{formatInvestmentDisplayName(investment, "")}</div>
               </td>
               <td className="py-3">
                 <Badge variant="outline" className="text-xs">

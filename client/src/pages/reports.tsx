@@ -197,9 +197,14 @@ export default function Reports() {
         : investments.filter(inv => inv.platformId === platformFilter);
 
       filteredInvs.forEach(inv => {
+        // Use investment number instead of name to avoid Arabic text issues
+        const investmentLabel = inv.investmentNumber 
+          ? `${tr("investments.number")}${inv.investmentNumber}`
+          : inv.name;
+        
         investmentData.push([
           inv.platform?.name || "N/A",
-          inv.name,
+          investmentLabel,
           parseFloat(inv.faceValue).toString(),
           new Date(inv.startDate).toLocaleDateString(),
           new Date(inv.endDate).toLocaleDateString(),
@@ -233,8 +238,13 @@ export default function Reports() {
         : cashflows.filter(cf => cf.investment.platformId === platformFilter);
 
       filteredCfs.forEach(cf => {
+        // Use investment number instead of name to avoid Arabic text issues
+        const investmentLabel = cf.investment?.investmentNumber 
+          ? `${tr("investments.number")}${cf.investment.investmentNumber}`
+          : cf.investment?.name || "N/A";
+        
         cashflowData.push([
-          cf.investment?.name || "N/A",
+          investmentLabel,
           cf.investment?.platform?.name || "N/A",
           new Date(cf.dueDate).toLocaleDateString(),
           parseFloat(cf.amount).toString(),
@@ -483,14 +493,21 @@ export default function Reports() {
         ? investments 
         : investments.filter(inv => inv.platformId === platformFilter);
 
-      const invData = filteredInvs.slice(0, 20).map(inv => [
-        reshapeArabic(inv.platform?.name || "N/A"), // Reshape Arabic platform names
-        reshapeArabic(inv.name), // Reshape Arabic investment names
-        formatCurrency(parseFloat(inv.faceValue)),
-        new Date(inv.startDate).toLocaleDateString(),
-        formatPercentage(parseFloat(inv.expectedIrr)),
-        processText(translateValue(inv.status, effectiveLang))
-      ]);
+      const invData = filteredInvs.slice(0, 20).map(inv => {
+        // Use investment number instead of name to avoid Arabic text issues
+        const investmentLabel = inv.investmentNumber 
+          ? `${tr("investments.number")}${inv.investmentNumber}`
+          : reshapeArabic(inv.name);
+        
+        return [
+          reshapeArabic(inv.platform?.name || "N/A"), // Reshape Arabic platform names
+          investmentLabel, // Use investment number or fallback to reshaped name
+          formatCurrency(parseFloat(inv.faceValue)),
+          new Date(inv.startDate).toLocaleDateString(),
+          formatPercentage(parseFloat(inv.expectedIrr)),
+          processText(translateValue(inv.status, effectiveLang))
+        ];
+      });
 
       autoTable(doc, {
         startY: yPos,

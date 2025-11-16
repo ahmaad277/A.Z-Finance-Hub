@@ -191,3 +191,18 @@ export function getInvestmentStatusConfig(status: string): InvestmentStatusConfi
 
   return configs[status] || neutralFallback;
 }
+
+/**
+ * Format investment display name with number prefix
+ * Returns: "#12 — Name" (both English and Arabic)
+ * Falls back to just the name if number is missing
+ */
+export function formatInvestmentDisplayName(
+  investment: { name: string; investmentNumber?: number | null },
+  numberPrefix: string = "Investment #"
+): string {
+  if (!investment.investmentNumber) {
+    return investment.name;
+  }
+  return `#${investment.investmentNumber} — ${investment.name}`;
+}

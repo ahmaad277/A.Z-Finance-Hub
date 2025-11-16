@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, Trash2, CheckCircle, X, Calendar, DollarSign, TrendingUp, Target, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export function InvestmentDetailsDrawer({
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <DrawerTitle className="text-2xl truncate" data-testid="text-investment-name">
-                {investment.name}
+                {formatInvestmentDisplayName(investment, t("investments.number"))}
               </DrawerTitle>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className={`text-xs ${getPlatformBadgeClasses(investment.platform?.name)}`} data-testid="text-platform-name">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,8 +86,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               {t(`investments.${investment.status}`)}
             </Badge>
           </div>
-          <h3 className="font-semibold text-xs line-clamp-1" title={investment.name}>
-            {investment.name}
+          <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+            {formatInvestmentDisplayName(investment, t("investments.number"))}
           </h3>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -240,8 +240,8 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               {t(`investments.${investment.status}`)}
             </Badge>
           </div>
-          <h3 className="font-semibold text-sm line-clamp-1" title={investment.name}>
-            {investment.name}
+          <h3 className="font-semibold text-sm line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+            {formatInvestmentDisplayName(investment, t("investments.number"))}
           </h3>
         </div>
       

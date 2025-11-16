@@ -263,6 +263,7 @@ const translations = {
     "investments.expectedProfit": "Expected Profit",
     "investments.months": "months",
     "investments.completePayment": "Complete Payment",
+    "investments.number": "Investment #",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -1304,6 +1305,7 @@ const translations = {
     "investments.expectedProfit": "الأرباح المتوقعة",
     "investments.months": "شهر",
     "investments.completePayment": "إتمام الدفعة",
+    "investments.number": "استثمار #",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",

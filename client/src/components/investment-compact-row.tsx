@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, calculateDaysUntil, METRIC_COLOR_MAP, cn } from "@/lib/utils";
+import { formatCurrency, calculateDaysUntil, METRIC_COLOR_MAP, cn, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import type { InvestmentWithPlatform } from "@shared/schema";
 import { Building2, TrendingUp, Calendar, Percent, ArrowRight, AlertTriangle } from "lucide-react";
@@ -86,7 +86,9 @@ export function InvestmentCompactRow({
       <div className="flex-1 min-w-0 flex items-center gap-2">
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="font-medium truncate leading-tight">{investment.name}</span>
+            <span className="font-medium truncate leading-tight" title={formatInvestmentDisplayName(investment, "")}>
+              {formatInvestmentDisplayName(investment, "")}
+            </span>
             {investment.needsReview === 1 && (
               <Badge 
                 className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-[9px] px-1.5 py-0.5 h-4 shrink-0"

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn } from "@/lib/utils";
+import { formatCurrency, formatPercentage, formatDate, calculateDaysUntil, calculateROI, getInvestmentStatusConfig, METRIC_COLOR_MAP, cn, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, TrendingUp, Calendar, Target, AlertTriangle, Clock, DollarSign, CheckCircle } from "lucide-react";
 import type { InvestmentWithPlatform } from "@shared/schema";
@@ -63,7 +63,9 @@ export function InvestmentCard({ investment, totalReturns = 0, onEdit, onComplet
               </Badge>
             )}
             <div className="flex items-center gap-2">
-              <CardTitle className="text-lg line-clamp-2">{investment.name}</CardTitle>
+              <CardTitle className="text-lg line-clamp-2">
+                {formatInvestmentDisplayName(investment, t("investments.number"))}
+              </CardTitle>
               {investment.needsReview === 1 && (
                 <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/30 text-xs px-2 py-0.5 h-5 shrink-0" data-testid="badge-needs-review">
                   <AlertTriangle className="h-3 w-3 mr-1" />

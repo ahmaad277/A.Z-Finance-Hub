@@ -348,12 +348,26 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
+      // Get next investment number (sequential numbering with row-level lock to prevent duplicates)
+      // Lock the row with highest investment_number to prevent concurrent duplicates
+      // Note: If table is completely empty, two concurrent inserts could both get #1,
+      // but the second will fail with unique constraint error (acceptable for single-user app)
+      const [latestInvestment] = await tx
+        .select({ investmentNumber: investments.investmentNumber })
+        .from(investments)
+        .orderBy(sql`${investments.investmentNumber} DESC NULLS LAST`)
+        .limit(1)
+        .for('update'); // Lock the latest row
+      
+      const nextInvestmentNumber = (latestInvestment?.investmentNumber ?? 0) + 1;
+      
       // Create the investment (convert numbers to strings for database)
       const [investment] = await tx
         .insert(investments)
         .values({
           platformId: insertInvestment.platformId,
           name: insertInvestment.name,
+          investmentNumber: nextInvestmentNumber,
           faceValue: String(insertInvestment.faceValue),
           totalExpectedProfit: String(insertInvestment.totalExpectedProfit),
           startDate: insertInvestment.startDate,
