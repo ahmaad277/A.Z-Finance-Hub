@@ -24,6 +24,7 @@ export const investments = pgTable("investments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   platformId: varchar("platform_id").notNull(),
   name: text("name").notNull(),
+  investmentNumber: integer("investment_number").unique(), // Sequential number based on portfolio entry order
   faceValue: numeric("face_value", { precision: 15, scale: 2 }).notNull(), // القيمة الاسمية - Principal amount (merged from 'amount')
   totalExpectedProfit: numeric("total_expected_profit", { precision: 15, scale: 2 }).notNull(), // إجمالي الأرباح المتوقعة
   startDate: timestamp("start_date").notNull(),
@@ -41,14 +42,17 @@ export const investments = pgTable("investments", {
   needsReview: integer("needs_review").notNull().default(0), // 0 = no review needed, 1 = needs review (Check! indicator)
   lateDate: timestamp("late_date"), // Date when investment status became 'late'
   defaultedDate: timestamp("defaulted_date"), // Date when investment status became 'defaulted'
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`), // When investment was added to portfolio
 });
 
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ 
   id: true, 
+  investmentNumber: true,
   actualIrr: true,
   actualEndDate: true,
   lateDate: true,
   defaultedDate: true,
+  createdAt: true,
 }).extend({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
