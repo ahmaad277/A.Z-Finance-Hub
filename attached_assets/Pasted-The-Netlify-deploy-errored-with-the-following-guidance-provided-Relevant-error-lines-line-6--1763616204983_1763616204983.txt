@@ -1,0 +1,46 @@
+The Netlify deploy errored, with the following guidance provided:
+
+Relevant error lines
+- [line 6](#L6): "git ref refs/heads/main does not exist or you do not have permission"
+- [line 7](#L7): "Failing build: Failed to prepare repo"
+
+Diagnosis
+- Error type: Git/permissions error — Netlify cannot checkout the repository branch it was told to build.
+- Cause: Netlify attempted to fetch refs/heads/main but either (a) that branch doesn't exist in the connected repo, or (b) Netlify's Git access (OAuth/app permissions or deploy key) lacks permission to read the repo/branch.
+
+Solution (step‑by‑step)
+1. Verify the branch exists
+   - Confirm the repo actually has a branch named exactly main (branch names are case-sensitive). If not, either create it or tell Netlify to build the correct branch:
+     - To create and push a main branch locally:
+       ```bash
+       git checkout -b main
+       git push -u origin main
+       ```
+   - Or change Netlify to build the repo’s existing branch (e.g., master) in Site settings.
+
+2. Verify Netlify has permission to read the repo
+   - In Netlify: Site settings → Build & deploy → Continuous Deployment → Repository, confirm the linked repository and branch.
+   - If the repo is on GitHub/GitLab/Bitbucket, reauthorize Netlify to ensure it has repo access:
+     - On Netlify: User settings → Applications (or Sites → Site settings → Build & deploy → Edit settings) → reconnect the Git provider.
+     - On GitHub: Settings → Installed GitHub Apps → Netlify (or Authorized OAuth Apps) and ensure the app has access to the repository or reauthorize to grant access to all necessary repos.
+   - After reauthorizing, trigger a new deploy.
+
+3. If you intentionally want Netlify to build a different branch
+   - Change the deploy branch in Netlify: Site settings → Build & deploy → Continuous Deployment → Branch to deploy → set the correct branch name and save.
+
+4. Retry the deploy
+   - Trigger a new deploy from the Netlify UI (Deploys → Trigger deploy → Deploy site) or push a commit to the configured branch.
+
+If you need help reauthorizing Netlify with GitHub (Node version docs are not relevant here), tell me whether the repository is public or private and which branch you expect Netlify to build (main or master), and I’ll give the exact clicks/commands.
+
+The relevant error logs are:
+
+Line 0: Failed during stage 'preparing repo': git ref refs/heads/main does not exist
+Line 1: build-image version: dffa6e46a3b73a23ca8995efed9259d5d2772478 (noble)
+Line 2: buildbot version: f6487c9e4e200095ec6ba850ebd9b6d71350687c
+Line 3: Fetching cached dependencies
+Line 4: Failed to fetch cache, continuing with build
+Line 5: Starting to prepare the repo for build
+Line 6: git ref refs/heads/main does not exist or you do not have permission
+Line 7: Failing build: Failed to prepare repo
+Line 8: Finished processing build request in 561ms
