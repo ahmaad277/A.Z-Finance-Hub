@@ -2093,12 +2093,33 @@ export class DatabaseStorage implements IStorage {
         await tx.insert(platforms).values(data.platforms);
       }
 
-      // Restore investments (preserve original IDs) - convert dates
+      // Restore investments (preserve original IDs) - convert dates and add investment numbers if missing
       if (data.investments && data.investments.length > 0) {
         const investmentsWithDates = data.investments.map((inv: any) =>
           convertDates(inv, ['startDate', 'endDate', 'actualEndDate', 'createdAt', 'lateDate', 'defaultedDate'])
         );
-        await tx.insert(investments).values(investmentsWithDates);
+        
+        // Check if investments have investment_number field
+        const needsNumbering = investmentsWithDates.some((inv: any) => !inv.investmentNumber);
+        
+        if (needsNumbering) {
+          // Old checkpoint without investment numbers - assign sequential numbers based on startDate
+          const sortedInvestments = [...investmentsWithDates].sort((a: any, b: any) => {
+            const dateA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
+            const dateB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
+            return dateA.getTime() - dateB.getTime();
+          });
+          
+          const investmentsWithNumbers = sortedInvestments.map((inv: any, index: number) => ({
+            ...inv,
+            investmentNumber: inv.investmentNumber || (index + 1), // Preserve existing numbers, assign new ones
+          }));
+          
+          await tx.insert(investments).values(investmentsWithNumbers);
+        } else {
+          // Modern checkpoint with investment numbers - restore as-is
+          await tx.insert(investments).values(investmentsWithDates);
+        }
       }
 
       // Restore cashflows (preserve original IDs) - convert dates
