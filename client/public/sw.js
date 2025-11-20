@@ -15,7 +15,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(STATIC_RESOURCES))
-      .catch(err => console.error('Install failed:', err))
+      .catch(() => {})
   );
   self.skipWaiting();
 });
