@@ -2096,7 +2096,7 @@ export class DatabaseStorage implements IStorage {
       // Restore investments (preserve original IDs) - convert dates
       if (data.investments && data.investments.length > 0) {
         const investmentsWithDates = data.investments.map((inv: any) =>
-          convertDates(inv, ['startDate', 'endDate', 'actualEndDate'])
+          convertDates(inv, ['startDate', 'endDate', 'actualEndDate', 'createdAt', 'lateDate', 'defaultedDate'])
         );
         await tx.insert(investments).values(investmentsWithDates);
       }
@@ -2120,19 +2120,25 @@ export class DatabaseStorage implements IStorage {
       // Restore cash transactions (preserve original IDs) - convert dates
       if (data.cashTransactions && data.cashTransactions.length > 0) {
         const transactionsWithDates = data.cashTransactions.map((ct: any) =>
-          convertDates(ct, ['transactionDate'])
+          convertDates(ct, ['date', 'createdAt'])
         );
         await tx.insert(cashTransactions).values(transactionsWithDates);
       }
 
-      // Restore alerts (preserve original IDs)
+      // Restore alerts (preserve original IDs) - convert dates
       if (data.alerts && data.alerts.length > 0) {
-        await tx.insert(alerts).values(data.alerts);
+        const alertsWithDates = data.alerts.map((alert: any) =>
+          convertDates(alert, ['createdAt'])
+        );
+        await tx.insert(alerts).values(alertsWithDates);
       }
 
-      // Restore saved scenarios (preserve original IDs)
+      // Restore saved scenarios (preserve original IDs) - convert dates
       if (data.savedScenarios && data.savedScenarios.length > 0) {
-        await tx.insert(savedScenarios).values(data.savedScenarios);
+        const scenariosWithDates = data.savedScenarios.map((scenario: any) =>
+          convertDates(scenario, ['createdAt'])
+        );
+        await tx.insert(savedScenarios).values(scenariosWithDates);
       }
 
       // Restore user settings (update existing or create)
