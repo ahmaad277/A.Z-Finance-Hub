@@ -1,0 +1,766 @@
+2025-11-21T05:24:11.224014963Z [err]  âŒ Critical error in investment status check: ErrorEvent {
+2025-11-21T05:24:11.224025427Z [err]    [Symbol(kTarget)]: WebSocket {
+2025-11-21T05:24:11.224032155Z [err]      _events: [Object: null prototype] {
+2025-11-21T05:24:11.224040080Z [err]        error: [Function],
+2025-11-21T05:24:11.224045814Z [err]        message: [Function],
+2025-11-21T05:24:11.224058562Z [err]      _autoPong: true,
+2025-11-21T05:24:11.224068080Z [err]      _url: 'wss://crossover.proxy.rlwy.net/v2',
+2025-11-21T05:24:11.224070542Z [err]      _bufferedAmount: 0,
+2025-11-21T05:24:11.224076566Z [err]      _receiver: null,
+2025-11-21T05:24:11.224086224Z [err]      _isServer: false,
+2025-11-21T05:24:11.224091878Z [err]      _sender: null,
+2025-11-21T05:24:11.224103238Z [err]      _socket: null,
+2025-11-21T05:24:11.224113279Z [err]      _redirects: 0,
+2025-11-21T05:24:11.224131315Z [err]        close: [Function],
+2025-11-21T05:24:11.224133412Z [inf]  5:24:01 AM [express] Running investment status check...
+2025-11-21T05:24:11.224141099Z [err]      _closeFrameSent: false,
+2025-11-21T05:24:11.224145424Z [err]        open: [Function]
+2025-11-21T05:24:11.224149131Z [err]      _closeMessage: <Buffer >,
+2025-11-21T05:24:11.224158464Z [err]      _maxListeners: undefined,
+2025-11-21T05:24:11.224158832Z [err]      },
+2025-11-21T05:24:11.224159889Z [err]      _closeTimer: null,
+2025-11-21T05:24:11.224163067Z [err]      _extensions: {},
+2025-11-21T05:24:11.224170914Z [err]      _binaryType: 'arraybuffer',
+2025-11-21T05:24:11.224172673Z [err]      _eventsCount: 4,
+2025-11-21T05:24:11.224175619Z [err]      _errorEmitted: true,
+2025-11-21T05:24:11.224175648Z [err]      _paused: false,
+2025-11-21T05:24:11.224185744Z [err]      _protocol: '',
+2025-11-21T05:24:11.224188242Z [err]      _closeCode: 1006,
+2025-11-21T05:24:11.224194351Z [err]      _readyState: 3,
+2025-11-21T05:24:11.224198520Z [err]      _closeFrameReceived: false,
+2025-11-21T05:24:11.228988310Z [err]          'Sec-WebSocket-Version: 13\r\n' +
+2025-11-21T05:24:11.228997425Z [err]          'Sec-WebSocket-Key: kU5Ldthfzpx0w+3An9ZK7A==\r\n' +
+2025-11-21T05:24:11.229403672Z [err]      _req: ClientRequest {
+2025-11-21T05:24:11.229410131Z [err]        _events: [Object: null prototype],
+2025-11-21T05:24:11.229417613Z [err]        _eventsCount: 4,
+2025-11-21T05:24:11.229424394Z [err]        _maxListeners: undefined,
+2025-11-21T05:24:11.229431079Z [err]        outputData: [],
+2025-11-21T05:24:11.229438962Z [err]        outputSize: 0,
+2025-11-21T05:24:11.229448314Z [err]        writable: true,
+2025-11-21T05:24:11.229454077Z [err]        destroyed: true,
+2025-11-21T05:24:11.229459621Z [err]        _last: true,
+2025-11-21T05:24:11.229465249Z [err]        chunkedEncoding: false,
+2025-11-21T05:24:11.229471520Z [err]        shouldKeepAlive: true,
+2025-11-21T05:24:11.229478488Z [err]        maxRequestsOnConnectionReached: false,
+2025-11-21T05:24:11.229484190Z [err]        _defaultKeepAlive: true,
+2025-11-21T05:24:11.229509830Z [err]        useChunkedEncodingByDefault: false,
+2025-11-21T05:24:11.229517373Z [err]        sendDate: false,
+2025-11-21T05:24:11.229525001Z [err]        _removedConnection: false,
+2025-11-21T05:24:11.229531664Z [err]        _removedContLen: false,
+2025-11-21T05:24:11.229538227Z [err]        _removedTE: false,
+2025-11-21T05:24:11.229544123Z [err]        strictContentLength: false,
+2025-11-21T05:24:11.229549980Z [err]        _contentLength: 0,
+2025-11-21T05:24:11.229573414Z [err]        _hasBody: true,
+2025-11-21T05:24:11.229581322Z [err]        _trailer: '',
+2025-11-21T05:24:11.229588601Z [err]        finished: true,
+2025-11-21T05:24:11.229601971Z [err]        _headerSent: true,
+2025-11-21T05:24:11.229607567Z [err]        _closed: true,
+2025-11-21T05:24:11.229612224Z [err]        _header: 'GET /v2 HTTP/1.1\r\n' +
+2025-11-21T05:24:11.230658986Z [err]        [Symbol(kHighWaterMark)]: 65536,
+2025-11-21T05:24:11.230670239Z [err]        [Symbol(kRejectNonStandardBodyWrites)]: false,
+2025-11-21T05:24:11.230679695Z [err]        [Symbol(kUniqueHeaders)]: null,
+2025-11-21T05:24:11.230684124Z [err]        at TLSSocket.emit (node:events:519:28)
+2025-11-21T05:24:11.230687968Z [err]        at ClientRequest.emit (node:events:519:28)
+2025-11-21T05:24:11.230694742Z [err]        [Symbol(kAborted)]: true,
+2025-11-21T05:24:11.230695632Z [err]        at addChunk (node:internal/streams/readable:561:12)
+2025-11-21T05:24:11.230701750Z [err]        at HTTPParser.parserOnIncomingClient (node:_http_client:772:27)
+2025-11-21T05:24:11.230703199Z [err]    [Symbol(kType)]: 'error',
+2025-11-21T05:24:11.230706722Z [err]        [Symbol(kError)]: undefined
+2025-11-21T05:24:11.230713045Z [err]        at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)
+2025-11-21T05:24:11.230715618Z [err]    [Symbol(kError)]: Error: Unexpected server response: 502
+2025-11-21T05:24:11.230721171Z [err]      },
+2025-11-21T05:24:11.230725864Z [err]        at TLSSocket.socketOnData (node:_http_client:614:22)
+2025-11-21T05:24:11.230726394Z [err]        at ClientRequest.<anonymous> (/app/node_modules/ws/lib/websocket.js:913:7)
+2025-11-21T05:24:11.230731935Z [err]      [Symbol(shapeMode)]: false,
+2025-11-21T05:24:11.230738029Z [err]      [Symbol(kCapture)]: false
+2025-11-21T05:24:11.230745252Z [err]    },
+2025-11-21T05:24:11.230750520Z [err]          'Connection: Upgrade\r\n' +
+2025-11-21T05:24:11.230756841Z [err]          'Upgrade: websocket\r\n' +
+2025-11-21T05:24:11.230762713Z [err]          'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' +
+2025-11-21T05:24:11.230768958Z [err]          'Host: crossover.proxy.rlwy.net\r\n' +
+2025-11-21T05:24:11.230775870Z [err]          '\r\n',
+2025-11-21T05:24:11.230784114Z [err]        _keepAliveTimeout: 0,
+2025-11-21T05:24:11.230791542Z [err]        [Symbol(corked)]: 0,
+2025-11-21T05:24:11.230792561Z [err]        _onPendingData: [Function: nop],
+2025-11-21T05:24:11.230797440Z [err]        [Symbol(kChunkedBuffer)]: [],
+2025-11-21T05:24:11.230799840Z [err]        agent: undefined,
+2025-11-21T05:24:11.230806549Z [err]        [Symbol(kChunkedLength)]: 0,
+2025-11-21T05:24:11.230806633Z [err]        socketPath: undefined,
+2025-11-21T05:24:11.230814763Z [err]        [Symbol(kSocket)]: [TLSSocket],
+2025-11-21T05:24:11.230814862Z [err]        method: 'GET',
+2025-11-21T05:24:11.230823466Z [err]        maxHeaderSize: undefined,
+2025-11-21T05:24:11.230824599Z [err]        [Symbol(kOutHeaders)]: [Object: null prototype],
+2025-11-21T05:24:11.230829995Z [err]        insecureHTTPParser: undefined,
+2025-11-21T05:24:11.230833572Z [err]        [Symbol(errored)]: null,
+2025-11-21T05:24:11.230836032Z [err]        joinDuplicateHeaders: undefined,
+2025-11-21T05:24:11.230841892Z [err]        path: '/v2',
+2025-11-21T05:24:11.230847673Z [err]        _ended: true,
+2025-11-21T05:24:11.230852701Z [err]        res: [IncomingMessage],
+2025-11-21T05:24:11.230858497Z [err]        aborted: true,
+2025-11-21T05:24:11.230864065Z [err]        timeoutCb: null,
+2025-11-21T05:24:11.230868852Z [err]        upgradeOrConnect: false,
+2025-11-21T05:24:11.230873823Z [err]        parser: null,
+2025-11-21T05:24:11.230878555Z [err]        maxHeadersCount: null,
+2025-11-21T05:24:11.230883080Z [err]        reusedSocket: false,
+2025-11-21T05:24:11.230888988Z [err]        host: 'crossover.proxy.rlwy.net',
+2025-11-21T05:24:11.230894711Z [err]        protocol: 'https:',
+2025-11-21T05:24:11.230901073Z [err]        [Symbol(shapeMode)]: false,
+2025-11-21T05:24:11.230907436Z [err]        [Symbol(kCapture)]: false,
+2025-11-21T05:24:11.230912048Z [err]        [Symbol(kBytesWritten)]: 0,
+2025-11-21T05:24:11.230916066Z [err]        [Symbol(kNeedDrain)]: false,
+2025-11-21T05:24:11.232386560Z [err]        at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-11-21T05:24:11.232392601Z [err]        at Readable.push (node:internal/streams/readable:392:5)
+2025-11-21T05:24:11.232397784Z [err]        at TLSWrap.onStreamRead (node:internal/stream_base_commons:189:23),
+2025-11-21T05:24:11.232402764Z [err]    [Symbol(kMessage)]: 'Unexpected server response: 502'
+2025-11-21T05:24:11.232407317Z [err]  }
+2025-11-21T05:31:38.000000000Z [inf]  Starting Container
+2025-11-21T05:31:39.878805160Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:31:39.878818051Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:31:39.878825465Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:31:39.953054770Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:31:40.919794774Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:31:40.919802776Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:31:40.919810022Z [inf]  [âœ“] Changes applied
+2025-11-21T05:31:41.000000000Z [inf]  Stopping Container
+2025-11-21T05:31:41.057023859Z [err]  
+2025-11-21T05:31:41.057029109Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:31:41.057033872Z [err]      triggerUncaughtException(
+2025-11-21T05:31:41.057043141Z [err]      ^
+2025-11-21T05:31:41.057048618Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:31:41.057055529Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:31:41.057061222Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:31:41.057066853Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:31:41.057072488Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:41.057078785Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703100823:2:3744)
+2025-11-21T05:31:41.057084524Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703100823:2:4243)
+2025-11-21T05:31:41.057094318Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703100823:2:4984)
+2025-11-21T05:31:41.057100735Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703100823:2:5361)
+2025-11-21T05:31:41.057107510Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:41.057113266Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:31:41.057119057Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:31:41.057124114Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:31:41.057129647Z [err]  }
+2025-11-21T05:31:41.057135722Z [err]  
+2025-11-21T05:31:41.057141336Z [err]  Node.js v22.21.1
+2025-11-21T05:31:43.122623936Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:31:43.131185684Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:31:43.131192050Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:31:44.107098310Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:44.107148405Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:31:44.107154103Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:31:44.222018957Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:31:45.159141500Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:31:45.159157902Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:31:45.159165538Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:31:45.159172131Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:45.159178531Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:31:45.159184747Z [inf]  [i] No changes detected
+2025-11-21T05:31:45.160192327Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:31:45.160198236Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:31:45.251286418Z [err]  npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-21T04_23_57_746Z-debug-0.log
+2025-11-21T05:31:45.251310148Z [err]  npm error path /app
+2025-11-21T05:31:45.251317346Z [err]  npm error command failed
+2025-11-21T05:31:45.251324668Z [err]  npm error signal SIGTERM
+2025-11-21T05:31:45.251331025Z [err]  npm error command sh -c NODE_ENV=development tsx server/index.ts
+2025-11-21T05:31:46.038977849Z [err]  }
+2025-11-21T05:31:46.038990997Z [err]  
+2025-11-21T05:31:46.038998843Z [err]  Node.js v22.21.1
+2025-11-21T05:31:46.039018922Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:31:46.039031416Z [err]      triggerUncaughtException(
+2025-11-21T05:31:46.039040088Z [err]      ^
+2025-11-21T05:31:46.039048136Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:31:46.039055315Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:31:46.039063206Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:31:46.039070718Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:31:46.039077752Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:46.039084801Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703105394:2:3744)
+2025-11-21T05:31:46.039093093Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703105394:2:4243)
+2025-11-21T05:31:46.039100557Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703105394:2:4984)
+2025-11-21T05:31:46.039117717Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703105394:2:5361)
+2025-11-21T05:31:46.039124579Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:46.039131169Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:31:46.039137318Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:31:46.039144351Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:31:46.039226468Z [err]  
+2025-11-21T05:31:47.169373291Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:31:48.416931775Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:31:48.416936562Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:31:48.416941245Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:31:49.340403917Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:31:49.340857705Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:31:49.340863488Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:49.340869584Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:31:49.340875774Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:31:49.340882752Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:31:50.285856982Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:31:50.285863447Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:50.285868154Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703110105:2:3744)
+2025-11-21T05:31:50.285873399Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703110105:2:4243)
+2025-11-21T05:31:50.285970342Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:31:50.285975838Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:31:50.285981369Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:50.285988090Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:31:50.285988483Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:31:50.285996326Z [inf]  [i] No changes detected
+2025-11-21T05:31:50.286000891Z [err]      triggerUncaughtException(
+2025-11-21T05:31:50.286004403Z [err]  
+2025-11-21T05:31:50.286009537Z [err]      ^
+2025-11-21T05:31:50.286017403Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:31:50.286037226Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:31:50.286041480Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703110105:2:4984)
+2025-11-21T05:31:50.286046715Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:31:50.286049536Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703110105:2:5361)
+2025-11-21T05:31:50.286055475Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:50.286061114Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:31:50.286083877Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:31:50.286090708Z [err]  }
+2025-11-21T05:31:50.286097375Z [err]  
+2025-11-21T05:31:50.286110731Z [err]  Node.js v22.21.1
+2025-11-21T05:31:50.286507733Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:31:52.203242387Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:31:52.218116314Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:31:52.218122301Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:31:53.262460229Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:31:53.262468569Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:31:53.262475316Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:53.280868378Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:31:53.407191600Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:31:54.234279601Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:31:54.234285073Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:31:54.234288913Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:31:54.234296506Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:31:54.234301106Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:31:54.234306753Z [inf]  [i] No changes detected
+2025-11-21T05:31:54.340452445Z [err]  
+2025-11-21T05:31:54.340452731Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:54.340465411Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:31:54.340467247Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:31:54.340474454Z [err]      triggerUncaughtException(
+2025-11-21T05:31:54.340475555Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:31:54.340483088Z [err]      ^
+2025-11-21T05:31:54.340484088Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:31:54.340495590Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:31:54.340500069Z [err]  }
+2025-11-21T05:31:54.340504249Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:31:54.340509410Z [err]  
+2025-11-21T05:31:54.340512350Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:31:54.340517477Z [err]  Node.js v22.21.1
+2025-11-21T05:31:54.340521038Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:31:54.340527163Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:54.340533254Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703114231:2:3744)
+2025-11-21T05:31:54.340540078Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703114231:2:4243)
+2025-11-21T05:31:54.340546299Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703114231:2:4984)
+2025-11-21T05:31:54.340551992Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703114231:2:5361)
+2025-11-21T05:31:56.346633875Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:31:56.346641104Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:31:56.346643729Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:31:57.286493769Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:31:57.286498850Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:31:57.286506747Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:31:57.286511841Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:31:57.327154226Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:31:58.324397337Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:31:58.324403839Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:31:58.324409304Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:31:58.324415957Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:31:58.324421766Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:31:58.324427805Z [inf]  [i] No changes detected
+2025-11-21T05:31:58.396281372Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:31:58.396284937Z [err]      ^
+2025-11-21T05:31:58.396292803Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:31:58.396296738Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:31:58.396301073Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:31:58.396306770Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:31:58.396317537Z [err]  }
+2025-11-21T05:31:58.396320875Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:31:58.396326938Z [err]  
+2025-11-21T05:31:58.396327657Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:31:58.396336195Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:58.396336596Z [err]  Node.js v22.21.1
+2025-11-21T05:31:58.396343399Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703118278:2:3744)
+2025-11-21T05:31:58.396348960Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703118278:2:4243)
+2025-11-21T05:31:58.396353512Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703118278:2:4984)
+2025-11-21T05:31:58.396374230Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703118278:2:5361)
+2025-11-21T05:31:58.396378577Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:31:58.396448283Z [err]  
+2025-11-21T05:31:58.396455431Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:31:58.396462452Z [err]      triggerUncaughtException(
+2025-11-21T05:32:00.167597746Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:00.476364427Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:00.476371924Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:01.154355436Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:01.193685528Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:01.314194924Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:01.441081492Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:02.570342261Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:02.570346490Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:02.570350640Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:02.570355539Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:02.570359822Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:32:02.570363776Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:02.570367813Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:02.570372009Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:02.570376644Z [inf]  [i] No changes detected
+2025-11-21T05:32:03.298797611Z [err]  
+2025-11-21T05:32:03.298807462Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:03.298813110Z [err]      triggerUncaughtException(
+2025-11-21T05:32:03.298818846Z [err]      ^
+2025-11-21T05:32:03.298824862Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:03.298831495Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:03.298840801Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:03.298846832Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:03.298854452Z [err]  
+2025-11-21T05:32:03.298856762Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:03.298863501Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:03.298867773Z [err]  Node.js v22.21.1
+2025-11-21T05:32:03.298868989Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703122645:2:3744)
+2025-11-21T05:32:03.298874801Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:03.298878132Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703122645:2:4243)
+2025-11-21T05:32:03.298885607Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:03.298887650Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703122645:2:4984)
+2025-11-21T05:32:03.298895743Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:03.298898597Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703122645:2:5361)
+2025-11-21T05:32:03.298904085Z [err]  }
+2025-11-21T05:32:04.501886800Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:05.419073802Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:05.419074183Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:05.419079682Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:06.243541337Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:06.243546660Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:06.243554159Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:06.243559155Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:06.243566820Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:06.351955413Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:06.472170132Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:07.526232356Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:32:07.526239693Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:07.526245748Z [inf]  [i] No changes detected
+2025-11-21T05:32:07.526251857Z [err]  
+2025-11-21T05:32:07.526257115Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:07.526263274Z [err]      triggerUncaughtException(
+2025-11-21T05:32:07.526268492Z [err]      ^
+2025-11-21T05:32:07.526274571Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:07.526280188Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:07.526285022Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:07.526289949Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:07.526294977Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:07.526300961Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703126962:2:3744)
+2025-11-21T05:32:07.526306688Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703126962:2:4243)
+2025-11-21T05:32:07.526313253Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703126962:2:4984)
+2025-11-21T05:32:07.526319716Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703126962:2:5361)
+2025-11-21T05:32:07.526326151Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:07.526332378Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:07.526338686Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:07.526345139Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:07.526357340Z [err]  }
+2025-11-21T05:32:07.526364643Z [err]  
+2025-11-21T05:32:07.531457409Z [err]  Node.js v22.21.1
+2025-11-21T05:32:09.341059181Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:09.341065850Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:09.341071678Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:09.500511172Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:10.507745309Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:10.507750791Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:10.507757384Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:10.507768371Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:10.507774113Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:10.507781124Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:10.558941595Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:11.141716074Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:32:11.141723627Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:11.141729095Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:11.141734093Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:11.141740037Z [inf]  [i] No changes detected
+2025-11-21T05:32:11.335013542Z [err]  
+2025-11-21T05:32:11.335022832Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:11.335029557Z [err]      triggerUncaughtException(
+2025-11-21T05:32:11.335035119Z [err]      ^
+2025-11-21T05:32:11.335040186Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:11.335046519Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:11.335053372Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:11.335060785Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:11.335316257Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:11.335323984Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703131208:2:3744)
+2025-11-21T05:32:11.335328444Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703131208:2:4243)
+2025-11-21T05:32:11.335332585Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703131208:2:4984)
+2025-11-21T05:32:11.335336462Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703131208:2:5361)
+2025-11-21T05:32:11.335340195Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:11.335344206Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:11.335348035Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:11.335352576Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:11.335357028Z [err]  }
+2025-11-21T05:32:11.335361165Z [err]  
+2025-11-21T05:32:11.335365263Z [err]  Node.js v22.21.1
+2025-11-21T05:32:13.615697693Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:13.615703976Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:13.615711784Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:14.648025692Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:14.648033733Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:14.648041241Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:14.648048993Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:14.648058469Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:14.648065828Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:15.796959297Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:15.796966058Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:15.796972122Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:32:15.796979664Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:15.796986295Z [inf]  [i] No changes detected
+2025-11-21T05:32:15.796993419Z [err]  
+2025-11-21T05:32:15.796999877Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:15.797006421Z [err]      triggerUncaughtException(
+2025-11-21T05:32:15.797013292Z [err]      ^
+2025-11-21T05:32:15.797019838Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:15.797026967Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:15.797033524Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:15.797040405Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:15.797046949Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:15.797057380Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703135257:2:3744)
+2025-11-21T05:32:15.797063082Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703135257:2:4243)
+2025-11-21T05:32:15.797069472Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703135257:2:4984)
+2025-11-21T05:32:15.797078102Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703135257:2:5361)
+2025-11-21T05:32:15.797083386Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:15.797089048Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:15.797094701Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:16.488121572Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:16.488127330Z [err]  }
+2025-11-21T05:32:16.488133537Z [err]  
+2025-11-21T05:32:16.488174335Z [err]  Node.js v22.21.1
+2025-11-21T05:32:23.784780130Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:24.449409813Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:24.449416307Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:25.327941661Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:25.327950137Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:25.328690770Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:25.360201804Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:25.456551195Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:25.591902287Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:25.714393050Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:26.234313661Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:26.234320344Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:26.234327015Z [inf]  [i] No changes detected
+2025-11-21T05:32:26.323312820Z [err]  
+2025-11-21T05:32:26.323323044Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:26.323331283Z [err]      triggerUncaughtException(
+2025-11-21T05:32:26.323337638Z [err]      ^
+2025-11-21T05:32:26.323344017Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:26.323350182Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:26.323357504Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:26.323364503Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:26.323370280Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:26.323376276Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703146204:2:3744)
+2025-11-21T05:32:26.323382149Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703146204:2:4243)
+2025-11-21T05:32:26.323388403Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703146204:2:4984)
+2025-11-21T05:32:26.323395858Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703146204:2:5361)
+2025-11-21T05:32:26.323401662Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:26.323408758Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:26.323414836Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:26.323420799Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:26.323426775Z [err]  }
+2025-11-21T05:32:26.323432979Z [err]  
+2025-11-21T05:32:26.323438839Z [err]  Node.js v22.21.1
+2025-11-21T05:32:27.690974597Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:32:28.576241139Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-11-21T05:32:28.576248091Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-11-21T05:32:28.576255545Z [inf]  Using 'pg' driver for database querying
+2025-11-21T05:32:29.625262785Z [inf]  [â£·] Pulling schema from database...
+2025-11-21T05:32:29.625270087Z [inf]  [2K[1G[â£¯] Pulling schema from database...
+2025-11-21T05:32:29.625276893Z [inf]  [2K[1G[â£Ÿ] Pulling schema from database...
+2025-11-21T05:32:29.625283407Z [inf]  [2K[1G[â¡¿] Pulling schema from database...
+2025-11-21T05:32:29.625292803Z [inf]  [2K[1G[â¢¿] Pulling schema from database...
+2025-11-21T05:32:29.625298895Z [inf]  [2K[1G[â£»] Pulling schema from database...
+2025-11-21T05:32:29.630002990Z [inf]  [2K[1G[â£½] Pulling schema from database...
+2025-11-21T05:32:29.755534437Z [inf]  [2K[1G[â£·] Pulling schema from database...
+2025-11-21T05:32:29.769080187Z [inf]  [2K[1G[âœ“] Pulling schema from database...
+2025-11-21T05:32:29.806255308Z [inf]  [i] No changes detected
+2025-11-21T05:32:30.733688648Z [err]  
+2025-11-21T05:32:30.733692711Z [err]  node:internal/modules/run_main:123
+2025-11-21T05:32:30.733697218Z [err]      triggerUncaughtException(
+2025-11-21T05:32:30.733701203Z [err]      ^
+2025-11-21T05:32:30.733705988Z [err]  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/seed-data.ts' imported from /app/
+2025-11-21T05:32:30.733710168Z [err]      at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-11-21T05:32:30.733714291Z [err]      at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-11-21T05:32:30.733719009Z [err]      at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-11-21T05:32:30.733725189Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:30.733730731Z [err]      at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703150067:2:3744)
+2025-11-21T05:32:30.733736187Z [err]      at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703150067:2:4243)
+2025-11-21T05:32:30.733741736Z [err]      at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703150067:2:4984)
+2025-11-21T05:32:30.733747114Z [err]      at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1763703150067:2:5361)
+2025-11-21T05:32:30.733754449Z [err]      at nextResolve (node:internal/modules/esm/hooks:748:28)
+2025-11-21T05:32:30.733760230Z [err]      at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+2025-11-21T05:32:30.733766950Z [err]    code: 'ERR_MODULE_NOT_FOUND',
+2025-11-21T05:32:30.733772858Z [err]    url: 'file:///app/scripts/seed-data.ts'
+2025-11-21T05:32:30.733779495Z [err]  }
+2025-11-21T05:32:30.733785782Z [err]  
+2025-11-21T05:32:30.733797822Z [err]  Node.js v22.21.1
+2025-11-21T05:34:04.000000000Z [inf]  Starting Container
+2025-11-21T05:34:04.058833161Z [err]  2025-11-21 05:34:00.466 UTC [27] LOG:  checkpoint starting: time
+2025-11-21T05:34:05.390953359Z [inf]  
+2025-11-21T05:34:05.390975343Z [inf]  5:34:05 AM [express] serving on port 8080
+2025-11-21T05:34:05.390981465Z [inf]  5:34:05 AM [express] Running investment status check...
+2025-11-21T05:34:05.390991066Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-21T05:34:05.390993203Z [inf]  5:34:05 AM [express] Investment status checker scheduled to run every 60 minutes
+2025-11-21T05:34:05.390996949Z [inf]  
+2025-11-21T05:34:05.391002763Z [inf]  > rest-express@1.0.0 start
+2025-11-21T05:34:05.391009004Z [inf]  > NODE_ENV=production node dist/index.js
+2025-11-21T05:34:05.439237530Z [err]  âŒ Critical error in investment status check: ErrorEvent {
+2025-11-21T05:34:05.439241802Z [err]      _bufferedAmount: 0,
+2025-11-21T05:34:05.439246579Z [err]    [Symbol(kTarget)]: WebSocket {
+2025-11-21T05:34:05.439252608Z [err]      _isServer: false,
+2025-11-21T05:34:05.439255450Z [err]      _events: [Object: null prototype] {
+2025-11-21T05:34:05.439260301Z [err]      _redirects: 0,
+2025-11-21T05:34:05.439264841Z [err]      _maxListeners: undefined,
+2025-11-21T05:34:05.439265409Z [err]        error: [Function],
+2025-11-21T05:34:05.439267179Z [err]      _autoPong: true,
+2025-11-21T05:34:05.439274571Z [err]      _url: 'wss://crossover.proxy.rlwy.net/v2',
+2025-11-21T05:34:05.439277032Z [err]        message: [Function],
+2025-11-21T05:34:05.439280770Z [err]      _binaryType: 'arraybuffer',
+2025-11-21T05:34:05.439287480Z [err]      _req: ClientRequest {
+2025-11-21T05:34:05.439288683Z [err]        close: [Function],
+2025-11-21T05:34:05.439294348Z [err]      _closeCode: 1006,
+2025-11-21T05:34:05.439300923Z [err]        open: [Function]
+2025-11-21T05:34:05.439307544Z [err]      _closeFrameReceived: false,
+2025-11-21T05:34:05.439312593Z [err]      },
+2025-11-21T05:34:05.439320755Z [err]      _closeFrameSent: false,
+2025-11-21T05:34:05.439324756Z [err]      _eventsCount: 4,
+2025-11-21T05:34:05.439331588Z [err]      _closeMessage: <Buffer >,
+2025-11-21T05:34:05.439339878Z [err]      _closeTimer: null,
+2025-11-21T05:34:05.439347194Z [err]      _errorEmitted: true,
+2025-11-21T05:34:05.439354813Z [err]      _extensions: {},
+2025-11-21T05:34:05.439363411Z [err]      _paused: false,
+2025-11-21T05:34:05.439373287Z [err]      _protocol: '',
+2025-11-21T05:34:05.439384293Z [err]      _readyState: 3,
+2025-11-21T05:34:05.439394048Z [err]      _receiver: null,
+2025-11-21T05:34:05.439406231Z [err]      _sender: null,
+2025-11-21T05:34:05.439414722Z [err]      _socket: null,
+2025-11-21T05:34:05.441808821Z [err]        _events: [Object: null prototype],
+2025-11-21T05:34:05.441817549Z [err]        _eventsCount: 4,
+2025-11-21T05:34:05.441822572Z [err]        _maxListeners: undefined,
+2025-11-21T05:34:05.441827925Z [err]        outputData: [],
+2025-11-21T05:34:05.441832924Z [err]        outputSize: 0,
+2025-11-21T05:34:05.441839332Z [err]        writable: true,
+2025-11-21T05:34:05.441844381Z [err]        destroyed: true,
+2025-11-21T05:34:05.441849273Z [err]        _last: true,
+2025-11-21T05:34:05.441854331Z [err]        chunkedEncoding: false,
+2025-11-21T05:34:05.441858735Z [err]        shouldKeepAlive: true,
+2025-11-21T05:34:05.441863508Z [err]        maxRequestsOnConnectionReached: false,
+2025-11-21T05:34:05.441893390Z [err]        _defaultKeepAlive: true,
+2025-11-21T05:34:05.441900128Z [err]        useChunkedEncodingByDefault: false,
+2025-11-21T05:34:05.441905799Z [err]        sendDate: false,
+2025-11-21T05:34:05.441911296Z [err]        _removedConnection: false,
+2025-11-21T05:34:05.441916471Z [err]        _removedContLen: false,
+2025-11-21T05:34:05.441921538Z [err]        _removedTE: false,
+2025-11-21T05:34:05.441927730Z [err]        strictContentLength: false,
+2025-11-21T05:34:05.441933551Z [err]        _contentLength: 0,
+2025-11-21T05:34:05.441939176Z [err]        _hasBody: true,
+2025-11-21T05:34:05.441943616Z [err]        _trailer: '',
+2025-11-21T05:34:05.441947545Z [err]        finished: true,
+2025-11-21T05:34:05.441952952Z [err]        _headerSent: true,
+2025-11-21T05:34:05.441957085Z [err]        _closed: true,
+2025-11-21T05:34:05.441961192Z [err]        _header: 'GET /v2 HTTP/1.1\r\n' +
+2025-11-21T05:34:05.441965315Z [err]          'Sec-WebSocket-Version: 13\r\n' +
+2025-11-21T05:34:05.441969732Z [err]          'Sec-WebSocket-Key: e2M0GPpe4vSCGlfQ/3l34g==\r\n' +
+2025-11-21T05:34:05.441973813Z [err]          'Connection: Upgrade\r\n' +
+2025-11-21T05:34:05.443842338Z [err]          'Upgrade: websocket\r\n' +
+2025-11-21T05:34:05.443853496Z [err]          'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' +
+2025-11-21T05:34:05.443861267Z [err]          'Host: crossover.proxy.rlwy.net\r\n' +
+2025-11-21T05:34:05.443868034Z [err]          '\r\n',
+2025-11-21T05:34:05.443874726Z [err]        _keepAliveTimeout: 0,
+2025-11-21T05:34:05.443881697Z [err]        _onPendingData: [Function: nop],
+2025-11-21T05:34:05.443887523Z [err]        agent: undefined,
+2025-11-21T05:34:05.443894100Z [err]        socketPath: undefined,
+2025-11-21T05:34:05.443900721Z [err]        method: 'GET',
+2025-11-21T05:34:05.443907582Z [err]        maxHeaderSize: undefined,
+2025-11-21T05:34:05.443913961Z [err]        insecureHTTPParser: undefined,
+2025-11-21T05:34:05.443920402Z [err]        joinDuplicateHeaders: undefined,
+2025-11-21T05:34:05.443927061Z [err]        path: '/v2',
+2025-11-21T05:34:05.443934159Z [err]        _ended: true,
+2025-11-21T05:34:05.443943569Z [err]        res: [IncomingMessage],
+2025-11-21T05:34:05.443950796Z [err]        aborted: true,
+2025-11-21T05:34:05.443957165Z [err]        timeoutCb: null,
+2025-11-21T05:34:05.443964173Z [err]        upgradeOrConnect: false,
+2025-11-21T05:34:05.443969327Z [err]        parser: null,
+2025-11-21T05:34:05.443974002Z [err]        maxHeadersCount: null,
+2025-11-21T05:34:05.443979502Z [err]        reusedSocket: false,
+2025-11-21T05:34:05.443984753Z [err]        host: 'crossover.proxy.rlwy.net',
+2025-11-21T05:34:05.443989246Z [err]        protocol: 'https:',
+2025-11-21T05:34:05.443995689Z [err]        [Symbol(shapeMode)]: false,
+2025-11-21T05:34:05.444000965Z [err]        [Symbol(kCapture)]: false,
+2025-11-21T05:34:05.444005164Z [err]        [Symbol(kBytesWritten)]: 0,
+2025-11-21T05:34:05.444009337Z [err]        [Symbol(kNeedDrain)]: false,
+2025-11-21T05:34:05.444018447Z [err]        [Symbol(corked)]: 0,
+2025-11-21T05:34:05.446293324Z [err]    },
+2025-11-21T05:34:05.446306760Z [err]    [Symbol(kType)]: 'error',
+2025-11-21T05:34:05.446307109Z [err]        [Symbol(kChunkedBuffer)]: [],
+2025-11-21T05:34:05.446314281Z [err]        [Symbol(kChunkedLength)]: 0,
+2025-11-21T05:34:05.446316086Z [err]    [Symbol(kError)]: Error: Unexpected server response: 502
+2025-11-21T05:34:05.446321027Z [err]        [Symbol(kSocket)]: [TLSSocket],
+2025-11-21T05:34:05.446324089Z [err]        at ClientRequest.<anonymous> (/app/node_modules/ws/lib/websocket.js:913:7)
+2025-11-21T05:34:05.446331620Z [err]        at ClientRequest.emit (node:events:519:28)
+2025-11-21T05:34:05.446333420Z [err]        [Symbol(kOutHeaders)]: [Object: null prototype],
+2025-11-21T05:34:05.446340675Z [err]        [Symbol(errored)]: null,
+2025-11-21T05:34:05.446341015Z [err]        at HTTPParser.parserOnIncomingClient (node:_http_client:772:27)
+2025-11-21T05:34:05.446347924Z [err]        [Symbol(kHighWaterMark)]: 65536,
+2025-11-21T05:34:05.446349774Z [err]        at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)
+2025-11-21T05:34:05.446354388Z [err]        [Symbol(kRejectNonStandardBodyWrites)]: false,
+2025-11-21T05:34:05.446358228Z [err]        at TLSSocket.socketOnData (node:_http_client:614:22)
+2025-11-21T05:34:05.446361040Z [err]        [Symbol(kUniqueHeaders)]: null,
+2025-11-21T05:34:05.446367133Z [err]        at TLSSocket.emit (node:events:519:28)
+2025-11-21T05:34:05.446369072Z [err]        [Symbol(kAborted)]: true,
+2025-11-21T05:34:05.446375502Z [err]        at addChunk (node:internal/streams/readable:561:12)
+2025-11-21T05:34:05.446376416Z [err]        [Symbol(kError)]: undefined
+2025-11-21T05:34:05.446383463Z [err]      },
+2025-11-21T05:34:05.446383684Z [err]        at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-11-21T05:34:05.446389578Z [err]      [Symbol(shapeMode)]: false,
+2025-11-21T05:34:05.446394943Z [err]      [Symbol(kCapture)]: false
+2025-11-21T05:34:05.447919505Z [err]        at Readable.push (node:internal/streams/readable:392:5)
+2025-11-21T05:34:05.447927309Z [err]        at TLSWrap.onStreamRead (node:internal/stream_base_commons:189:23),
+2025-11-21T05:34:05.447933290Z [err]    [Symbol(kMessage)]: 'Unexpected server response: 502'
+2025-11-21T05:34:05.447940045Z [err]  }
+2025-11-21T05:34:09.000000000Z [inf]  Stopping Container
+2025-11-21T05:34:12.294076735Z [err]  2025-11-21 05:34:12.291 UTC [27] LOG:  checkpoint complete: wrote 118 buffers (0.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=11.745 s, sync=0.046 s, total=11.826 s; sync files=134, longest=0.025 s, average=0.001 s; distance=745 kB, estimate=745 kB; lsn=0/1A138E0, redo lsn=0/1A13850
+2025-11-21T05:34:45.018912792Z [inf]  5:34:44 AM [express] GET /api/platforms 500 in 16ms :: {"error":"Failed to fetch platforms"}
+2025-11-21T05:34:45.018928905Z [inf]  5:34:44 AM [express] GET /api/settings 500 in 35ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:34:45.018935849Z [inf]  5:34:44 AM [express] GET /api/settings 500 in 43ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:34:45.018941610Z [inf]  5:34:44 AM [express] GET /api/platforms 500 in 33ms :: {"error":"Failed to fetch platforms"}
+2025-11-21T05:34:45.563335968Z [inf]  5:34:45 AM [express] GET /api/analytics 200 in 10ms
+2025-11-21T05:34:45.570735901Z [inf]  5:34:45 AM [express] GET /api/cashflows 500 in 20ms :: {"error":"Failed to fetch cashflows"}
+2025-11-21T05:34:45.572019354Z [inf]  5:34:45 AM [express] GET /api/settings 500 in 48ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:34:45.573841093Z [inf]  5:34:45 AM [express] POST /api/alerts/generate 500 in 27ms :: {"error":"Unexpected server response: â€¦
+2025-11-21T05:34:45.575844376Z [inf]  5:34:45 AM [express] GET /api/investments 500 in 22ms :: {"error":"Failed to fetch investments"}
+2025-11-21T05:34:45.588422477Z [inf]  5:34:45 AM [express] GET /api/cash/transactions 500 in 40ms :: {"error":"Failed to fetch cash transaâ€¦
+2025-11-21T05:34:45.588427122Z [inf]  5:34:45 AM [express] POST /api/investments/check-status 500 in 47ms :: {"error":"Unexpected server râ€¦
+2025-11-21T05:34:45.590280818Z [inf]  5:34:45 AM [express] GET /api/portfolio/stats 500 in 61ms :: {"error":"Failed to fetch portfolio staâ€¦
+2025-11-21T05:34:45.590285850Z [inf]  5:34:45 AM [express] GET /api/cash/balance 500 in 35ms :: {"error":"Failed to fetch cash balance"}
+2025-11-21T05:34:45.590290099Z [inf]  5:34:45 AM [express] GET /api/platforms 500 in 64ms :: {"error":"Failed to fetch platforms"}
+2025-11-21T05:34:45.884434164Z [inf]  5:34:45 AM [express] GET /api/cash/transactions 500 in 18ms :: {"error":"Failed to fetch cash transaâ€¦
+2025-11-21T05:34:45.888165281Z [inf]  5:34:45 AM [express] GET /api/settings 500 in 18ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:34:45.894343941Z [inf]  5:34:45 AM [express] GET /api/investments 500 in 33ms :: {"error":"Failed to fetch investments"}
+2025-11-21T05:34:45.912964129Z [inf]  5:34:45 AM [express] GET /api/saved-scenarios 500 in 22ms :: {"error":"Failed to fetch saved scenariâ€¦
+2025-11-21T05:34:48.922587193Z [err]        close: [Function],
+2025-11-21T05:34:48.922602104Z [err]        open: [Function]
+2025-11-21T05:34:48.922612578Z [err]      },
+2025-11-21T05:34:48.922622371Z [err]      _eventsCount: 4,
+2025-11-21T05:34:48.922630525Z [err]      _maxListeners: undefined,
+2025-11-21T05:34:48.922639116Z [err]      _binaryType: 'arraybuffer',
+2025-11-21T05:34:48.922646834Z [err]      _closeCode: 1006,
+2025-11-21T05:34:48.922655491Z [err]      _closeFrameReceived: false,
+2025-11-21T05:34:48.922661239Z [err]      _closeFrameSent: false,
+2025-11-21T05:34:48.922667457Z [err]      _closeMessage: <Buffer >,
+2025-11-21T05:34:48.922674867Z [err]      _closeTimer: null,
+2025-11-21T05:34:48.922677537Z [err]  Settings update error: ErrorEvent {
+2025-11-21T05:34:48.922684930Z [err]      _errorEmitted: true,
+2025-11-21T05:34:48.922688606Z [err]    [Symbol(kTarget)]: WebSocket {
+2025-11-21T05:34:48.922697784Z [err]      _events: [Object: null prototype] {
+2025-11-21T05:34:48.922699353Z [err]      _extensions: {},
+2025-11-21T05:34:48.922712001Z [err]        error: [Function],
+2025-11-21T05:34:48.922714738Z [err]      _paused: false,
+2025-11-21T05:34:48.922725387Z [err]        message: [Function],
+2025-11-21T05:34:48.922727993Z [err]      _protocol: '',
+2025-11-21T05:34:48.922734507Z [err]      _readyState: 3,
+2025-11-21T05:34:48.922740514Z [err]      _receiver: null,
+2025-11-21T05:34:48.922747349Z [err]      _sender: null,
+2025-11-21T05:34:48.922752955Z [err]      _socket: null,
+2025-11-21T05:34:48.922758744Z [err]      _bufferedAmount: 0,
+2025-11-21T05:34:48.922764136Z [err]      _isServer: false,
+2025-11-21T05:34:48.922772048Z [err]      _redirects: 0,
+2025-11-21T05:34:48.922778481Z [err]      _autoPong: true,
+2025-11-21T05:34:48.922791622Z [err]      _url: 'wss://crossover.proxy.rlwy.net/v2',
+2025-11-21T05:34:48.922801173Z [err]      _req: ClientRequest {
+2025-11-21T05:34:48.924482832Z [err]        _events: [Object: null prototype],
+2025-11-21T05:34:48.924488496Z [err]        chunkedEncoding: false,
+2025-11-21T05:34:48.924490732Z [err]        _eventsCount: 4,
+2025-11-21T05:34:48.924495310Z [err]        finished: true,
+2025-11-21T05:34:48.924498395Z [err]        _maxListeners: undefined,
+2025-11-21T05:34:48.924502231Z [err]        shouldKeepAlive: true,
+2025-11-21T05:34:48.924507586Z [err]        outputData: [],
+2025-11-21T05:34:48.924510476Z [err]        _headerSent: true,
+2025-11-21T05:34:48.924516485Z [err]        maxRequestsOnConnectionReached: false,
+2025-11-21T05:34:48.924518237Z [err]        outputSize: 0,
+2025-11-21T05:34:48.924520621Z [err]        _closed: true,
+2025-11-21T05:34:48.924529698Z [err]        _header: 'GET /v2 HTTP/1.1\r\n' +
+2025-11-21T05:34:48.924530616Z [err]        writable: true,
+2025-11-21T05:34:48.924532539Z [err]        _defaultKeepAlive: true,
+2025-11-21T05:34:48.924538793Z [err]        destroyed: true,
+2025-11-21T05:34:48.924541613Z [err]          'Sec-WebSocket-Version: 13\r\n' +
+2025-11-21T05:34:48.924546993Z [err]        useChunkedEncodingByDefault: false,
+2025-11-21T05:34:48.924549704Z [err]        _last: true,
+2025-11-21T05:34:48.924550464Z [err]          'Sec-WebSocket-Key: CQFvi1Xkxk6j9ErR4XVx7w==\r\n' +
+2025-11-21T05:34:48.924558709Z [err]          'Connection: Upgrade\r\n' +
+2025-11-21T05:34:48.924561465Z [err]        sendDate: false,
+2025-11-21T05:34:48.924568128Z [err]        _removedConnection: false,
+2025-11-21T05:34:48.924574117Z [err]        _removedContLen: false,
+2025-11-21T05:34:48.924580424Z [err]        _removedTE: false,
+2025-11-21T05:34:48.924587183Z [err]        strictContentLength: false,
+2025-11-21T05:34:48.924596654Z [err]        _contentLength: 0,
+2025-11-21T05:34:48.924605518Z [err]        _hasBody: true,
+2025-11-21T05:34:48.924617487Z [err]        _trailer: '',
+2025-11-21T05:34:48.925885917Z [err]          'Upgrade: websocket\r\n' +
+2025-11-21T05:34:48.925891590Z [err]          'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' +
+2025-11-21T05:34:48.925912888Z [err]          'Host: crossover.proxy.rlwy.net\r\n' +
+2025-11-21T05:34:48.925917712Z [err]          '\r\n',
+2025-11-21T05:34:48.925921927Z [err]        _keepAliveTimeout: 0,
+2025-11-21T05:34:48.925925858Z [err]        _onPendingData: [Function: nop],
+2025-11-21T05:34:48.925929869Z [err]        agent: undefined,
+2025-11-21T05:34:48.925933730Z [err]        socketPath: undefined,
+2025-11-21T05:34:48.925937696Z [err]        method: 'GET',
+2025-11-21T05:34:48.925941784Z [err]        maxHeaderSize: undefined,
+2025-11-21T05:34:48.925945608Z [err]        insecureHTTPParser: undefined,
+2025-11-21T05:34:48.925950231Z [err]        joinDuplicateHeaders: undefined,
+2025-11-21T05:34:48.925954152Z [err]        path: '/v2',
+2025-11-21T05:34:48.925958188Z [err]        _ended: true,
+2025-11-21T05:34:48.925965523Z [err]        res: [IncomingMessage],
+2025-11-21T05:34:48.925969660Z [err]        aborted: true,
+2025-11-21T05:34:48.925974513Z [err]        timeoutCb: null,
+2025-11-21T05:34:48.925979573Z [err]        upgradeOrConnect: false,
+2025-11-21T05:34:48.925983609Z [err]        parser: null,
+2025-11-21T05:34:48.925987482Z [err]        maxHeadersCount: null,
+2025-11-21T05:34:48.925991341Z [err]        reusedSocket: false,
+2025-11-21T05:34:48.925995315Z [err]        host: 'crossover.proxy.rlwy.net',
+2025-11-21T05:34:48.925999071Z [err]        protocol: 'https:',
+2025-11-21T05:34:48.926003045Z [err]        [Symbol(shapeMode)]: false,
+2025-11-21T05:34:48.926079412Z [err]        [Symbol(kCapture)]: false,
+2025-11-21T05:34:48.926088107Z [err]        [Symbol(kBytesWritten)]: 0,
+2025-11-21T05:34:48.926092122Z [err]        [Symbol(kNeedDrain)]: false,
+2025-11-21T05:34:48.926096065Z [err]        [Symbol(corked)]: 0,
+2025-11-21T05:34:48.927121671Z [err]    [Symbol(kType)]: 'error',
+2025-11-21T05:34:48.927133350Z [err]    [Symbol(kError)]: Error: Unexpected server response: 502
+2025-11-21T05:34:48.927140471Z [err]        [Symbol(kChunkedBuffer)]: [],
+2025-11-21T05:34:48.927143036Z [err]        at ClientRequest.<anonymous> (/app/node_modules/ws/lib/websocket.js:913:7)
+2025-11-21T05:34:48.927151659Z [err]        at ClientRequest.emit (node:events:519:28)
+2025-11-21T05:34:48.927154018Z [err]        [Symbol(kChunkedLength)]: 0,
+2025-11-21T05:34:48.927160585Z [err]        at HTTPParser.parserOnIncomingClient (node:_http_client:772:27)
+2025-11-21T05:34:48.927165599Z [err]        [Symbol(kSocket)]: [TLSSocket],
+2025-11-21T05:34:48.927170817Z [err]        at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)
+2025-11-21T05:34:48.927179983Z [err]        [Symbol(kOutHeaders)]: [Object: null prototype],
+2025-11-21T05:34:48.927180796Z [err]        at TLSSocket.socketOnData (node:_http_client:614:22)
+2025-11-21T05:34:48.927191437Z [err]        at TLSSocket.emit (node:events:519:28)
+2025-11-21T05:34:48.927192618Z [err]        [Symbol(errored)]: null,
+2025-11-21T05:34:48.927203672Z [err]        [Symbol(kHighWaterMark)]: 65536,
+2025-11-21T05:34:48.927203862Z [err]        at addChunk (node:internal/streams/readable:561:12)
+2025-11-21T05:34:48.927213341Z [err]        at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-11-21T05:34:48.927216739Z [err]        [Symbol(kRejectNonStandardBodyWrites)]: false,
+2025-11-21T05:34:48.927223263Z [err]        [Symbol(kUniqueHeaders)]: null,
+2025-11-21T05:34:48.927228555Z [err]        [Symbol(kAborted)]: true,
+2025-11-21T05:34:48.927233138Z [err]        [Symbol(kError)]: undefined
+2025-11-21T05:34:48.927237594Z [err]      },
+2025-11-21T05:34:48.927241988Z [err]      [Symbol(shapeMode)]: false,
+2025-11-21T05:34:48.927246130Z [err]      [Symbol(kCapture)]: false
+2025-11-21T05:34:48.927250138Z [err]    },
+2025-11-21T05:34:48.928117810Z [err]        at Readable.push (node:internal/streams/readable:392:5)
+2025-11-21T05:34:48.928122205Z [err]        at TLSWrap.onStreamRead (node:internal/stream_base_commons:189:23),
+2025-11-21T05:34:48.928127825Z [err]    [Symbol(kMessage)]: 'Unexpected server response: 502'
+2025-11-21T05:34:48.928131813Z [err]  }
+2025-11-21T05:34:48.928137244Z [inf]  5:34:48 AM [express] PUT /api/settings 400 in 20ms :: {"error":"Unexpected server response: 502"}
+2025-11-21T05:34:58.544237161Z [inf]  5:34:58 AM [express] GET /api/settings 500 in 11ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:34:58.544243374Z [inf]  5:34:58 AM [express] GET /api/cash/transactions 500 in 14ms :: {"error":"Failed to fetch cash transaâ€¦
+2025-11-21T05:34:58.544249138Z [inf]  5:34:58 AM [express] GET /api/cash/balance 500 in 18ms :: {"error":"Failed to fetch cash balance"}
+2025-11-21T05:34:58.544254923Z [inf]  5:34:58 AM [express] GET /api/portfolio/stats 500 in 54ms :: {"error":"Failed to fetch portfolio staâ€¦
+2025-11-21T05:34:58.544260830Z [inf]  5:34:58 AM [express] GET /api/cashflows 500 in 56ms :: {"error":"Failed to fetch cashflows"}
+2025-11-21T05:34:58.544266471Z [inf]  5:34:58 AM [express] GET /api/analytics 200 in 8ms
+2025-11-21T05:34:58.544271996Z [inf]  5:34:58 AM [express] GET /api/platforms 500 in 10ms :: {"error":"Failed to fetch platforms"}
+2025-11-21T05:34:58.544277982Z [inf]  5:34:58 AM [express] GET /api/investments 500 in 72ms :: {"error":"Failed to fetch investments"}
+2025-11-21T05:35:00.061491026Z [inf]  5:35:00 AM [express] GET /api/platforms 500 in 40ms :: {"error":"Failed to fetch platforms"}
+2025-11-21T05:35:00.068786847Z [inf]  5:35:00 AM [express] GET /api/cash/transactions 500 in 33ms :: {"error":"Failed to fetch cash transaâ€¦
+2025-11-21T05:35:00.068792292Z [inf]  5:35:00 AM [express] GET /api/settings 500 in 30ms :: {"error":"Failed to fetch settings"}
+2025-11-21T05:35:00.071805287Z [inf]  5:35:00 AM [express] GET /api/saved-scenarios 500 in 38ms :: {"error":"Failed to fetch saved scenariâ€¦
+2025-11-21T05:35:00.075837432Z [inf]  5:35:00 AM [express] GET /api/investments 500 in 50ms :: {"error":"Failed to fetch investments"}
