@@ -58,3 +58,11 @@ The application is a single-user personal tool built with a modern web stack, op
 ## External Dependencies
 - **Charting:** Recharts for data visualization.
 - **Database:** PostgreSQL (via Neon) with Drizzle ORM.
+
+## Deployment & Migration
+- **Railway Deployment:** Application deployed on Railway platform with GitHub repository at github.com/ahmaad277/A.Z-Finance-Hub.
+- **Database Migration System:** Automated migration scripts for seamless data transfer between environments:
+  - `scripts/export-data.ts`: Exports complete database snapshot (platforms, investments, cashflows, alerts, transactions, scenarios, snapshots, vision targets) to JSON format.
+  - `scripts/seed-data.ts`: Imports data from JSON snapshot to target database with conflict handling using `onConflictDoNothing()`.
+  - Migration respects foreign key constraints with ordered imports: Platforms → Settings → Investments → Cashflows → Custom Distributions → Alerts → Cash Transactions → Scenarios → Snapshots → History → Vision Targets.
+  - See `RAILWAY_MIGRATION.md` for detailed deployment instructions.
