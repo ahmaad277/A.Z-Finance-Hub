@@ -25,12 +25,17 @@ git push origin main
    npm run build
    ```
 
-3. **Start Command** (مؤقت - للمرة الأولى فقط):
+3. **Install Command** (مهم جداً - إضافة tsx):
+   ```
+   npm install && npm install -g tsx
+   ```
+
+4. **Start Command** (مؤقت - للمرة الأولى فقط):
    ```
    npx drizzle-kit push && tsx scripts/seed-data.ts && npm run start
    ```
 
-4. اضغط **Deploy** من Railway Dashboard
+5. اضغط **Deploy** من Railway Dashboard
 
 ---
 
@@ -63,6 +68,11 @@ npm run start
 
 إذا كنت تريد تبسيط أكثر، استخدم هذا الأمر الواحد فقط:
 
+**Install Command:**
+```bash
+npm install && npm install -g tsx
+```
+
 **Start Command (للمرة الأولى):**
 ```bash
 npx drizzle-kit push --force && tsx scripts/seed-data.ts && npm run start
@@ -72,6 +82,12 @@ npx drizzle-kit push --force && tsx scripts/seed-data.ts && npm run start
 ```bash
 npm run start
 ```
+
+**ملاحظة:** إذا استمر الخطأ `Cannot find module 'tsx'`، جرب:
+```bash
+node --loader tsx scripts/seed-data.ts
+```
+أو بدلاً من ذلك، أضف `tsx` إلى dependencies في package.json
 
 ---
 
@@ -98,8 +114,40 @@ npm run start
 
 ---
 
-## ⚠️ ملاحظات
+## ⚠️ ملاحظات مهمة
 
-- تأكد من وجود `DATABASE_URL` في Railway Variables
-- تأكد من وجود `NODE_ENV=production`
+### 🔌 DATABASE_URL Configuration
+- **مهم جداً**: استخدم **Pooled Connection String** في Railway
+- في Neon Dashboard → Connection Details → اختر **Pooled connection**
+- الرابط يجب أن يحتوي على `-pooler` في الاسم:
+  ```
+  postgresql://user:pass@ep-xxx-pooler.neon.tech/dbname
+  ```
+  بدلاً من:
+  ```
+  postgresql://user:pass@ep-xxx.neon.tech/dbname
+  ```
+
+### 📦 Environment Variables على Railway
+- `DATABASE_URL` ← Pooled connection string من Neon
+- `NODE_ENV=production`
+- تأكد من عدم وجود `PORT` variable (Railway يضبطه تلقائياً)
+
+### 🐛 حل مشاكل WebSocket Error 502
+إذا ظهر الخطأ:
+```
+Error: Unexpected server response: 502
+wss://crossover.proxy.rlwy.net/v2
+```
+
+**الحل:**
+1. استخدم **Pooled connection string** (كما بالأعلى)
+2. أضف timeout parameters للرابط:
+   ```
+   ?connect_timeout=30&pool_timeout=30
+   ```
+3. إذا استمر الخطأ، تحقق من Neon compute status (قد يكون في cold start)
+
+### 💾 Migration Scripts
 - Script seed يستخدم `onConflictDoNothing()` لتجنب Duplicate Errors
+- آمن لتشغيله عدة مرات بدون مشاكل
