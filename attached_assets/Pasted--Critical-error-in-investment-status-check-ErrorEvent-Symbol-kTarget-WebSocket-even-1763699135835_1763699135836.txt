@@ -1,0 +1,113 @@
+❌ Critical error in investment status check: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://crossover.proxy.rlwy.net/v2',
+    _req: ClientRequest {
+      _events: [Object: null prototype],
+      _eventsCount: 4,
+      _maxListeners: undefined,
+      outputData: [],
+      outputSize: 0,
+      writable: true,
+      destroyed: true,
+      _last: true,
+      chunkedEncoding: false,
+      shouldKeepAlive: true,
+      maxRequestsOnConnectionReached: false,
+      _defaultKeepAlive: true,
+      useChunkedEncodingByDefault: false,
+      sendDate: false,
+      _removedConnection: false,
+      _removedContLen: false,
+      _removedTE: false,
+      strictContentLength: false,
+      _contentLength: 0,
+      _hasBody: true,
+      _trailer: '',
+      finished: true,
+      _headerSent: true,
+      _closed: true,
+      protocol: 'https:',
+      aborted: true,
+      _header: 'GET /v2 HTTP/1.1\r\n' +
+      timeoutCb: null,
+        'Sec-WebSocket-Version: 13\r\n' +
+      parser: null,
+      upgradeOrConnect: false,
+      maxHeadersCount: null,
+        'Sec-WebSocket-Key: /8yT+UyMV1jwSWLHD0+c3g==\r\n' +
+      reusedSocket: false,
+        'Connection: Upgrade\r\n' +
+      host: 'crossover.proxy.rlwy.net',
+        'Upgrade: websocket\r\n' +
+        'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' +
+      res: [IncomingMessage],
+        'Host: crossover.proxy.rlwy.net\r\n' +
+        '\r\n',
+      _keepAliveTimeout: 0,
+      _onPendingData: [Function: nop],
+      agent: undefined,
+      socketPath: undefined,
+      method: 'GET',
+      maxHeaderSize: undefined,
+      insecureHTTPParser: undefined,
+      joinDuplicateHeaders: undefined,
+      path: '/v2',
+      _ended: true,
+  [Symbol(kType)]: 'error',
+      [Symbol(kChunkedLength)]: 0,
+  [Symbol(kError)]: Error: Unexpected server response: 502
+      [Symbol(kSocket)]: [TLSSocket],
+      at ClientRequest.<anonymous> (/app/node_modules/ws/lib/websocket.js:913:7)
+      [Symbol(kOutHeaders)]: [Object: null prototype],
+      at ClientRequest.emit (node:events:519:28)
+      [Symbol(errored)]: null,
+      [Symbol(shapeMode)]: false,
+      at HTTPParser.parserOnIncomingClient (node:_http_client:772:27)
+      [Symbol(kHighWaterMark)]: 65536,
+      [Symbol(kCapture)]: false,
+      at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(kRejectNonStandardBodyWrites)]: false,
+      [Symbol(kUniqueHeaders)]: null,
+      [Symbol(kNeedDrain)]: false,
+      [Symbol(kAborted)]: true,
+      [Symbol(corked)]: 0,
+      [Symbol(kChunkedBuffer)]: [],
+      [Symbol(kError)]: undefined
+    },
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+      at TLSSocket.socketOnData (node:_http_client:614:22)
+      at TLSSocket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TLSWrap.onStreamRead (node:internal/stream_base_commons:189:23),
+  [Symbol(kMessage)]: 'Unexpected server response: 502'

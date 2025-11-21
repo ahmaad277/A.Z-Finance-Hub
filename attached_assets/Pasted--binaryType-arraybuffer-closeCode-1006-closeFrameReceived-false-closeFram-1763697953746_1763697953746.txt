@@ -1,0 +1,110 @@
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://crossover.proxy.rlwy.net/v2',
+    _req: ClientRequest {
+      _events: [Object: null prototype],
+      _eventsCount: 4,
+      _maxListeners: undefined,
+      outputData: [],
+      outputSize: 0,
+      writable: true,
+      destroyed: true,
+      _last: true,
+      chunkedEncoding: false,
+      shouldKeepAlive: true,
+      maxRequestsOnConnectionReached: false,
+      _defaultKeepAlive: true,
+      useChunkedEncodingByDefault: false,
+      sendDate: false,
+      _removedConnection: false,
+      _removedContLen: false,
+      _removedTE: false,
+      strictContentLength: false,
+      _contentLength: 0,
+      _hasBody: true,
+      _trailer: '',
+      finished: true,
+      _headerSent: true,
+      _closed: true,
+      _header: 'GET /v2 HTTP/1.1\r\n' +
+      insecureHTTPParser: undefined,
+      joinDuplicateHeaders: undefined,
+      path: '/v2',
+      _ended: true,
+      res: [IncomingMessage],
+        'Sec-WebSocket-Version: 13\r\n' +
+      aborted: true,
+      timeoutCb: null,
+        'Sec-WebSocket-Key: pa5MwQu+wF+OM6khZGcclw==\r\n' +
+        'Connection: Upgrade\r\n' +
+      upgradeOrConnect: false,
+        'Upgrade: websocket\r\n' +
+        'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n' +
+      parser: null,
+        'Host: crossover.proxy.rlwy.net\r\n' +
+      maxHeadersCount: null,
+        '\r\n',
+      reusedSocket: false,
+      _keepAliveTimeout: 0,
+      host: 'crossover.proxy.rlwy.net',
+      _onPendingData: [Function: nop],
+      protocol: 'https:',
+      agent: undefined,
+      [Symbol(shapeMode)]: false,
+      socketPath: undefined,
+      method: 'GET',
+      maxHeaderSize: undefined,
+      [Symbol(kCapture)]: false,
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(kNeedDrain)]: false,
+      [Symbol(corked)]: 0,
+      [Symbol(kChunkedBuffer)]: [],
+      [Symbol(kChunkedLength)]: 0,
+      [Symbol(kSocket)]: [TLSSocket],
+      [Symbol(kOutHeaders)]: [Object: null prototype],
+      [Symbol(errored)]: null,
+      [Symbol(kHighWaterMark)]: 65536,
+      [Symbol(kRejectNonStandardBodyWrites)]: false,
+      [Symbol(kUniqueHeaders)]: null,
+      [Symbol(kAborted)]: true,
+      [Symbol(kError)]: undefined
+    },
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: Unexpected server response: 502
+      at ClientRequest.<anonymous> (/app/node_modules/ws/lib/websocket.js:913:7)
+      at ClientRequest.emit (node:events:519:28)
+      at HTTPParser.parserOnIncomingClient (node:_http_client:772:27)
+      at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)
+      at TLSSocket.socketOnData (node:_http_client:614:22)
+      at TLSSocket.emit (node:events:519:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TLSWrap.onStreamRead (node:internal/stream_base_commons:189:23),
+  [Symbol(kMessage)]: 'Unexpected server response: 502'
+}
+4:02:53 AM [express] PUT /api/settings 400 in 10ms :: {"error":"Unexpected server response: 502"}
+4:02:56 AM [express] GET /api/cashflows 500 in 13ms :: {"error":"Failed to fetch cashflows"}
+4:02:56 AM [express] GET /api/platforms 500 in 17ms :: {"error":"Failed to fetch platforms"}
+4:02:56 AM [express] GET /api/investments 500 in 20ms :: {"error":"Failed to fetch investments"}
+4:02:56 AM [express] GET /api/platforms 500 in 13ms :: {"error":"Failed to fetch platforms"}
+4:02:56 AM [express] GET /api/cash/balance 500 in 29ms :: {"error":"Failed to fetch cash balance"}
