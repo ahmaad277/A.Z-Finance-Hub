@@ -32,7 +32,7 @@ const DataEntry = lazy(() => import("@/pages/data-entry"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // App version - increment to force cache clear
-const APP_VERSION = "5";
+const APP_VERSION = "6";
 const VERSION_KEY = "azfinance-app-version";
 
 function LoadingFallback() {
