@@ -1,10 +1,10 @@
 # 🚀 Railway Database Migration Guide
 
-## الخطوات المطلوبة لنقل البيانات من Replit إلى Railway
+## 📱 تعليمات بسيطة للمستخدم على iPhone
 
-### الخطوة 1️⃣: Push Scripts إلى GitHub
+### الخطوة 1️⃣: Push إلى GitHub
 
-في Replit Terminal:
+في Replit Shell (من iPhone Safari Desktop Mode):
 
 ```bash
 git add scripts/ RAILWAY_MIGRATION.md
@@ -14,52 +14,62 @@ git push origin main
 
 ---
 
-### الخطوة 2️⃣: إنشاء جداول قاعدة البيانات على Railway
+### الخطوة 2️⃣: تحديث Railway Deploy Settings
 
-في Railway Dashboard:
+افتح Railway Dashboard من iPhone:
 
-1. افتح **A.Z-Finance-Hub** → **Settings** → **Deploy**
-2. أضف **Build Command**:
+1. اذهب إلى: **A.Z-Finance-Hub** → **Settings** → **Deploy**
+
+2. **Build Command** (إذا لم يكن موجود):
    ```
    npm run build
    ```
-3. أضف **Start Command**:
+
+3. **Start Command** (مؤقت - للمرة الأولى فقط):
    ```
-   npm run db:push && npm run start
+   npx drizzle-kit push && tsx scripts/seed-data.ts && npm run start
    ```
 
-أو باستخدام Railway CLI (إذا كان متاحاً):
+4. اضغط **Deploy** من Railway Dashboard
 
-```bash
-railway link
-railway run npx drizzle-kit push
+---
+
+### الخطوة 3️⃣: مراقبة Deploy Logs
+
+انتظر حتى ترى في Logs:
+
+```
+✅ Data imported successfully!
+   - Platforms: 7
+   - Investments: 2
+   - Cashflows: 15
+   ...
 ```
 
 ---
 
-### الخطوة 3️⃣: Import البيانات إلى Railway
+### الخطوة 4️⃣: إعادة Start Command للوضع العادي
 
-بعد نجاح db:push، شغّل seed script:
-
-**باستخدام Railway CLI:**
-```bash
-railway run tsx scripts/seed-data.ts
+بعد نجاح Deploy الأول، أعد Start Command إلى:
+```
+npm run start
 ```
 
-**أو من Railway Dashboard:**
-1. اذهب إلى **Settings** → **Deploy**
-2. أضف **Post-deploy Command**:
-   ```
-   tsx scripts/seed-data.ts
-   ```
-3. Deploy مرة واحدة فقط، ثم احذف Post-deploy Command
+ثم **Redeploy** مرة أخرى.
 
 ---
 
-### الخطوة 4️⃣: إعادة Start Command إلى الوضع العادي
+## ✨ الطريقة الأسهل (ONE-COMMAND)
 
-بعد نجاح Import، أعد Start Command إلى:
+إذا كنت تريد تبسيط أكثر، استخدم هذا الأمر الواحد فقط:
+
+**Start Command (للمرة الأولى):**
+```bash
+npx drizzle-kit push --force && tsx scripts/seed-data.ts && npm run start
 ```
+
+بعد Deploy الأول بنجاح، أعده إلى:
+```bash
 npm run start
 ```
 
