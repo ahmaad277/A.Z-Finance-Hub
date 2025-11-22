@@ -35,6 +35,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Code Quality:** Clean codebase, organized imports, and production-ready error handling.
 - **Progressive Web App (PWA):** Full PWA support with versioned service worker (v1.0.1) for intelligent caching (static, runtime, network-only for APIs) and offline navigation. Includes PWA manifest with branded icons and theme color integration.
 - **Number Formatting:** Unified `Intl.NumberFormat('en-US')` for consistent English digit display across all numeric values.
+- **Automatic Arabic-to-English Number Conversion:** Global input handler in base Input component that automatically converts Arabic numerals (٠-٩) to English (0-9) in real-time during typing via `onBeforeInput` event. Applied to all text inputs (excluding date, email, password fields) for consistent data entry experience.
 - **Mobile Swipe Gesture Navigation:** Custom `useSwipeGesture` hook for touch-based sidebar navigation on mobile devices.
 - **Design System Unification:** Standardized reusable primitives, spacing, typography, and component design across the application.
 - **Mobile Chart Optimization:** Universal edge-to-edge chart pattern for optimal mobile viewing.
@@ -67,13 +68,16 @@ The application is a single-user personal tool built with a modern web stack, op
 **New Features:**
 - Real-time data synchronization: Implemented 60-second automatic polling for critical queries (dashboard, investments, cashflows, data-entry) to keep data synchronized across devices
 - Comprehensive changelog page: Added `/changelog` route with version history display, bilingual support, and integration into sidebar navigation
+- Automatic Arabic-to-English number conversion: All input fields now automatically convert Arabic numerals (٠-٩) to English (0-9) during typing for consistent data entry
 
 **Improvements:**
 - Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
 - Reverted to permanent RTL layout: Application now maintains right-to-left layout regardless of language selection for optimal right-hand mobile usage (language selection only affects text translations)
+- Unified numeric field handling: Face Value field now uses `useNormalizedNumberField` hook for consistent behavior with other financial input fields
 
 **Bug Fixes:**
 - Fixed iOS keyboard not showing decimal separator for financial input fields
+- Fixed controlled/uncontrolled input warnings in numeric fields
 
 ### v1.0.0 (Initial Release)
 Complete Sharia-compliant investment management platform with Sukuk tracking, Vision 2040 calculator, bilingual support, PWA capabilities, and comprehensive financial reporting.
