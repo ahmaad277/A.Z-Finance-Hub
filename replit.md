@@ -35,7 +35,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Code Quality:** Clean codebase, organized imports, and production-ready error handling.
 - **Progressive Web App (PWA):** Full PWA support with versioned service worker (v1.0.1) for intelligent caching (static, runtime, network-only for APIs) and offline navigation. Includes PWA manifest with branded icons and theme color integration.
 - **Number Formatting:** Unified `Intl.NumberFormat('en-US')` for consistent English digit display across all numeric values.
-- **Automatic Arabic-to-English Number Conversion:** Global input handler in base Input component that automatically converts Arabic numerals (٠-٩) to English (0-9) in real-time during typing via `onBeforeInput` event. Applied to all text inputs (excluding date, email, password fields) for consistent data entry experience.
+- **Automatic Arabic-to-English Number Conversion:** Global normalization system in base Input component that automatically converts Arabic numerals (٠-٩٫،) to English (0-9..) via `onChange` handler. Normalization occurs before React Hook Form validation, preserving controlled component flow. Applied to all text inputs (excluding date, email, password fields) for typing, paste, and autocomplete. ArabicNumberInput wrapper provides numeric parsing for financial fields (Face Value, Expected IRR, Total Expected Profit).
 - **Mobile Swipe Gesture Navigation:** Custom `useSwipeGesture` hook for touch-based sidebar navigation on mobile devices.
 - **Design System Unification:** Standardized reusable primitives, spacing, typography, and component design across the application.
 - **Mobile Chart Optimization:** Universal edge-to-edge chart pattern for optimal mobile viewing.
@@ -74,15 +74,15 @@ The application is a single-user personal tool built with a modern web stack, op
 - Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
 - Reverted to permanent RTL layout: Application now maintains right-to-left layout regardless of language selection for optimal right-hand mobile usage (language selection only affects text translations)
 - Arabic decimal separator conversion: Enhanced conversion system to handle both Arabic decimal separator (٫) and Arabic comma (،), automatically converting them to English period (.)
-- Numeric field architecture refactor: Replaced `useNormalizedNumberField` with new `useNumericFieldController` hook implementing single-source-of-truth pattern with immediate RHF synchronization on every keystroke, preventing data loss during validation, reset, or rapid submission
-- Face Value 5K+ button: Properly reads from RHF field.value and updates both form state and display value through unified controller
+- Numeric field architecture refactor: Implemented onChange-based normalization in base Input component, eliminating manual DOM manipulation and preserving React's controlled component flow. Created ArabicNumberInput thin wrapper for numeric parsing and RHF integration
+- Face Value +5K button: Correctly increments from current numeric value stored in RHF (e.g., 10000 + 5000 = 15000) after Arabic numeral conversion
 
 **Bug Fixes:**
 - Fixed iOS keyboard not showing decimal separator for financial input fields
-- Fixed data disappearing in Add Investment dialog: Eliminated dual-state synchronization issues in Face Value, Expected IRR, and Total Expected Profit fields
-- Fixed 5K+ button behavior: Button now correctly increments current value by 5000 with stable state management
-- Fixed controlled/uncontrolled input warnings in numeric fields
-- Fixed immediate submission without blur now correctly captures numeric field values
+- Fixed Arabic numeral input causing character duplication: Moved normalization from onBeforeInput (manual DOM mutation) to onChange (React-compatible) to eliminate race conditions
+- Fixed +5K button reading stale values: onChange normalization ensures RHF receives numeric values immediately, enabling correct increments (10000→15000, not 0→5000)
+- Fixed NaN validation errors: Proper float parsing in ArabicNumberInput ensures numeric field values are always finite or undefined
+- Fixed paste/autocomplete bypassing conversion: onChange handler normalizes all input methods uniformly
 
 ### v1.0.0 (Initial Release)
 Complete Sharia-compliant investment management platform with Sukuk tracking, Vision 2040 calculator, bilingual support, PWA capabilities, and comprehensive financial reporting.

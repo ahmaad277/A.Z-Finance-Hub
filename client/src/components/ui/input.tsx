@@ -43,37 +43,26 @@ export function useNormalizedNumberField(
 }
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, onChange, onBeforeInput, inputMode, ...props }, ref) => {
+  ({ className, type, onChange, inputMode, ...props }, ref) => {
     const isNumericInput = type === "number";
     const effectiveType = isNumericInput ? "text" : type;
     const effectiveInputMode = isNumericInput ? "numeric" : inputMode;
 
-    const handleBeforeInput = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-      // Apply Arabic to English number conversion to all text inputs
-      const inputEvent = e.nativeEvent as InputEvent;
-      if (inputEvent.data && type !== "date" && type !== "email" && type !== "password") {
-        const normalized = normalizeNumberInput(inputEvent.data);
-        if (normalized !== inputEvent.data) {
-          e.preventDefault();
-          const input = e.target as HTMLInputElement;
-          const start = input.selectionStart ?? 0;
-          const end = input.selectionEnd ?? 0;
-          const before = input.value.substring(0, start);
-          const after = input.value.substring(end);
-          const newValue = before + normalized + after;
-          
-          input.value = newValue;
-          const newCursorPos = start + normalized.length;
-          input.setSelectionRange(newCursorPos, newCursorPos);
-          input.dispatchEvent(new Event('input', { bubbles: true }));
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      // Normalize Arabic numerals to English inside onChange (for typing, paste, autocomplete)
+      if (type !== "date" && type !== "email" && type !== "password") {
+        const originalValue = e.currentTarget.value;
+        const normalized = normalizeNumberInput(originalValue);
+        
+        if (normalized !== originalValue) {
+          // Update the input value to the normalized version
+          e.currentTarget.value = normalized;
         }
       }
-      onBeforeInput?.(e);
-    }, [type, onBeforeInput]);
-
-    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      
+      // Call upstream onChange with normalized value
       onChange?.(e);
-    }, [onChange]);
+    }, [type, onChange]);
 
     return (
       <input
@@ -84,7 +73,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
-        onBeforeInput={handleBeforeInput}
         onChange={handleChange}
         {...props}
       />

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { ArabicNumberInput } from "@/components/ui/arabic-number-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,6 @@ import {
   calculateDurationMonths, 
   calculateEndDate 
 } from "@shared/profit-calculator";
-import { normalizeNumberInput } from "@/lib/utils";
 
 const formSchema = insertInvestmentSchema.extend({
   platformId: z.string().min(1, "Platform is required"),
@@ -70,25 +70,6 @@ interface InvestmentDialogProps {
   dataEntryToken?: string | null;
 }
 
-// Helper to parse normalized numeric input
-function parseNormalizedNumber(rawValue: string): { 
-  raw: string; 
-  normalized: string; 
-  value: number | undefined; 
-  isValid: boolean;
-} {
-  const normalized = normalizeNumberInput(rawValue);
-  const parsed = parseFloat(normalized);
-  const isValid = !isNaN(parsed) && isFinite(parsed);
-  
-  return {
-    raw: rawValue,
-    normalized,
-    value: isValid ? parsed : undefined,
-    isValid,
-  };
-}
-
 export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToken }: InvestmentDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -109,16 +90,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const [durationMonthsInput, setDurationMonthsInput] = useState<number>(0);
   const isResettingRef = useRef(false);
   const [customCashflows, setCustomCashflows] = useState<CustomCashflow[]>([]);
-  
-  // Local state for numeric field display values
-  const [faceValueDisplay, setFaceValueDisplay] = useState<string>("");
-  const [expectedIrrDisplay, setExpectedIrrDisplay] = useState<string>("");
-  const [totalExpectedProfitDisplay, setTotalExpectedProfitDisplay] = useState<string>("");
-  
-  // Track last valid parsed values (for +5K and preventing 0-wipe)
-  const lastValidFaceValue = useRef<number>(0);
-  const lastValidIrr = useRef<number>(0);
-  const lastValidProfit = useRef<number>(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -174,16 +145,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
         isReinvestment: investment.isReinvestment,
       });
       
-      // Sync display values
-      setFaceValueDisplay(String(faceValue));
-      setExpectedIrrDisplay(String(irr));
-      setTotalExpectedProfitDisplay(String(totalProfit));
-      
-      // Update last valid refs
-      lastValidFaceValue.current = faceValue;
-      lastValidIrr.current = irr;
-      lastValidProfit.current = totalProfit;
-      
       setUserEditedProfit(true);
     } else {
       form.reset({
@@ -203,14 +164,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
         isReinvestment: 0,
       });
       setDurationMonthsInput(0);
-      
-      // Clear display values and last valid refs
-      setFaceValueDisplay("");
-      setExpectedIrrDisplay("");
-      setTotalExpectedProfitDisplay("");
-      lastValidFaceValue.current = 0;
-      lastValidIrr.current = 0;
-      lastValidProfit.current = 0;
     }
     
     setTimeout(() => {
@@ -429,8 +382,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const handleCalculateProfit = () => {
     if (autoCalculatedProfit > 0) {
       form.setValue("totalExpectedProfit", autoCalculatedProfit);
-      setTotalExpectedProfitDisplay(String(autoCalculatedProfit));
-      lastValidProfit.current = autoCalculatedProfit;
       setUserEditedProfit(false);
       toast({
         title: language === 'ar' ? 'تم الحساب' : 'Calculated',
@@ -601,49 +552,16 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                     </FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Input 
-                          type="text" 
-                          inputMode="decimal"
-                          placeholder="100000" 
-                          value={faceValueDisplay}
-                          onChange={(e) => {
-                            const rawValue = e.target.value;
-                            setFaceValueDisplay(rawValue);
-                            
-                            // Parse and update RHF only if valid
-                            const parsed = normalizeNumberInput(rawValue);
-                            if (parsed > 0) {
-                              field.onChange(parsed);
-                              lastValidFaceValue.current = parsed;
-                            } else if (rawValue.trim() === "") {
-                              // Clear if empty
-                              field.onChange(undefined);
-                            }
-                            // Skip RHF update for invalid input (allows Arabic typing)
+                        <ArabicNumberInput
+                          placeholder="100000"
+                          value={field.value ?? ''}
+                          onValueChange={(values) => {
+                            // Update RHF with numeric value
+                            field.onChange(values.floatValue ?? undefined);
                           }}
-                          onBlur={() => {
-                            // Reformat if we have a valid number
-                            const parsed = normalizeNumberInput(faceValueDisplay);
-                            if (parsed > 0) {
-                              field.onChange(parsed);
-                              lastValidFaceValue.current = parsed;
-                              setFaceValueDisplay(String(parsed));
-                            } else if (faceValueDisplay.trim() === "") {
-                              // Clear if empty
-                              field.onChange(undefined);
-                              setFaceValueDisplay("");
-                            } else {
-                              // Invalid input: revert to last valid or undefined
-                              if (lastValidFaceValue.current > 0) {
-                                field.onChange(lastValidFaceValue.current);
-                                setFaceValueDisplay(String(lastValidFaceValue.current));
-                              } else {
-                                field.onChange(undefined);
-                                setFaceValueDisplay("");
-                              }
-                            }
-                          }}
-                          data-testid="input-face-value" 
+                          thousandSeparator={false}
+                          decimalScale={2}
+                          data-testid="input-face-value"
                         />
                       </FormControl>
                       <Button
@@ -652,15 +570,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         size="icon"
                         onClick={(e) => {
                           e.preventDefault();
-                          
-                          // Use last valid value (prevents data loss during partial edits)
-                          const currentValue = lastValidFaceValue.current || 0;
+                          const currentValue = field.value || 0;
                           const newValue = currentValue + 5000;
-                          
-                          // Update RHF, display, and last valid
                           field.onChange(newValue);
-                          setFaceValueDisplay(String(newValue));
-                          lastValidFaceValue.current = newValue;
                         }}
                         data-testid="button-add-5000"
                       >
@@ -682,49 +594,15 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                   <FormItem>
                     <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="text" 
-                        inputMode="decimal"
-                        placeholder="12.5" 
-                        value={expectedIrrDisplay}
-                        onChange={(e) => {
-                          const rawValue = e.target.value;
-                          setExpectedIrrDisplay(rawValue);
-                          
-                          // Parse and update RHF only if valid
-                          const parsed = normalizeNumberInput(rawValue);
-                          if (parsed > 0) {
-                            field.onChange(parsed);
-                            lastValidIrr.current = parsed;
-                          } else if (rawValue.trim() === "") {
-                            // Clear if empty
-                            field.onChange(undefined);
-                          }
-                          // Skip RHF update for invalid input (allows Arabic typing)
+                      <ArabicNumberInput
+                        placeholder="12.5"
+                        value={field.value ?? ''}
+                        onValueChange={(values) => {
+                          field.onChange(values.floatValue ?? undefined);
                         }}
-                        onBlur={() => {
-                          // Reformat if we have a valid number
-                          const parsed = normalizeNumberInput(expectedIrrDisplay);
-                          if (parsed > 0) {
-                            field.onChange(parsed);
-                            lastValidIrr.current = parsed;
-                            setExpectedIrrDisplay(String(parsed));
-                          } else if (expectedIrrDisplay.trim() === "") {
-                            // Clear if empty
-                            field.onChange(undefined);
-                            setExpectedIrrDisplay("");
-                          } else {
-                            // Invalid input: revert to last valid or undefined
-                            if (lastValidIrr.current > 0) {
-                              field.onChange(lastValidIrr.current);
-                              setExpectedIrrDisplay(String(lastValidIrr.current));
-                            } else {
-                              field.onChange(undefined);
-                              setExpectedIrrDisplay("");
-                            }
-                          }
-                        }}
-                        data-testid="input-irr" 
+                        thousandSeparator={false}
+                        decimalScale={2}
+                        data-testid="input-irr"
                       />
                     </FormControl>
                     <FormMessage />
@@ -850,53 +728,18 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                     </FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Input 
-                          type="text" 
-                          inputMode="decimal"
-                          placeholder="12500" 
-                          value={totalExpectedProfitDisplay}
-                          onChange={(e) => {
-                            const rawValue = e.target.value;
-                            setTotalExpectedProfitDisplay(rawValue);
-                            
-                            // Parse and update RHF only if valid
-                            const parsed = normalizeNumberInput(rawValue);
-                            if (parsed > 0) {
-                              field.onChange(parsed);
-                              lastValidProfit.current = parsed;
-                            } else if (rawValue.trim() === "") {
-                              // Clear if empty
-                              field.onChange(undefined);
-                            }
-                            // Skip RHF update for invalid input (allows Arabic typing)
-                            
+                        <ArabicNumberInput
+                          placeholder="12500"
+                          value={field.value ?? ''}
+                          onValueChange={(values) => {
+                            field.onChange(values.floatValue ?? undefined);
                             if (!isResettingRef.current) {
                               setUserEditedProfit(true);
                             }
                           }}
-                          onBlur={() => {
-                            // Reformat if we have a valid number
-                            const parsed = normalizeNumberInput(totalExpectedProfitDisplay);
-                            if (parsed > 0) {
-                              field.onChange(parsed);
-                              lastValidProfit.current = parsed;
-                              setTotalExpectedProfitDisplay(String(parsed));
-                            } else if (totalExpectedProfitDisplay.trim() === "") {
-                              // Clear if empty
-                              field.onChange(undefined);
-                              setTotalExpectedProfitDisplay("");
-                            } else {
-                              // Invalid input: revert to last valid or undefined
-                              if (lastValidProfit.current > 0) {
-                                field.onChange(lastValidProfit.current);
-                                setTotalExpectedProfitDisplay(String(lastValidProfit.current));
-                              } else {
-                                field.onChange(undefined);
-                                setTotalExpectedProfitDisplay("");
-                              }
-                            }
-                          }}
-                          data-testid="input-total-expected-profit" 
+                          thousandSeparator={false}
+                          decimalScale={2}
+                          data-testid="input-total-expected-profit"
                         />
                       </FormControl>
                       <Button
