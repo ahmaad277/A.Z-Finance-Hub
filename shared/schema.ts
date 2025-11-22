@@ -9,11 +9,18 @@ export const platforms = pgTable("platforms", {
   name: text("name").notNull(),
   type: text("type").notNull(), // 'sukuk' | 'manfaa' | 'lendo'
   logoUrl: text("logo_url"),
+  feePercentage: numeric("fee_percentage", { precision: 5, scale: 2 }).notNull().default("0"), // Platform fee % (e.g., 2.5%)
+  deductFees: integer("deduct_fees").notNull().default(1), // 0 = don't deduct, 1 = deduct fees from profit
 });
 
-export const insertPlatformSchema = createInsertSchema(platforms).omit({ id: true });
+export const insertPlatformSchema = createInsertSchema(platforms).omit({ id: true }).extend({
+  feePercentage: z.coerce.number().min(0).max(100),
+  deductFees: z.number().int().min(0).max(1).optional().default(1),
+});
 export const updatePlatformSchema = z.object({
   name: z.string().trim().min(1, "Platform name is required"),
+  feePercentage: z.coerce.number().min(0).max(100).optional(),
+  deductFees: z.number().int().min(0).max(1).optional(),
 });
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
 export type UpdatePlatform = z.infer<typeof updatePlatformSchema>;

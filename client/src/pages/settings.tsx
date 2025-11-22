@@ -40,6 +40,8 @@ export default function Settings() {
   const { toast } = useToast();
   const [newPlatformName, setNewPlatformName] = useState("");
   const [newPlatformType, setNewPlatformType] = useState<string>("sukuk");
+  const [newPlatformFeePercentage, setNewPlatformFeePercentage] = useState("0");
+  const [newPlatformDeductFees, setNewPlatformDeductFees] = useState(true);
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [biometricAvailable, setBiometricAvailable] = useState(false);
@@ -47,6 +49,8 @@ export default function Settings() {
   const [platformToDelete, setPlatformToDelete] = useState<Platform | null>(null);
   const [platformToEdit, setPlatformToEdit] = useState<Platform | null>(null);
   const [editPlatformName, setEditPlatformName] = useState("");
+  const [editPlatformFeePercentage, setEditPlatformFeePercentage] = useState("0");
+  const [editPlatformDeductFees, setEditPlatformDeductFees] = useState(true);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetConfirmation, setResetConfirmation] = useState("");
 
@@ -116,12 +120,16 @@ export default function Settings() {
     check();
   }, []);
 
-  // Populate edit platform name when dialog opens
+  // Populate edit platform fields when dialog opens
   useEffect(() => {
     if (platformToEdit) {
       setEditPlatformName(platformToEdit.name);
+      setEditPlatformFeePercentage(platformToEdit.feePercentage || "0");
+      setEditPlatformDeductFees(platformToEdit.deductFees === 1);
     } else {
       setEditPlatformName("");
+      setEditPlatformFeePercentage("0");
+      setEditPlatformDeductFees(true);
     }
   }, [platformToEdit]);
 
@@ -146,12 +154,14 @@ export default function Settings() {
   });
 
   const addPlatformMutation = useMutation({
-    mutationFn: async (data: { name: string; type: string }) => {
+    mutationFn: async (data: { name: string; type: string; feePercentage: number; deductFees: number }) => {
       return apiRequest("POST", "/api/platforms", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
       setNewPlatformName("");
+      setNewPlatformFeePercentage("0");
+      setNewPlatformDeductFees(true);
       toast({
         title: t("settings.platformAdded"),
         description: t("settings.platformAddedDesc"),
@@ -167,14 +177,20 @@ export default function Settings() {
   });
 
   const updatePlatformMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string }) => {
-      return apiRequest("PUT", `/api/platforms/${data.id}`, { name: data.name });
+    mutationFn: async (data: { id: string; name: string; feePercentage?: number; deductFees?: number }) => {
+      return apiRequest("PUT", `/api/platforms/${data.id}`, { 
+        name: data.name,
+        feePercentage: data.feePercentage,
+        deductFees: data.deductFees
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       setPlatformToEdit(null);
       setEditPlatformName("");
+      setEditPlatformFeePercentage("0");
+      setEditPlatformDeductFees(true);
       toast({
         title: t("settings.platformUpdated"),
         description: t("settings.platformUpdatedDesc"),
@@ -401,7 +417,12 @@ export default function Settings() {
       });
       return;
     }
-    addPlatformMutation.mutate({ name: newPlatformName, type: newPlatformType });
+    addPlatformMutation.mutate({ 
+      name: newPlatformName, 
+      type: newPlatformType,
+      feePercentage: parseFloat(newPlatformFeePercentage) || 0,
+      deductFees: newPlatformDeductFees ? 1 : 0
+    });
   };
 
   const handleSetPIN = async () => {
@@ -758,6 +779,29 @@ export default function Settings() {
                     <SelectItem value="other">{t("settings.other")}</SelectItem>
                   </SelectContent>
                 </Select>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">
+                    {language === "ar" ? "نسبة الرسوم (%)" : "Fee Percentage (%)"}
+                  </Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={newPlatformFeePercentage}
+                    onChange={(e) => setNewPlatformFeePercentage(e.target.value)}
+                    placeholder="0"
+                    data-testid="input-new-platform-fee"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">
+                    {language === "ar" ? "خصم الرسوم من الأرباح" : "Deduct Fees from Profit"}
+                  </Label>
+                  <Switch
+                    checked={newPlatformDeductFees}
+                    onCheckedChange={setNewPlatformDeductFees}
+                    data-testid="switch-new-platform-deduct-fees"
+                  />
+                </div>
                 <Button
                   onClick={handleAddPlatform}
                   disabled={addPlatformMutation.isPending}
@@ -1046,6 +1090,29 @@ export default function Settings() {
                     data-testid="input-edit-platform-name"
                   />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">
+                    {language === "ar" ? "نسبة الرسوم (%)" : "Fee Percentage (%)"}
+                  </Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={editPlatformFeePercentage}
+                    onChange={(e) => setEditPlatformFeePercentage(e.target.value)}
+                    placeholder="0"
+                    data-testid="input-edit-platform-fee"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">
+                    {language === "ar" ? "خصم الرسوم من الأرباح" : "Deduct Fees from Profit"}
+                  </Label>
+                  <Switch
+                    checked={editPlatformDeductFees}
+                    onCheckedChange={setEditPlatformDeductFees}
+                    data-testid="switch-edit-platform-deduct-fees"
+                  />
+                </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1056,7 +1123,9 @@ export default function Settings() {
             <AlertDialogAction
               onClick={() => platformToEdit && updatePlatformMutation.mutate({ 
                 id: platformToEdit.id, 
-                name: editPlatformName 
+                name: editPlatformName,
+                feePercentage: parseFloat(editPlatformFeePercentage) || 0,
+                deductFees: editPlatformDeductFees ? 1 : 0
               })}
               disabled={updatePlatformMutation.isPending || !editPlatformName.trim()}
               data-testid="button-confirm-edit-platform"
