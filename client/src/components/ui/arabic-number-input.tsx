@@ -31,6 +31,18 @@ export const ArabicNumberInput = forwardRef<HTMLInputElement, ArabicNumberInputP
       // Update local state immediately (preserves trailing decimals like "10.")
       setLocalValue(stringValue);
       
+      // Parse immediately for RHF sync (may be undefined for partial input)
+      const cleanValue = stringValue.trim().replace(/[\.\-]+$/, '');
+      const floatValue = cleanValue === '' ? undefined : parseFloat(cleanValue);
+      
+      // Emit both string and parsed float on every change
+      // This keeps RHF updated while preserving display string
+      onValueChange?.({
+        value: stringValue,
+        formattedValue: stringValue,
+        floatValue: isNaN(floatValue as number) ? undefined : floatValue,
+      });
+      
       // Call original onChange if provided
       onChange?.(e);
     };
@@ -38,23 +50,16 @@ export const ArabicNumberInput = forwardRef<HTMLInputElement, ArabicNumberInputP
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       const stringValue = localValue.trim();
       
-      // Remove trailing decimal/minus for clean parsing
+      // Remove trailing decimal/minus for clean display
       const cleanValue = stringValue.replace(/[\.\-]+$/, '');
       
       // Parse to float
       const floatValue = cleanValue === '' ? undefined : parseFloat(cleanValue);
       
-      // Notify parent with parsed numeric value on blur
-      onValueChange?.({
-        value: stringValue,
-        formattedValue: stringValue,
-        floatValue: isNaN(floatValue as number) ? undefined : floatValue,
-      });
-      
       // Clean up display: if valid number, show cleaned version
       if (floatValue !== undefined && !isNaN(floatValue)) {
         setLocalValue(floatValue.toString());
-      } else if (cleanValue === '') {
+      } else if (stringValue === '' || cleanValue === '') {
         setLocalValue('');
       }
       

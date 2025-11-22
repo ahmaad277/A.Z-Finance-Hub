@@ -80,7 +80,8 @@ The application is a single-user personal tool built with a modern web stack, op
 **Bug Fixes:**
 - Fixed iOS keyboard not showing decimal separator for financial input fields
 - Fixed Arabic numeral input causing character duplication: Moved normalization from onBeforeInput (manual DOM mutation) to onChange (React-compatible) to eliminate race conditions
-- Fixed +5K button reading stale values: onChange normalization ensures RHF receives numeric values immediately, enabling correct increments (10000→15000, not 0→5000)
+- Fixed decimal separator input blocking: Refactored ArabicNumberInput to maintain local string state during typing, preserving trailing decimals (e.g., "10.") while emitting parsed floatValue to RHF on every keystroke for immediate calculations
+- Fixed +5K button reading stale values: ArabicNumberInput now emits floatValue on every change, enabling correct increments without blur (30.5→5030.5 works immediately)
 - Fixed NaN validation errors: Proper float parsing in ArabicNumberInput ensures numeric field values are always finite or undefined
 - Fixed paste/autocomplete bypassing conversion: onChange handler normalizes all input methods uniformly
 
