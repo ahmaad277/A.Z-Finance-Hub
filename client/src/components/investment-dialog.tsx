@@ -559,8 +559,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                             // Update RHF with numeric value
                             field.onChange(values.floatValue ?? undefined);
                           }}
-                          thousandSeparator={false}
-                          decimalScale={2}
                           data-testid="input-face-value"
                         />
                       </FormControl>
@@ -600,8 +598,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         onValueChange={(values) => {
                           field.onChange(values.floatValue ?? undefined);
                         }}
-                        thousandSeparator={false}
-                        decimalScale={2}
                         data-testid="input-irr"
                       />
                     </FormControl>
@@ -737,8 +733,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                               setUserEditedProfit(true);
                             }
                           }}
-                          thousandSeparator={false}
-                          decimalScale={2}
                           data-testid="input-total-expected-profit"
                         />
                       </FormControl>

@@ -1,10 +1,9 @@
 import { Input } from './input';
 import { forwardRef, useState, useEffect } from 'react';
 
-export interface ArabicNumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type' | 'inputMode' | 'onBlur'> {
+export interface ArabicNumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'inputMode'> {
   'data-testid'?: string;
   onValueChange?: (values: { floatValue?: number; formattedValue: string; value: string }) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   value?: number | string;
 }
 
