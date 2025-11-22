@@ -70,6 +70,67 @@ interface InvestmentDialogProps {
   dataEntryToken?: string | null;
 }
 
+// مكون منفصل للـ Face Value field مع زر 5K+
+function FaceValueField({ form, t }: { form: any; t: any }) {
+  return (
+    <FormField
+      control={form.control}
+      name="faceValue"
+      render={({ field }) => {
+        const normalizedField = useNormalizedNumberField(field, 0);
+        
+        return (
+          <FormItem>
+            <FormLabel>
+              {t("dialog.faceValue")}
+            </FormLabel>
+            <div className="flex gap-2">
+              <FormControl>
+                <Input 
+                  type="text" 
+                  inputMode="decimal"
+                  placeholder="100000" 
+                  value={normalizedField.value}
+                  onChange={normalizedField.onChange}
+                  onBlur={normalizedField.onBlur}
+                  data-testid="input-face-value" 
+                />
+              </FormControl>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent any default behavior
+                  
+                  // قراءة القيمة من RHF field (القيمة الموثوقة الوحيدة)
+                  const currentValue = typeof field.value === 'number' ? field.value : 0;
+                  const newValue = currentValue + 5000;
+                  
+                  // تحديث RHF state
+                  field.onChange(newValue);
+                  
+                  // تحديث normalizedField لإجبار re-render العرض
+                  normalizedField.onChange({ 
+                    target: { value: String(newValue) } 
+                  } as React.ChangeEvent<HTMLInputElement>);
+                }}
+                data-testid="button-add-5000"
+              >
+                +5K
+              </Button>
+            </div>
+            <FormDescription>
+              {t("dialog.faceValueDesc")}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
+    />
+  );
+}
+
 export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToken }: InvestmentDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -537,50 +598,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
             />
 
             <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="faceValue"
-                render={({ field }) => {
-                  const normalizedField = useNormalizedNumberField(field, 0);
-                  
-                  return (
-                    <FormItem>
-                      <FormLabel>
-                        {t("dialog.faceValue")}
-                      </FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input 
-                            type="text" 
-                            inputMode="decimal"
-                            placeholder="100000" 
-                            value={normalizedField.value}
-                            onChange={normalizedField.onChange}
-                            onBlur={normalizedField.onBlur}
-                            data-testid="input-face-value" 
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            const currentValue = field.value || 0;
-                            field.onChange(currentValue + 5000);
-                          }}
-                          data-testid="button-add-5000"
-                        >
-                          +5K
-                        </Button>
-                      </div>
-                      <FormDescription>
-                        {t("dialog.faceValueDesc")}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+              <FaceValueField form={form} t={t} />
 
               <FormField
                 control={form.control}

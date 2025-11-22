@@ -73,10 +73,12 @@ The application is a single-user personal tool built with a modern web stack, op
 **Improvements:**
 - Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
 - Reverted to permanent RTL layout: Application now maintains right-to-left layout regardless of language selection for optimal right-hand mobile usage (language selection only affects text translations)
-- Unified numeric field handling: Face Value field now uses `useNormalizedNumberField` hook for consistent behavior with other financial input fields
+- Arabic decimal separator conversion: Enhanced conversion system to handle both Arabic decimal separator (٫) and Arabic comma (،), automatically converting them to English period (.)
+- Face Value 5K+ button architecture: Refactored to use uncontrolled input with ref-based DOM reading, eliminating state synchronization issues between Arabic-to-English conversion and React state
 
 **Bug Fixes:**
 - Fixed iOS keyboard not showing decimal separator for financial input fields
+- Fixed 5K+ button behavior: Button now correctly increments current value by 5000 instead of replacing it, working seamlessly with Arabic numeral auto-conversion
 - Fixed controlled/uncontrolled input warnings in numeric fields
 
 ### v1.0.0 (Initial Release)
