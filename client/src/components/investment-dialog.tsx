@@ -101,16 +101,13 @@ function FaceValueField({ form, t }: { form: any; t: any }) {
                 variant="outline"
                 size="icon"
                 onClick={(e) => {
-                  e.preventDefault(); // Prevent any default behavior
+                  e.preventDefault();
                   
-                  // قراءة القيمة من RHF field (القيمة الموثوقة الوحيدة)
                   const currentValue = typeof field.value === 'number' ? field.value : 0;
                   const newValue = currentValue + 5000;
                   
-                  // تحديث RHF state
+                  // Update both RHF state and normalized field display
                   field.onChange(newValue);
-                  
-                  // تحديث normalizedField لإجبار re-render العرض
                   normalizedField.onChange({ 
                     target: { value: String(newValue) } 
                   } as React.ChangeEvent<HTMLInputElement>);
