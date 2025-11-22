@@ -13,12 +13,13 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { SaveCheckpointButton } from "@/components/save-checkpoint-button";
 import { PlatformFilterButton } from "@/components/platform-filter-button";
 import { ShareDataEntryButton } from "@/components/share-data-entry-button";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { SplashScreen } from "@/components/SplashScreen";
+import { useSplash } from "@/lib/splash-provider";
 
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Investments = lazy(() => import("@/pages/investments"));
@@ -32,9 +33,6 @@ const Vision2040 = lazy(() => import("@/pages/vision-2040"));
 const DataEntry = lazy(() => import("@/pages/data-entry"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
-// App version - increment to force cache clear
-const APP_VERSION = "7";
-const VERSION_KEY = "azfinance-app-version";
 
 function LoadingFallback() {
   return (
@@ -119,15 +117,7 @@ function AppContent() {
 }
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    const storedVersion = localStorage.getItem(VERSION_KEY);
-    if (storedVersion !== APP_VERSION) {
-      clearCache();
-      localStorage.setItem(VERSION_KEY, APP_VERSION);
-    }
-  }, []);
+  const { showSplash, hideSplash } = useSplash();
 
   return (
     <ErrorBoundary>
@@ -138,12 +128,12 @@ function App() {
               <TooltipProvider>
                 <AppContent />
                 <Toaster />
-                {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+                {showSplash && <SplashScreen onComplete={hideSplash} />}
               </TooltipProvider>
-          </PlatformFilterProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+            </PlatformFilterProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

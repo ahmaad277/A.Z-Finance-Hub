@@ -18,6 +18,7 @@ import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { SplashScreen } from "@/components/SplashScreen";
+import { useSplash } from "@/lib/splash-provider";
 
 // Helper function to make API requests with data-entry token
 async function apiRequestWithToken(
@@ -69,8 +70,8 @@ export default function DataEntry() {
   const { toast } = useToast();
   const [, params] = useRoute("/data-entry/:token");
   const token = params?.token;
+  const { showSplash, hideSplash } = useSplash();
 
-  const [showSplash, setShowSplash] = useState(true);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
@@ -415,7 +416,7 @@ export default function DataEntry() {
         }}
       />
       
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onComplete={hideSplash} />}
     </div>
   );
 }
