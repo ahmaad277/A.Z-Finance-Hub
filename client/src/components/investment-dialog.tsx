@@ -70,6 +70,25 @@ interface InvestmentDialogProps {
   dataEntryToken?: string | null;
 }
 
+// Helper to parse normalized numeric input
+function parseNormalizedNumber(rawValue: string): { 
+  raw: string; 
+  normalized: string; 
+  value: number | undefined; 
+  isValid: boolean;
+} {
+  const normalized = normalizeNumberInput(rawValue);
+  const parsed = parseFloat(normalized);
+  const isValid = !isNaN(parsed) && isFinite(parsed);
+  
+  return {
+    raw: rawValue,
+    normalized,
+    value: isValid ? parsed : undefined,
+    isValid,
+  };
+}
+
 export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToken }: InvestmentDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -95,6 +114,11 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const [faceValueDisplay, setFaceValueDisplay] = useState<string>("");
   const [expectedIrrDisplay, setExpectedIrrDisplay] = useState<string>("");
   const [totalExpectedProfitDisplay, setTotalExpectedProfitDisplay] = useState<string>("");
+  
+  // Track last valid parsed values (for +5K and preventing 0-wipe)
+  const lastValidFaceValue = useRef<number>(0);
+  const lastValidIrr = useRef<number>(0);
+  const lastValidProfit = useRef<number>(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -154,6 +178,12 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       setFaceValueDisplay(String(faceValue));
       setExpectedIrrDisplay(String(irr));
       setTotalExpectedProfitDisplay(String(totalProfit));
+      
+      // Update last valid refs
+      lastValidFaceValue.current = faceValue;
+      lastValidIrr.current = irr;
+      lastValidProfit.current = totalProfit;
+      
       setUserEditedProfit(true);
     } else {
       form.reset({
@@ -174,10 +204,13 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       });
       setDurationMonthsInput(0);
       
-      // Clear display values
+      // Clear display values and last valid refs
       setFaceValueDisplay("");
       setExpectedIrrDisplay("");
       setTotalExpectedProfitDisplay("");
+      lastValidFaceValue.current = 0;
+      lastValidIrr.current = 0;
+      lastValidProfit.current = 0;
     }
     
     setTimeout(() => {
@@ -397,6 +430,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
     if (autoCalculatedProfit > 0) {
       form.setValue("totalExpectedProfit", autoCalculatedProfit);
       setTotalExpectedProfitDisplay(String(autoCalculatedProfit));
+      lastValidProfit.current = autoCalculatedProfit;
       setUserEditedProfit(false);
       toast({
         title: language === 'ar' ? 'تم الحساب' : 'Calculated',
@@ -576,15 +610,38 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                             const rawValue = e.target.value;
                             setFaceValueDisplay(rawValue);
                             
-                            // Parse and update RHF immediately
+                            // Parse and update RHF only if valid
                             const parsed = normalizeNumberInput(rawValue);
-                            field.onChange(parsed);
+                            if (parsed > 0) {
+                              field.onChange(parsed);
+                              lastValidFaceValue.current = parsed;
+                            } else if (rawValue.trim() === "") {
+                              // Clear if empty
+                              field.onChange(undefined);
+                            }
+                            // Skip RHF update for invalid input (allows Arabic typing)
                           }}
                           onBlur={() => {
-                            // Reformat on blur
+                            // Reformat if we have a valid number
                             const parsed = normalizeNumberInput(faceValueDisplay);
-                            field.onChange(parsed);
-                            setFaceValueDisplay(parsed === 0 ? "" : String(parsed));
+                            if (parsed > 0) {
+                              field.onChange(parsed);
+                              lastValidFaceValue.current = parsed;
+                              setFaceValueDisplay(String(parsed));
+                            } else if (faceValueDisplay.trim() === "") {
+                              // Clear if empty
+                              field.onChange(undefined);
+                              setFaceValueDisplay("");
+                            } else {
+                              // Invalid input: revert to last valid or undefined
+                              if (lastValidFaceValue.current > 0) {
+                                field.onChange(lastValidFaceValue.current);
+                                setFaceValueDisplay(String(lastValidFaceValue.current));
+                              } else {
+                                field.onChange(undefined);
+                                setFaceValueDisplay("");
+                              }
+                            }
                           }}
                           data-testid="input-face-value" 
                         />
@@ -596,13 +653,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         onClick={(e) => {
                           e.preventDefault();
                           
-                          // Read from RHF (single source of truth)
-                          const currentValue = typeof field.value === 'number' ? field.value : 0;
+                          // Use last valid value (prevents data loss during partial edits)
+                          const currentValue = lastValidFaceValue.current || 0;
                           const newValue = currentValue + 5000;
                           
-                          // Update both RHF and display
+                          // Update RHF, display, and last valid
                           field.onChange(newValue);
                           setFaceValueDisplay(String(newValue));
+                          lastValidFaceValue.current = newValue;
                         }}
                         data-testid="button-add-5000"
                       >
@@ -633,15 +691,38 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           const rawValue = e.target.value;
                           setExpectedIrrDisplay(rawValue);
                           
-                          // Parse and update RHF immediately
+                          // Parse and update RHF only if valid
                           const parsed = normalizeNumberInput(rawValue);
-                          field.onChange(parsed);
+                          if (parsed > 0) {
+                            field.onChange(parsed);
+                            lastValidIrr.current = parsed;
+                          } else if (rawValue.trim() === "") {
+                            // Clear if empty
+                            field.onChange(undefined);
+                          }
+                          // Skip RHF update for invalid input (allows Arabic typing)
                         }}
                         onBlur={() => {
-                          // Reformat on blur
+                          // Reformat if we have a valid number
                           const parsed = normalizeNumberInput(expectedIrrDisplay);
-                          field.onChange(parsed);
-                          setExpectedIrrDisplay(parsed === 0 ? "" : String(parsed));
+                          if (parsed > 0) {
+                            field.onChange(parsed);
+                            lastValidIrr.current = parsed;
+                            setExpectedIrrDisplay(String(parsed));
+                          } else if (expectedIrrDisplay.trim() === "") {
+                            // Clear if empty
+                            field.onChange(undefined);
+                            setExpectedIrrDisplay("");
+                          } else {
+                            // Invalid input: revert to last valid or undefined
+                            if (lastValidIrr.current > 0) {
+                              field.onChange(lastValidIrr.current);
+                              setExpectedIrrDisplay(String(lastValidIrr.current));
+                            } else {
+                              field.onChange(undefined);
+                              setExpectedIrrDisplay("");
+                            }
+                          }
                         }}
                         data-testid="input-irr" 
                       />
@@ -778,19 +859,42 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                             const rawValue = e.target.value;
                             setTotalExpectedProfitDisplay(rawValue);
                             
-                            // Parse and update RHF immediately
+                            // Parse and update RHF only if valid
                             const parsed = normalizeNumberInput(rawValue);
-                            field.onChange(parsed);
+                            if (parsed > 0) {
+                              field.onChange(parsed);
+                              lastValidProfit.current = parsed;
+                            } else if (rawValue.trim() === "") {
+                              // Clear if empty
+                              field.onChange(undefined);
+                            }
+                            // Skip RHF update for invalid input (allows Arabic typing)
                             
                             if (!isResettingRef.current) {
                               setUserEditedProfit(true);
                             }
                           }}
                           onBlur={() => {
-                            // Reformat on blur
+                            // Reformat if we have a valid number
                             const parsed = normalizeNumberInput(totalExpectedProfitDisplay);
-                            field.onChange(parsed);
-                            setTotalExpectedProfitDisplay(parsed === 0 ? "" : String(parsed));
+                            if (parsed > 0) {
+                              field.onChange(parsed);
+                              lastValidProfit.current = parsed;
+                              setTotalExpectedProfitDisplay(String(parsed));
+                            } else if (totalExpectedProfitDisplay.trim() === "") {
+                              // Clear if empty
+                              field.onChange(undefined);
+                              setTotalExpectedProfitDisplay("");
+                            } else {
+                              // Invalid input: revert to last valid or undefined
+                              if (lastValidProfit.current > 0) {
+                                field.onChange(lastValidProfit.current);
+                                setTotalExpectedProfitDisplay(String(lastValidProfit.current));
+                              } else {
+                                field.onChange(undefined);
+                                setTotalExpectedProfitDisplay("");
+                              }
+                            }
                           }}
                           data-testid="input-total-expected-profit" 
                         />
