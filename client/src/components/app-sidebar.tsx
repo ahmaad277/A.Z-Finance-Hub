@@ -69,8 +69,8 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar side="right">
-      <SidebarHeader className="border-b border-sidebar-border p-6">
+    <Sidebar side="right" className="sidebar-gradient">
+      <SidebarHeader className="border-b border-white/10 p-6">
         <div className="flex items-center gap-3">
           <img 
             src="/icon-192.png" 
@@ -79,15 +79,15 @@ export function AppSidebar() {
             data-testid="img-app-logo"
           />
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight">A.Z Finance Hub</span>
-            <span className="text-xs text-muted-foreground">Vision 2040</span>
+            <span className="text-lg font-bold tracking-tight text-white">A.Z Finance Hub</span>
+            <span className="text-xs text-white/70">Vision 2040</span>
           </div>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-white/60">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -115,8 +115,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="text-[10px] text-muted-foreground text-center">
+      <SidebarFooter className="border-t border-white/10 p-4">
+        <div className="text-[10px] text-white/70 text-center">
           © 2025 A.Z Finance
         </div>
       </SidebarFooter>

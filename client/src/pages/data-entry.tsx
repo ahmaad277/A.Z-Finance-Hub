@@ -17,6 +17,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { SplashScreen } from "@/components/SplashScreen";
 
 // Helper function to make API requests with data-entry token
 async function apiRequestWithToken(
@@ -69,6 +70,7 @@ export default function DataEntry() {
   const [, params] = useRoute("/data-entry/:token");
   const token = params?.token;
 
+  const [showSplash, setShowSplash] = useState(true);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
@@ -412,6 +414,8 @@ export default function DataEntry() {
           setPendingCashflowInvestment(null);
         }}
       />
+      
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
     </div>
   );
 }
