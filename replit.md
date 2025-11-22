@@ -74,12 +74,15 @@ The application is a single-user personal tool built with a modern web stack, op
 - Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
 - Reverted to permanent RTL layout: Application now maintains right-to-left layout regardless of language selection for optimal right-hand mobile usage (language selection only affects text translations)
 - Arabic decimal separator conversion: Enhanced conversion system to handle both Arabic decimal separator (٫) and Arabic comma (،), automatically converting them to English period (.)
-- Face Value 5K+ button architecture: Implemented dual-state update pattern for FaceValueField component, updating both React Hook Form state and useNormalizedNumberField internal state simultaneously to ensure proper synchronization between form validation and display value
+- Numeric field architecture refactor: Replaced `useNormalizedNumberField` with new `useNumericFieldController` hook implementing single-source-of-truth pattern with immediate RHF synchronization on every keystroke, preventing data loss during validation, reset, or rapid submission
+- Face Value 5K+ button: Properly reads from RHF field.value and updates both form state and display value through unified controller
 
 **Bug Fixes:**
 - Fixed iOS keyboard not showing decimal separator for financial input fields
-- Fixed 5K+ button behavior: Button now correctly increments current value by 5000 instead of replacing it, achieved by reading from RHF field.value and updating both field.onChange() and normalizedField.onChange() to maintain state synchronization
+- Fixed data disappearing in Add Investment dialog: Eliminated dual-state synchronization issues in Face Value, Expected IRR, and Total Expected Profit fields
+- Fixed 5K+ button behavior: Button now correctly increments current value by 5000 with stable state management
 - Fixed controlled/uncontrolled input warnings in numeric fields
+- Fixed immediate submission without blur now correctly captures numeric field values
 
 ### v1.0.0 (Initial Release)
 Complete Sharia-compliant investment management platform with Sukuk tracking, Vision 2040 calculator, bilingual support, PWA capabilities, and comprehensive financial reporting.

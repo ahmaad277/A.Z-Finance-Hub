@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input, useNormalizedNumberField } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +70,43 @@ interface InvestmentDialogProps {
   dataEntryToken?: string | null;
 }
 
+// Hook لإدارة الحقول الرقمية بشكل صحيح (single source of truth)
+function useNumericFieldController(field: any, defaultValue: number = 0) {
+  const [displayValue, setDisplayValue] = useState<string>("");
+  
+  // Sync display value with RHF field value (on mount, reset, or external changes)
+  useEffect(() => {
+    if (field.value === undefined || field.value === null || field.value === 0) {
+      setDisplayValue("");
+    } else if (typeof field.value === 'number') {
+      setDisplayValue(String(field.value));
+    }
+  }, [field.value]);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    setDisplayValue(rawValue);
+    
+    // Parse and update RHF immediately (for validation & submission without blur)
+    const parsed = normalizeNumberInput(rawValue);
+    field.onChange(parsed);
+  };
+  
+  const handleBlur = () => {
+    // Reformat display value on blur for consistency
+    const parsed = normalizeNumberInput(displayValue);
+    field.onChange(parsed);
+    setDisplayValue(parsed === 0 ? "" : String(parsed));
+  };
+  
+  return {
+    value: displayValue,
+    onChange: handleChange,
+    onBlur: handleBlur,
+    setDisplayValue, // Expose for direct updates (e.g., 5K+ button)
+  };
+}
+
 // مكون منفصل للـ Face Value field مع زر 5K+
 function FaceValueField({ form, t }: { form: any; t: any }) {
   return (
@@ -77,7 +114,7 @@ function FaceValueField({ form, t }: { form: any; t: any }) {
       control={form.control}
       name="faceValue"
       render={({ field }) => {
-        const normalizedField = useNormalizedNumberField(field, 0);
+        const controller = useNumericFieldController(field, 0);
         
         return (
           <FormItem>
@@ -90,9 +127,9 @@ function FaceValueField({ form, t }: { form: any; t: any }) {
                   type="text" 
                   inputMode="decimal"
                   placeholder="100000" 
-                  value={normalizedField.value}
-                  onChange={normalizedField.onChange}
-                  onBlur={normalizedField.onBlur}
+                  value={controller.value}
+                  onChange={controller.onChange}
+                  onBlur={controller.onBlur}
                   data-testid="input-face-value" 
                 />
               </FormControl>
@@ -103,14 +140,13 @@ function FaceValueField({ form, t }: { form: any; t: any }) {
                 onClick={(e) => {
                   e.preventDefault();
                   
+                  // Read from RHF (single source of truth)
                   const currentValue = typeof field.value === 'number' ? field.value : 0;
                   const newValue = currentValue + 5000;
                   
-                  // Update both RHF state and normalized field display
+                  // Update RHF and display through controller
                   field.onChange(newValue);
-                  normalizedField.onChange({ 
-                    target: { value: String(newValue) } 
-                  } as React.ChangeEvent<HTMLInputElement>);
+                  controller.setDisplayValue(String(newValue));
                 }}
                 data-testid="button-add-5000"
               >
@@ -601,7 +637,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                 control={form.control}
                 name="expectedIrr"
                 render={({ field }) => {
-                  const normalizedField = useNormalizedNumberField(field, 0);
+                  const controller = useNumericFieldController(field, 0);
                   return (
                     <FormItem>
                       <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
@@ -610,9 +646,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                           type="text" 
                           inputMode="decimal"
                           placeholder="12.5" 
-                          value={normalizedField.value}
-                          onChange={normalizedField.onChange}
-                          onBlur={normalizedField.onBlur}
+                          value={controller.value}
+                          onChange={controller.onChange}
+                          onBlur={controller.onBlur}
                           data-testid="input-irr" 
                         />
                       </FormControl>
@@ -734,7 +770,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                 control={form.control}
                 name="totalExpectedProfit"
                 render={({ field }) => {
-                  const normalizedField = useNormalizedNumberField(field, undefined);
+                  const controller = useNumericFieldController(field, 0);
                   
                   return (
                     <FormItem>
@@ -747,14 +783,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                             type="text" 
                             inputMode="decimal"
                             placeholder="12500" 
-                            value={normalizedField.value}
+                            value={controller.value}
                             onChange={(e) => {
-                              normalizedField.onChange(e);
+                              controller.onChange(e);
                               if (!isResettingRef.current) {
                                 setUserEditedProfit(true);
                               }
                             }}
-                            onBlur={normalizedField.onBlur}
+                            onBlur={controller.onBlur}
                             data-testid="input-total-expected-profit" 
                           />
                         </FormControl>
