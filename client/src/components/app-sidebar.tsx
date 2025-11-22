@@ -113,8 +113,9 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="text-[10px] text-muted-foreground text-center">
-          © 2025 A.Z Finance • v1.0.0
+        <div className="flex flex-col items-center gap-0.5 text-[10px] text-muted-foreground">
+          <div>© 2025 A.Z Finance</div>
+          <div>v1.0.0</div>
         </div>
       </SidebarFooter>
     </Sidebar>
