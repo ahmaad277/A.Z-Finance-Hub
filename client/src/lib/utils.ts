@@ -136,9 +136,15 @@ export function convertArabicToEnglishNumbers(str: string): string {
   const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
   
   let result = str;
+  
+  // تحويل الأرقام العربية إلى إنجليزية
   arabicNumbers.forEach((arabic, index) => {
     result = result.replace(new RegExp(arabic, 'g'), englishNumbers[index]);
   });
+  
+  // تحويل الفاصلة العشرية العربية (٫) والفاصلة العربية (،) إلى نقطة إنجليزية
+  result = result.replace(/٫/g, '.');
+  result = result.replace(/،/g, '.');
   
   return result;
 }
