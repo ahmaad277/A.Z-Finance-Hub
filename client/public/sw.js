@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.0.4';
+const CACHE_VERSION = '1.0.2';
 const STATIC_CACHE = `az-finance-static-v${CACHE_VERSION}`;
 const ASSETS_CACHE = `az-finance-assets-v${CACHE_VERSION}`;
 

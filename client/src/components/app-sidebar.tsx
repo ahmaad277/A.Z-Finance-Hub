@@ -69,25 +69,22 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar side="right" className="sidebar-gradient">
-      <SidebarHeader className="border-b border-sidebar-primary-foreground/10 p-6">
+    <Sidebar side="right">
+      <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
-          <img 
-            src="/icon-192.png" 
-            alt="A.Z Finance Hub Logo" 
-            className="h-10 w-10 rounded-lg object-cover"
-            data-testid="img-app-logo"
-          />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <TrendingUp className="h-6 w-6" />
+          </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-sidebar-primary-foreground">A.Z Finance Hub</span>
-            <span className="text-xs text-sidebar-primary-foreground/70">Vision 2040</span>
+            <span className="text-lg font-bold tracking-tight">A.Z Finance Hub</span>
+            <span className="text-xs text-muted-foreground">Vision 2040</span>
           </div>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-primary-foreground/60">
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -115,8 +112,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-primary-foreground/10 p-4">
-        <div className="text-[10px] text-sidebar-primary-foreground/70 text-center">
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="text-[10px] text-muted-foreground text-center">
           © 2025 A.Z Finance
         </div>
       </SidebarFooter>

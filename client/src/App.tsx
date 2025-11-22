@@ -18,8 +18,6 @@ import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { SplashScreen } from "@/components/SplashScreen";
-import { useSplash } from "@/lib/splash-provider";
 
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Investments = lazy(() => import("@/pages/investments"));
@@ -33,6 +31,9 @@ const Vision2040 = lazy(() => import("@/pages/vision-2040"));
 const DataEntry = lazy(() => import("@/pages/data-entry"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
+// App version - increment to force cache clear
+const APP_VERSION = "6";
+const VERSION_KEY = "azfinance-app-version";
 
 function LoadingFallback() {
   return (
@@ -117,7 +118,13 @@ function AppContent() {
 }
 
 function App() {
-  const { showSplash, hideSplash } = useSplash();
+  useEffect(() => {
+    const storedVersion = localStorage.getItem(VERSION_KEY);
+    if (storedVersion !== APP_VERSION) {
+      clearCache();
+      localStorage.setItem(VERSION_KEY, APP_VERSION);
+    }
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -128,12 +135,11 @@ function App() {
               <TooltipProvider>
                 <AppContent />
                 <Toaster />
-                {showSplash && <SplashScreen onComplete={hideSplash} />}
               </TooltipProvider>
-            </PlatformFilterProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+          </PlatformFilterProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
     </ErrorBoundary>
   );
 }
