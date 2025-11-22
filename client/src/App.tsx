@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient, clearCache } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +7,8 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/language-provider";
 import { PlatformFilterProvider } from "@/lib/platform-filter-context";
+import { DataEntryProvider, useDataEntry } from "@/lib/data-entry-context";
+import { RouteGuard } from "@/components/route-guard";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -43,7 +45,7 @@ function LoadingFallback() {
   );
 }
 
-function Router() {
+function OwnerRouter() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
@@ -57,9 +59,16 @@ function Router() {
         <Route path="/help" component={Help} />
         <Route path="/settings" component={Settings} />
         <Route path="/platform/:id" component={PlatformDetails} />
-        <Route path="/data-entry/:token" component={DataEntry} />
         <Route component={NotFound} />
       </Switch>
+    </Suspense>
+  );
+}
+
+function DataEntryRouter() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <DataEntry />
     </Suspense>
   );
 }
@@ -95,7 +104,7 @@ function MainContent() {
         </div>
       </header>
       <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
-        <Router />
+        <OwnerRouter />
       </main>
     </div>
   );
@@ -106,12 +115,37 @@ function AppContent() {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
+  const { isDataEntryMode, isInitializing } = useDataEntry();
+  const [location] = useLocation();
+
+  if (isInitializing) {
+    return <LoadingFallback />;
+  }
+
+  const hasStoredToken = localStorage.getItem("azfinance-data-entry-token");
+  const isOnDataEntryRoute = location.startsWith("/data-entry/");
+  
+  if (hasStoredToken && !isOnDataEntryRoute) {
+    return <LoadingFallback />;
+  }
+
+  if (isDataEntryMode || isOnDataEntryRoute) {
+    return (
+      <div className="flex h-screen w-full">
+        <RouteGuard>
+          <DataEntryRouter />
+        </RouteGuard>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider style={style as React.CSSProperties} defaultOpen={false}>
       <div className="flex h-screen w-full">
         <AppSidebar />
-        <MainContent />
+        <RouteGuard>
+          <MainContent />
+        </RouteGuard>
       </div>
     </SidebarProvider>
   );
@@ -131,15 +165,17 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark">
           <LanguageProvider defaultLanguage="en">
-            <PlatformFilterProvider>
-              <TooltipProvider>
-                <AppContent />
-                <Toaster />
-              </TooltipProvider>
-          </PlatformFilterProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+            <DataEntryProvider>
+              <PlatformFilterProvider>
+                <TooltipProvider>
+                  <AppContent />
+                  <Toaster />
+                </TooltipProvider>
+              </PlatformFilterProvider>
+            </DataEntryProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

@@ -17,6 +17,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { useDataEntry } from "@/lib/data-entry-context";
 
 // Helper function to make API requests with data-entry token
 async function apiRequestWithToken(
@@ -68,6 +69,7 @@ export default function DataEntry() {
   const { toast } = useToast();
   const [, params] = useRoute("/data-entry/:token");
   const token = params?.token;
+  const { setDataEntryMode } = useDataEntry();
 
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -92,14 +94,19 @@ export default function DataEntry() {
       try {
         const response = await fetch(`/api/verify-data-entry-token/${token}`);
         const data = await response.json();
-        setIsVerified(data.valid === true);
+        const isValid = data.valid === true;
+        setIsVerified(isValid);
+        
+        if (isValid) {
+          setDataEntryMode(token);
+        }
       } catch (error) {
         setIsVerified(false);
       }
     };
 
     verifyToken();
-  }, [token]);
+  }, [token, setDataEntryMode]);
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],

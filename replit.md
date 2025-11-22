@@ -52,7 +52,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Atomic Cash Transaction Automation System:** Automatic cash movement tracking integrated throughout the investment lifecycle with three-layer protection and database transactions for ACID compliance.
 - **Cash Balance Calculation:** Platform-specific balance aggregation supporting legacy transactions.
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality with transaction-safe operations.
-- **Data-Entry Sharing System:** Secure token-based system for external users to manage investments with restricted access to sensitive financial data. Implemented with backend middleware, client-side token verification, and a dedicated data-entry page.
+- **Data-Entry Sharing System:** Secure token-based system for external users to manage investments with complete UI isolation. Features triple-layer security architecture: (1) AppContent synchronous gating preventing owner UI rendering, (2) DataEntryProvider automatic redirect with route subscription, (3) RouteGuard client-side protection. Token persists in localStorage, supports both client-side and full-page navigation protection, and ensures zero owner UI exposure during all navigation attempts. Backend middleware protects API endpoints with per-request token validation.
 
 ## External Dependencies
 - **Charting:** Recharts for data visualization.
