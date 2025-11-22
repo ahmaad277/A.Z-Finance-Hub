@@ -49,28 +49,27 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     const effectiveInputMode = isNumericInput ? "numeric" : inputMode;
 
     const handleBeforeInput = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-      if (isNumericInput) {
-        const inputEvent = e.nativeEvent as InputEvent;
-        if (inputEvent.data) {
-          const normalized = normalizeNumberInput(inputEvent.data);
-          if (normalized !== inputEvent.data) {
-            e.preventDefault();
-            const input = e.target as HTMLInputElement;
-            const start = input.selectionStart ?? 0;
-            const end = input.selectionEnd ?? 0;
-            const before = input.value.substring(0, start);
-            const after = input.value.substring(end);
-            const newValue = before + normalized + after;
-            
-            input.value = newValue;
-            const newCursorPos = start + normalized.length;
-            input.setSelectionRange(newCursorPos, newCursorPos);
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-          }
+      // Apply Arabic to English number conversion to all text inputs
+      const inputEvent = e.nativeEvent as InputEvent;
+      if (inputEvent.data && type !== "date" && type !== "email" && type !== "password") {
+        const normalized = normalizeNumberInput(inputEvent.data);
+        if (normalized !== inputEvent.data) {
+          e.preventDefault();
+          const input = e.target as HTMLInputElement;
+          const start = input.selectionStart ?? 0;
+          const end = input.selectionEnd ?? 0;
+          const before = input.value.substring(0, start);
+          const after = input.value.substring(end);
+          const newValue = before + normalized + after;
+          
+          input.value = newValue;
+          const newCursorPos = start + normalized.length;
+          input.setSelectionRange(newCursorPos, newCursorPos);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
         }
       }
       onBeforeInput?.(e);
-    }, [isNumericInput, onBeforeInput]);
+    }, [type, onBeforeInput]);
 
     const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       onChange?.(e);

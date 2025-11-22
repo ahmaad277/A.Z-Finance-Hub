@@ -540,52 +540,46 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               <FormField
                 control={form.control}
                 name="faceValue"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("dialog.faceValue")}
-                    </FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          inputMode="decimal"
-                          placeholder="100000" 
-                          {...field}
-                          value={field.value === 0 ? "" : field.value}
-                          onChange={(e) => {
-                            const normalized = normalizeNumberInput(e.target.value);
-                            if (normalized === "") {
-                              field.onChange(0);
-                            } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
-                              return;
-                            } else {
-                              const val = parseFloat(normalized);
-                              field.onChange(isNaN(val) ? 0 : val);
-                            }
+                render={({ field }) => {
+                  const normalizedField = useNormalizedNumberField(field, 0);
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {t("dialog.faceValue")}
+                      </FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input 
+                            type="text" 
+                            inputMode="decimal"
+                            placeholder="100000" 
+                            value={normalizedField.value}
+                            onChange={normalizedField.onChange}
+                            onBlur={normalizedField.onBlur}
+                            data-testid="input-face-value" 
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            const currentValue = field.value || 0;
+                            field.onChange(currentValue + 5000);
                           }}
-                          data-testid="input-face-value" 
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          const currentValue = field.value || 0;
-                          field.onChange(currentValue + 5000);
-                        }}
-                        data-testid="button-add-5000"
-                      >
-                        +5K
-                      </Button>
-                    </div>
-                    <FormDescription>
-                      {t("dialog.faceValueDesc")}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                          data-testid="button-add-5000"
+                        >
+                          +5K
+                        </Button>
+                      </div>
+                      <FormDescription>
+                        {t("dialog.faceValueDesc")}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
@@ -654,8 +648,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                       placeholder={t("dialog.enterMonths")}
                       value={durationMonthsInput || ''}
                       onChange={(e) => {
-                        const normalized = normalizeNumberInput(e.target.value);
-                        setDurationMonthsInput(parseInt(normalized) || 0);
+                        const value = e.target.value;
+                        setDurationMonthsInput(parseInt(value) || 0);
                       }}
                       data-testid="input-duration-months"
                       className="mt-2"
@@ -892,13 +886,13 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) => {
-                          const normalized = normalizeNumberInput(e.target.value);
-                          if (normalized === "") {
+                          const value = e.target.value;
+                          if (value === "") {
                             field.onChange(null);
-                          } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
+                          } else if (value.endsWith('.') || value.endsWith('-') || value === '-') {
                             return;
                           } else {
-                            const val = parseInt(normalized);
+                            const val = parseInt(value);
                             field.onChange(isNaN(val) ? null : val);
                           }
                         }}
