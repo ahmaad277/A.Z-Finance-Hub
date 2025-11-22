@@ -54,6 +54,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Cash Balance Calculation:** Platform-specific balance aggregation supporting legacy transactions.
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality with transaction-safe operations.
 - **Data-Entry Sharing System:** Secure token-based system for external users to manage investments with complete UI isolation. Features triple-layer security architecture: (1) AppContent synchronous gating preventing owner UI rendering, (2) DataEntryProvider automatic redirect with route subscription, (3) RouteGuard client-side protection. Token persists in localStorage, supports both client-side and full-page navigation protection, and ensures zero owner UI exposure during all navigation attempts. Backend middleware protects API endpoints with per-request token validation.
+- **Platform Fee Management System:** Automatic profit deduction based on platform-specific fees. Each platform has configurable `feePercentage` (0-100%) and `deductFees` flag (enabled by default). Investment dialog calculates and displays net profit: Net Profit = Gross Profit - (Gross Profit × Fee %). Fee breakdown appears in calculated metrics summary only when applicable, with dynamic 4-column layout. System persists gross profit in database while computing net profit on display for flexibility. Full bilingual support with fee percentage input using `inputMode="decimal"` for mobile optimization.
 
 ## External Dependencies
 - **Charting:** Recharts for data visualization.
@@ -69,6 +70,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - Real-time data synchronization: Implemented 60-second automatic polling for critical queries (dashboard, investments, cashflows, data-entry) to keep data synchronized across devices
 - Comprehensive changelog page: Added `/changelog` route with version history display, bilingual support, and integration into sidebar navigation
 - Automatic Arabic-to-English number conversion: All input fields now automatically convert Arabic numerals (٠-٩) to English (0-9) during typing for consistent data entry
+- Platform Fee Management: Added configurable platform fees with automatic net profit calculation. Platforms now support fee percentage (0-100%) and deduct fees toggle. Investment dialog displays net profit after fee deduction with full breakdown when applicable
 
 **Improvements:**
 - Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
