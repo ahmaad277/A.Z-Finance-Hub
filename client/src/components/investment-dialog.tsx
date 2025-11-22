@@ -73,9 +73,13 @@ interface InvestmentDialogProps {
 // Hook لإدارة الحقول الرقمية بشكل صحيح (single source of truth)
 function useNumericFieldController(field: any, defaultValue: number = 0) {
   const [displayValue, setDisplayValue] = useState<string>("");
+  const isTypingRef = useRef(false);
   
-  // Sync display value with RHF field value (on mount, reset, or external changes)
+  // Sync display value with RHF field value (only when NOT typing)
   useEffect(() => {
+    // Don't update display while user is typing
+    if (isTypingRef.current) return;
+    
     if (field.value === undefined || field.value === null || field.value === 0) {
       setDisplayValue("");
     } else if (typeof field.value === 'number') {
@@ -84,6 +88,7 @@ function useNumericFieldController(field: any, defaultValue: number = 0) {
   }, [field.value]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    isTypingRef.current = true;
     const rawValue = e.target.value;
     setDisplayValue(rawValue);
     
@@ -93,6 +98,8 @@ function useNumericFieldController(field: any, defaultValue: number = 0) {
   };
   
   const handleBlur = () => {
+    isTypingRef.current = false;
+    
     // Reformat display value on blur for consistency
     const parsed = normalizeNumberInput(displayValue);
     field.onChange(parsed);
