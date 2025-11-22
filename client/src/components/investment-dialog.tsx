@@ -395,7 +395,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   // Calculate investment metrics based on form values
   const calculatedMetrics = useMemo(() => {
     const faceValue = formValues.faceValue || 0;
-    const totalExpectedProfit = formValues.totalExpectedProfit || 0;
+    const totalExpectedProfit = Number(formValues.totalExpectedProfit) || 0;
     const startDate = formValues.startDate;
     const endDate = formValues.endDate;
     const frequency = formValues.distributionFrequency;
@@ -437,13 +437,30 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
     // Number of units (assuming 1 SAR = 1 unit for simplicity)
     const numberOfUnits = faceValue;
 
+    // Calculate net profit after platform fees
+    const selectedPlatform = platforms?.find(p => p.id === formValues.platformId);
+    const feePercentage = Number(selectedPlatform?.feePercentage) || 0;
+    const deductFees = selectedPlatform?.deductFees || 0;
+
+    let netProfit = totalExpectedProfit;
+    let feeAmount = 0;
+
+    if (deductFees === 1 && feePercentage > 0) {
+      feeAmount = (totalExpectedProfit * feePercentage) / 100;
+      netProfit = totalExpectedProfit - feeAmount;
+    }
+
     return {
       totalExpectedReturn: totalExpectedProfit,
       numberOfUnits,
       paymentCount,
       paymentValue,
+      netProfit,
+      feeAmount,
+      feePercentage,
+      deductFees,
     };
-  }, [formValues.faceValue, formValues.totalExpectedProfit, formValues.startDate, formValues.endDate, formValues.distributionFrequency, formValues.profitPaymentStructure]);
+  }, [formValues.faceValue, formValues.totalExpectedProfit, formValues.startDate, formValues.endDate, formValues.distributionFrequency, formValues.profitPaymentStructure, formValues.platformId, platforms]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // Set durationMonths based on mode
@@ -957,7 +974,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
             {/* Calculated Metrics Summary - Compact Layout */}
             {calculatedMetrics && (
               <Card>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
+                <CardContent className={`grid grid-cols-1 ${calculatedMetrics.deductFees === 1 && calculatedMetrics.feePercentage > 0 ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 pt-4`}>
                   <div>
                     <p className="text-xs text-muted-foreground">{t("dialog.paymentCount")}</p>
                     <p className="text-base font-semibold" data-testid="text-calculated-payments">
@@ -982,6 +999,26 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                       }).format(calculatedMetrics.totalExpectedReturn)} {t("common.sar")}
                     </p>
                   </div>
+                  {calculatedMetrics.deductFees === 1 && calculatedMetrics.feePercentage > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'ar' ? 'صافي الربح بعد الرسوم' : 'Net Profit After Fees'}
+                      </p>
+                      <p className="text-base font-semibold text-primary" data-testid="text-calculated-net-profit">
+                        {new Intl.NumberFormat('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(calculatedMetrics.netProfit)} {t("common.sar")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {language === 'ar' ? `الرسوم (${calculatedMetrics.feePercentage}%): -` : `Fee (${calculatedMetrics.feePercentage}%): -`}
+                        {new Intl.NumberFormat('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(calculatedMetrics.feeAmount)} {t("common.sar")}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
