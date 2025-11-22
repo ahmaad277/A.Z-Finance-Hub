@@ -9,7 +9,7 @@ A.Z Finance Hub is a personal investment management platform focused on tracking
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
 - Number Format: All numbers display in English digits (0-9) across both English and Arabic interfaces, using `Intl.NumberFormat('en-US')` consistently throughout the application
-- Layout Direction: Permanent RTL - Application uses right-to-left layout for both English and Arabic, optimized for right-hand mobile usage
+- Layout Direction: Dynamic RTL/LTR - Application automatically switches between right-to-left (RTL) for Arabic and left-to-right (LTR) for English based on selected language
 - Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
 - Mobile Gesture Navigation: Swipe from right edge (>50px from edge) to left on mobile devices to open sidebar navigation
 

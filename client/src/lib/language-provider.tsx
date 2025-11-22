@@ -2122,7 +2122,7 @@ export function LanguageProvider({ children, defaultLanguage = "en" }: LanguageP
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("lang", language);
-    root.setAttribute("dir", "rtl");
+    root.setAttribute("dir", language === "ar" ? "rtl" : "ltr");
     localStorage.setItem("language", language);
   }, [language]);
 

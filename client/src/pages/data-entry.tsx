@@ -18,6 +18,7 @@ import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { useDataEntry } from "@/lib/data-entry-context";
+import { LanguageToggle } from "@/components/language-toggle";
 
 // Helper function to make API requests with data-entry token
 async function apiRequestWithToken(
@@ -65,7 +66,6 @@ function createDataEntryQueryFn(token: string) {
 
 export default function DataEntry() {
   const { t, language } = useLanguage();
-  const isRtl = language === "ar";
   const { toast } = useToast();
   const [, params] = useRoute("/data-entry/:token");
   const token = params?.token;
@@ -223,16 +223,19 @@ export default function DataEntry() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
       <header className="border-b px-4 py-4 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">
-            {language === "ar" ? "مرحباً في A.Z Finance Hub" : "Welcome to A.Z Finance Hub"}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {language === "ar" ? "إدارة الاستثمارات" : "Investment Management"}
-          </p>
+        <div className="max-w-7xl mx-auto flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold" data-testid="text-page-title">
+              {language === "ar" ? "مرحباً في A.Z Finance Hub" : "Welcome to A.Z Finance Hub"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {language === "ar" ? "إدارة الاستثمارات" : "Investment Management"}
+            </p>
+          </div>
+          <LanguageToggle />
         </div>
       </header>
 
