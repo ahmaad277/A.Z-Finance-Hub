@@ -1,28 +1,66 @@
 import { Input } from './input';
-import { forwardRef } from 'react';
+import { forwardRef, useState, useEffect } from 'react';
 
-export interface ArabicNumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type' | 'inputMode'> {
+export interface ArabicNumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type' | 'inputMode' | 'onBlur'> {
   'data-testid'?: string;
   onValueChange?: (values: { floatValue?: number; formattedValue: string; value: string }) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   value?: number | string;
 }
 
 export const ArabicNumberInput = forwardRef<HTMLInputElement, ArabicNumberInputProps>(
-  ({ onValueChange, value, onChange, ...props }, ref) => {
+  ({ onValueChange, value, onChange, onBlur, ...props }, ref) => {
+    // Maintain local string state to preserve trailing decimals during typing
+    const [localValue, setLocalValue] = useState<string>(() => {
+      if (value === null || value === undefined || value === '') return '';
+      return value.toString();
+    });
+
+    // Sync external value changes to local state
+    useEffect(() => {
+      if (value === null || value === undefined || value === '') {
+        setLocalValue('');
+      } else {
+        setLocalValue(value.toString());
+      }
+    }, [value]);
+    
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       // Input component has already normalized Arabic→English
       const stringValue = e.target.value;
-      const floatValue = stringValue === '' ? undefined : parseFloat(stringValue);
       
-      // Notify parent in standard format
+      // Update local state immediately (preserves trailing decimals like "10.")
+      setLocalValue(stringValue);
+      
+      // Call original onChange if provided
+      onChange?.(e);
+    };
+    
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      const stringValue = localValue.trim();
+      
+      // Remove trailing decimal/minus for clean parsing
+      const cleanValue = stringValue.replace(/[\.\-]+$/, '');
+      
+      // Parse to float
+      const floatValue = cleanValue === '' ? undefined : parseFloat(cleanValue);
+      
+      // Notify parent with parsed numeric value on blur
       onValueChange?.({
         value: stringValue,
         formattedValue: stringValue,
         floatValue: isNaN(floatValue as number) ? undefined : floatValue,
       });
       
-      // Call original onChange if provided
-      onChange?.(e);
+      // Clean up display: if valid number, show cleaned version
+      if (floatValue !== undefined && !isNaN(floatValue)) {
+        setLocalValue(floatValue.toString());
+      } else if (cleanValue === '') {
+        setLocalValue('');
+      }
+      
+      // Call original onBlur if provided
+      onBlur?.(e);
     };
     
     return (
@@ -31,8 +69,9 @@ export const ArabicNumberInput = forwardRef<HTMLInputElement, ArabicNumberInputP
         ref={ref}
         type="text"
         inputMode="decimal"
-        value={value ?? ''}
+        value={localValue}
         onChange={handleChange}
+        onBlur={handleBlur}
       />
     );
   }
