@@ -724,62 +724,59 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               <FormField
                 control={form.control}
                 name="totalExpectedProfit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
-                    </FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          inputMode="decimal"
-                          placeholder="12500" 
-                          {...field}
-                          onChange={(e) => {
-                            const normalized = normalizeNumberInput(e.target.value);
-                            if (normalized === "") {
-                              field.onChange(undefined);
-                            } else if (normalized.endsWith('.') || normalized.endsWith('-') || normalized === '-') {
-                              return;
-                            } else {
-                              const val = parseFloat(normalized);
-                              field.onChange(isNaN(val) ? undefined : val);
-                            }
-                            if (!isResettingRef.current) {
-                              setUserEditedProfit(true);
-                            }
-                          }}
-                          data-testid="input-total-expected-profit" 
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="default"
-                        onClick={handleCalculateProfit}
-                        data-testid="button-calculate-profit"
-                        className="whitespace-nowrap"
-                      >
-                        <Calculator className="w-4 h-4 mr-2" />
-                        {t("dialog.calculateProfit")}
-                      </Button>
-                    </div>
-                    {roiPercentage > 0 && displayDurationMonths > 0 && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="default" data-testid="badge-roi">
-                          {t("dialog.roi")}: {roiPercentage.toFixed(2)}% {t("dialog.over")} {displayDurationMonths} {t("dialog.months")}
-                        </Badge>
+                render={({ field }) => {
+                  const normalizedField = useNormalizedNumberField(field, undefined);
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
+                      </FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input 
+                            type="text" 
+                            inputMode="decimal"
+                            placeholder="12500" 
+                            value={normalizedField.value}
+                            onChange={(e) => {
+                              normalizedField.onChange(e);
+                              if (!isResettingRef.current) {
+                                setUserEditedProfit(true);
+                              }
+                            }}
+                            onBlur={normalizedField.onBlur}
+                            data-testid="input-total-expected-profit" 
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="default"
+                          onClick={handleCalculateProfit}
+                          data-testid="button-calculate-profit"
+                          className="whitespace-nowrap"
+                        >
+                          <Calculator className="w-4 h-4 mr-2" />
+                          {t("dialog.calculateProfit")}
+                        </Button>
                       </div>
-                    )}
-                    <FormDescription>
-                      {userEditedProfit 
-                        ? t("dialog.manuallyEdited")
-                        : t("dialog.calculatedAutomatically")}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                      {roiPercentage > 0 && displayDurationMonths > 0 && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="default" data-testid="badge-roi">
+                            {t("dialog.roi")}: {roiPercentage.toFixed(2)}% {t("dialog.over")} {displayDurationMonths} {t("dialog.months")}
+                          </Badge>
+                        </div>
+                      )}
+                      <FormDescription>
+                        {userEditedProfit 
+                          ? t("dialog.manuallyEdited")
+                          : t("dialog.calculatedAutomatically")}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
