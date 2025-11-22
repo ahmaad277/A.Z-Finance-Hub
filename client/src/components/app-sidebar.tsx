@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/lib/language-provider";
+import appLogo from "@/../../client/public/icon-192.png";
 
 const menuItems = [
   {
@@ -72,9 +73,12 @@ export function AppSidebar() {
     <Sidebar side="right">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <TrendingUp className="h-6 w-6" />
-          </div>
+          <img 
+            src={appLogo} 
+            alt="A.Z Finance Hub Logo" 
+            className="h-10 w-10 rounded-lg object-cover"
+            data-testid="img-app-logo"
+          />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight">A.Z Finance Hub</span>
             <span className="text-xs text-muted-foreground">Vision 2040</span>
