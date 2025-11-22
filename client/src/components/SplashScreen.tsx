@@ -14,15 +14,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }, [onComplete]);
 
   useEffect(() => {
+    console.log('[SplashScreen] Mounted, starting timers');
     const timer = setTimeout(() => {
+      console.log('[SplashScreen] Primary timer fired (1s)');
       onCompleteRef.current();
     }, 1000);
 
     const fallbackTimer = setTimeout(() => {
+      console.log('[SplashScreen] Fallback timer fired (2s)');
       onCompleteRef.current();
     }, 2000);
 
     return () => {
+      console.log('[SplashScreen] Cleanup');
       clearTimeout(timer);
       clearTimeout(fallbackTimer);
     };

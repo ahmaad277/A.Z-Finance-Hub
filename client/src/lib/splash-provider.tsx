@@ -13,12 +13,14 @@ const SPLASH_SHOWN_KEY = "azfinance-splash-shown";
 export function SplashProvider({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(() => {
     const shown = sessionStorage.getItem(SPLASH_SHOWN_KEY);
+    console.log('[SplashProvider] Initializing:', { shown, willShow: !shown });
     return !shown;
   });
   
   const timersRef = useRef<NodeJS.Timeout[]>([]);
 
   const hideSplash = () => {
+    console.log('[SplashProvider] Hiding splash');
     sessionStorage.setItem(SPLASH_SHOWN_KEY, "true");
     setShowSplash(false);
     timersRef.current.forEach(clearTimeout);
