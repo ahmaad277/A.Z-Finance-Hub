@@ -9,7 +9,7 @@ A.Z Finance Hub is a personal investment management platform focused on tracking
 - Currency: SAR (Saudi Riyal)
 - Date format: en-US locale
 - Number Format: All numbers display in English digits (0-9) across both English and Arabic interfaces, using `Intl.NumberFormat('en-US')` consistently throughout the application
-- Layout Direction: Dynamic RTL/LTR - Application automatically switches between right-to-left (RTL) for Arabic and left-to-right (LTR) for English based on selected language
+- Layout Direction: Permanent RTL - Application maintains right-to-left (RTL) layout regardless of language for optimal right-hand mobile usage
 - Mobile Optimized: Full responsive design for all screen sizes (mobile, tablet, desktop)
 - Mobile Gesture Navigation: Swipe from right edge (>50px from edge) to left on mobile devices to open sidebar navigation
 
@@ -58,3 +58,22 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Charting:** Recharts for data visualization.
 - **Database:** PostgreSQL (via Neon) with Drizzle ORM.
 - **Deployment:** Railway platform.
+
+## Version History
+
+### v1.0.1 (November 22, 2025)
+**Real-Time Data Synchronization & Mobile Improvements**
+
+**New Features:**
+- Real-time data synchronization: Implemented 60-second automatic polling for critical queries (dashboard, investments, cashflows, data-entry) to keep data synchronized across devices
+- Comprehensive changelog page: Added `/changelog` route with version history display, bilingual support, and integration into sidebar navigation
+
+**Improvements:**
+- Enhanced mobile keyboard: Changed numeric input fields (face value, expected IRR, total expected profit) from `type="number"` to `type="text"` with `inputMode="decimal"` to display comma/decimal separator on iOS keyboards
+- Reverted to permanent RTL layout: Application now maintains right-to-left layout regardless of language selection for optimal right-hand mobile usage (language selection only affects text translations)
+
+**Bug Fixes:**
+- Fixed iOS keyboard not showing decimal separator for financial input fields
+
+### v1.0.0 (Initial Release)
+Complete Sharia-compliant investment management platform with Sukuk tracking, Vision 2040 calculator, bilingual support, PWA capabilities, and comprehensive financial reporting.

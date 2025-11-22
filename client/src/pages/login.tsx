@@ -16,7 +16,6 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { user, loginMutation } = useAuth();
   const { t, language } = useLanguage();
-  const isRTL = language === "ar";
   const [selectedEmail, setSelectedEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);

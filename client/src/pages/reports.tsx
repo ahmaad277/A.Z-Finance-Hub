@@ -21,7 +21,6 @@ import ArabicReshaper from 'arabic-reshaper';
 export default function Reports() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const isRtl = language === "ar";
 
   // Fetch data
   const { data: investments = [] } = useQuery<InvestmentWithPlatform[]>({

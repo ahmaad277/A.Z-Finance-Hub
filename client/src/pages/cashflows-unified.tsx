@@ -32,16 +32,19 @@ export default function CashflowsUnified() {
   // Fetch cashflows from investments
   const { data: cashflows = [], isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Fetch cash transactions
   const { data: cashTransactions = [], isLoading: transactionsLoading } = useQuery<CashTransaction[]>({
     queryKey: ["/api/cash/transactions"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Fetch cash balance
   const { data: cashBalanceResponse } = useQuery<{ balance: number }>({
     queryKey: ["/api/cash/balance"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
   const cashBalance = cashBalanceResponse?.balance ?? 0;
 

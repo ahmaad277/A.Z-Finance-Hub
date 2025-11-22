@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText, DollarSign, Target } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Wallet, BarChart3, Bell, RefreshCw, BookOpen, Settings2, FileText, DollarSign, Target, History } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -50,6 +50,11 @@ const menuItems = [
     key: "help",
     url: "/help",
     icon: BookOpen,
+  },
+  {
+    key: "changelog",
+    url: "/changelog",
+    icon: History,
   },
   {
     key: "settings",
@@ -115,7 +120,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex flex-col items-center gap-0.5 text-[10px] text-muted-foreground">
           <div>© 2025 A.Z Finance</div>
-          <div>v1.0.0</div>
+          <div>v1.0.1</div>
         </div>
       </SidebarFooter>
     </Sidebar>

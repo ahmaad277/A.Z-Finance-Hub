@@ -112,18 +112,23 @@ export default function DataEntry() {
     queryKey: ["/api/investments"],
     queryFn: token ? createDataEntryQueryFn(token) : undefined,
     refetchOnMount: true,
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
     enabled: isVerified === true && !!token,
   });
 
   const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
     queryFn: token ? createDataEntryQueryFn(token) : undefined,
+    refetchOnMount: true,
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
     enabled: isVerified === true && !!token,
   });
 
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
     queryFn: token ? createDataEntryQueryFn(token) : undefined,
+    refetchOnMount: true,
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
     enabled: isVerified === true && !!token,
   });
 

@@ -548,7 +548,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                     <div className="flex gap-2">
                       <FormControl>
                         <Input 
-                          type="number" 
+                          type="text" 
+                          inputMode="decimal"
                           placeholder="100000" 
                           {...field}
                           value={field.value === 0 ? "" : field.value}
@@ -597,8 +598,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                       <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
-                          step="0.01" 
+                          type="text" 
+                          inputMode="decimal"
                           placeholder="12.5" 
                           value={normalizedField.value}
                           onChange={normalizedField.onChange}
@@ -731,7 +732,8 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                     <div className="flex gap-2">
                       <FormControl>
                         <Input 
-                          type="number" 
+                          type="text" 
+                          inputMode="decimal"
                           placeholder="12500" 
                           {...field}
                           onChange={(e) => {

@@ -32,10 +32,12 @@ export default function Dashboard() {
   
   const { data: stats, isLoading } = useQuery<PortfolioStats>({
     queryKey: ["/api/portfolio/stats"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Date Range Filter for analytics
@@ -43,6 +45,7 @@ export default function Dashboard() {
 
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Track collapsed sections locally
@@ -95,10 +98,12 @@ export default function Dashboard() {
 
   const { data: investments } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: cashflows } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: analytics } = useQuery<AnalyticsData>({
@@ -107,10 +112,12 @@ export default function Dashboard() {
 
   const { data: cashBalance } = useQuery<{balance: number; total: number; byPlatform: Record<string, number>}>({
     queryKey: ["/api/cash/balance"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: cashTransactions } = useQuery<CashTransaction[]>({
     queryKey: ["/api/cash/transactions"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Calculate dashboard metrics for mobile view

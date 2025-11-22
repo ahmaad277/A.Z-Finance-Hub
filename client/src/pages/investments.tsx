@@ -30,7 +30,6 @@ import { LateStatusDialog } from "@/components/late-status-dialog";
 
 export default function Investments() {
   const { t, language } = useLanguage();
-  const isRtl = language === "ar";
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completePaymentDialogOpen, setCompletePaymentDialogOpen] = useState(false);
@@ -57,14 +56,17 @@ export default function Investments() {
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
     refetchOnMount: true, // Always refetch on mount to ensure fresh data
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: cashflows, isLoading: cashflowsLoading } = useQuery<CashflowWithInvestment[]>({
     queryKey: ["/api/cashflows"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   const { data: platforms } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
+    refetchInterval: 60000, // Sync data every 60 seconds for multi-device usage
   });
 
   // Mutation to mark cashflow as received (with late status management)

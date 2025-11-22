@@ -27,6 +27,7 @@ const CashflowsUnified = lazy(() => import("@/pages/cashflows-unified"));
 const Reports = lazy(() => import("@/pages/reports"));
 const Alerts = lazy(() => import("@/pages/alerts"));
 const Help = lazy(() => import("@/pages/help"));
+const Changelog = lazy(() => import("@/pages/changelog"));
 const Settings = lazy(() => import("@/pages/settings"));
 const PlatformDetails = lazy(() => import("@/pages/platform-details"));
 const Vision2040 = lazy(() => import("@/pages/vision-2040"));
@@ -57,6 +58,7 @@ function OwnerRouter() {
         <Route path="/alerts" component={Alerts} />
         <Route path="/vision-2040" component={Vision2040} />
         <Route path="/help" component={Help} />
+        <Route path="/changelog" component={Changelog} />
         <Route path="/settings" component={Settings} />
         <Route path="/platform/:id" component={PlatformDetails} />
         <Route component={NotFound} />

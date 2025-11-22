@@ -75,6 +75,7 @@ const translations = {
     "nav.alerts": "Alerts",
     "nav.vision2040": "Vision 2040",
     "nav.help": "Help & Guide",
+    "nav.changelog": "Version History",
     "nav.settings": "Settings",
     "nav.users": "Users",
     "nav.roles": "Roles",
@@ -843,6 +844,35 @@ const translations = {
     "help.tip5": "Set Realistic Goals",
     "help.tip5Desc": "In Settings, configure your Vision 2040 target capital to track progress toward your financial objectives.",
     
+    // Changelog
+    "changelog.title": "Version History",
+    "changelog.subtitle": "Track all updates and improvements",
+    "changelog.version": "Version",
+    "changelog.releaseDate": "Release Date",
+    "changelog.changes": "Changes",
+    "changelog.features": "New Features",
+    "changelog.improvements": "Improvements",
+    "changelog.bugFixes": "Bug Fixes",
+    "changelog.latest": "Latest",
+    
+    // v1.0.1 Changes
+    "changelog.v101.feature1": "Real-time data synchronization across devices (60-second polling)",
+    "changelog.v101.feature2": "Changelog page to track all version updates",
+    "changelog.v101.improvement1": "Mobile keyboard now shows decimal separator for numeric inputs",
+    "changelog.v101.improvement2": "Permanent RTL layout for right-hand mobile usage comfort",
+    "changelog.v101.bugFix1": "Fixed investments not syncing between devices in Railway deployment",
+    
+    // v1.0.0 Changes
+    "changelog.v100.feature1": "Complete Sukuk investment management platform",
+    "changelog.v100.feature2": "Vision 2040 Progress Calculator with adaptive targets",
+    "changelog.v100.feature3": "Bilingual support (English/Arabic) with full RTL",
+    "changelog.v100.feature4": "PWA support for offline usage",
+    "changelog.v100.feature5": "Financial reports with PDF/Excel export",
+    "changelog.v100.feature6": "Secure data-entry sharing system",
+    "changelog.v100.feature7": "Platform-specific color coding and analytics",
+    "changelog.v100.feature8": "Smart Sukuk cashflow automation",
+    "changelog.v100.feature9": "Mobile-optimized swipe gesture navigation",
+    
     // Reports
     "report.title": "Financial Reports",
     "report.portfolioReport": "A.Z Finance Hub - Portfolio Report",
@@ -1117,6 +1147,7 @@ const translations = {
     "nav.alerts": "التنبيهات",
     "nav.vision2040": "رؤية 2040",
     "nav.help": "المساعدة والدليل",
+    "nav.changelog": "سجل الإصدارات",
     "nav.settings": "الإعدادات",
     "nav.users": "المستخدمون",
     "nav.roles": "الأدوار",
@@ -1886,6 +1917,35 @@ const translations = {
     "help.tip5": "تحديد أهداف واقعية",
     "help.tip5Desc": "في الإعدادات، قم بتكوين رأس المال المستهدف لرؤية 2040 لتتبع التقدم نحو أهدافك المالية.",
     
+    // Changelog
+    "changelog.title": "سجل الإصدارات",
+    "changelog.subtitle": "تتبع جميع التحديثات والتحسينات",
+    "changelog.version": "الإصدار",
+    "changelog.releaseDate": "تاريخ الإصدار",
+    "changelog.changes": "التغييرات",
+    "changelog.features": "ميزات جديدة",
+    "changelog.improvements": "تحسينات",
+    "changelog.bugFixes": "إصلاح أخطاء",
+    "changelog.latest": "الأحدث",
+    
+    // v1.0.1 Changes
+    "changelog.v101.feature1": "مزامنة البيانات التلقائية بين الأجهزة (كل 60 ثانية)",
+    "changelog.v101.feature2": "صفحة سجل الإصدارات لمتابعة جميع التحديثات",
+    "changelog.v101.improvement1": "لوحة مفاتيح الجوال تعرض الآن الفاصلة العشرية في حقول الأرقام",
+    "changelog.v101.improvement2": "تثبيت التخطيط من اليمين لليسار (RTL) لسهولة الاستخدام باليد اليمنى",
+    "changelog.v101.bugFix1": "إصلاح عدم مزامنة الاستثمارات بين الأجهزة في بيئة Railway",
+    
+    // v1.0.0 Changes
+    "changelog.v100.feature1": "منصة إدارة استثمارات الصكوك الكاملة",
+    "changelog.v100.feature2": "حاسبة تقدم رؤية 2040 مع أهداف تكيفية",
+    "changelog.v100.feature3": "دعم لغتين (الإنجليزية/العربية) مع RTL كامل",
+    "changelog.v100.feature4": "دعم PWA للاستخدام دون اتصال",
+    "changelog.v100.feature5": "تقارير مالية مع تصدير PDF/Excel",
+    "changelog.v100.feature6": "نظام مشاركة آمن لإدخال البيانات",
+    "changelog.v100.feature7": "ترميز ألوان خاص بالمنصات مع التحليلات",
+    "changelog.v100.feature8": "أتمتة ذكية للتدفقات النقدية للصكوك",
+    "changelog.v100.feature9": "تنقل محسّن للجوال بإيماءات السحب",
+    
     // Reports
     "report.title": "التقارير المالية",
     "report.portfolioReport": "مركز أ.ز المالي - تقرير المحفظة",
@@ -2122,7 +2182,7 @@ export function LanguageProvider({ children, defaultLanguage = "en" }: LanguageP
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("lang", language);
-    root.setAttribute("dir", language === "ar" ? "rtl" : "ltr");
+    root.setAttribute("dir", "rtl"); // Always RTL for right-hand mobile usage
     localStorage.setItem("language", language);
   }, [language]);
 
