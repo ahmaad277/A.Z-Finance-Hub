@@ -346,7 +346,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
     }
   }, [durationMode, durationMonthsInput, formValues.startDate]);
 
-  // Calculate expected profit automatically
+  // Calculate expected profit automatically (NET profit after fees)
   const autoCalculatedProfit = useMemo(() => {
     const faceValue = formValues.faceValue || 0;
     const expectedIrr = formValues.expectedIrr || 0;
@@ -356,8 +356,21 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       return 0;
     }
 
-    return calculateExpectedProfit(faceValue, expectedIrr, months);
-  }, [formValues.faceValue, formValues.expectedIrr, calculatedDurationMonths, durationMonthsInput, durationMode]);
+    // Calculate gross profit first
+    const grossProfit = calculateExpectedProfit(faceValue, expectedIrr, months);
+    
+    // Deduct platform fees if applicable
+    const selectedPlatform = platforms?.find(p => p.id === formValues.platformId);
+    const feePercentage = Number(selectedPlatform?.feePercentage) || 0;
+    const deductFees = selectedPlatform?.deductFees || 0;
+    
+    if (deductFees === 1 && feePercentage > 0) {
+      const feeAmount = (grossProfit * feePercentage) / 100;
+      return grossProfit - feeAmount; // Return NET profit
+    }
+    
+    return grossProfit; // No fees, return gross profit
+  }, [formValues.faceValue, formValues.expectedIrr, calculatedDurationMonths, durationMonthsInput, durationMode, formValues.platformId, platforms]);
 
   // Auto-fill totalExpectedProfit when inputs change (if user hasn't manually edited it)
   useEffect(() => {
@@ -393,9 +406,10 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   };
 
   // Calculate investment metrics based on form values
+  // NOTE: totalExpectedProfit is now NET profit (after fee deduction)
   const calculatedMetrics = useMemo(() => {
     const faceValue = formValues.faceValue || 0;
-    const totalExpectedProfit = Number(formValues.totalExpectedProfit) || 0;
+    const netProfit = Number(formValues.totalExpectedProfit) || 0; // This is NET profit now
     const startDate = formValues.startDate;
     const endDate = formValues.endDate;
     const frequency = formValues.distributionFrequency;
@@ -431,27 +445,34 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       paymentCount = Math.ceil(durationYears * paymentsPerYear);
     }
 
-    // Calculate payment value per installment
-    const paymentValue = paymentCount > 0 ? totalExpectedProfit / paymentCount : 0;
+    // Calculate payment value per installment (based on NET profit)
+    const paymentValue = paymentCount > 0 ? netProfit / paymentCount : 0;
 
     // Number of units (assuming 1 SAR = 1 unit for simplicity)
     const numberOfUnits = faceValue;
 
-    // Calculate net profit after platform fees
+    // Calculate GROSS profit (reverse calculation) for display purposes
     const selectedPlatform = platforms?.find(p => p.id === formValues.platformId);
     const feePercentage = Number(selectedPlatform?.feePercentage) || 0;
     const deductFees = selectedPlatform?.deductFees || 0;
 
-    let netProfit = totalExpectedProfit;
+    let grossProfit = netProfit;
     let feeAmount = 0;
 
-    if (deductFees === 1 && feePercentage > 0) {
-      feeAmount = (totalExpectedProfit * feePercentage) / 100;
-      netProfit = totalExpectedProfit - feeAmount;
+    if (deductFees === 1 && feePercentage > 0 && feePercentage < 100) {
+      // Reverse calculation: netProfit = grossProfit × (1 - feePercentage/100)
+      // So: grossProfit = netProfit / (1 - feePercentage/100)
+      // Guard against division by zero when feePercentage >= 100
+      grossProfit = netProfit / (1 - feePercentage / 100);
+      feeAmount = grossProfit - netProfit;
+    } else if (deductFees === 1 && feePercentage >= 100) {
+      // If fee is 100% or more, all profit goes to fees
+      grossProfit = netProfit; // Can't reverse calculate safely
+      feeAmount = 0; // Already deducted
     }
 
     return {
-      totalExpectedReturn: totalExpectedProfit,
+      totalExpectedReturn: grossProfit, // Show gross profit in summary
       numberOfUnits,
       paymentCount,
       paymentValue,
@@ -731,6 +752,24 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
 
             {/* Total Expected Profit with Calculate Button */}
             <div className="space-y-2">
+              {(() => {
+                const selectedPlatform = platforms?.find(p => p.id === formValues.platformId);
+                const feePercentage = Number(selectedPlatform?.feePercentage) || 0;
+                const deductFees = selectedPlatform?.deductFees || 0;
+                const hasFees = deductFees === 1 && feePercentage > 0;
+                
+                return hasFees && (
+                  <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <AlertDescription className="text-sm text-blue-800 dark:text-blue-300">
+                      {language === 'ar' 
+                        ? `ملاحظة: سيتم خصم رسوم المنصة (${feePercentage}%) تلقائياً من الأرباح المتوقعة` 
+                        : `Note: Platform fees (${feePercentage}%) will be automatically deducted from expected profits`}
+                    </AlertDescription>
+                  </Alert>
+                );
+              })()}
+              
               <FormField
                 control={form.control}
                 name="totalExpectedProfit"
