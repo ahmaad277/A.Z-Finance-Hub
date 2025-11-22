@@ -14,7 +14,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/lib/language-provider";
-import appLogo from "@/../../client/public/icon-192.png";
 
 const menuItems = [
   {
@@ -74,7 +73,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <img 
-            src={appLogo} 
+            src="/icon-192.png" 
             alt="A.Z Finance Hub Logo" 
             className="h-10 w-10 rounded-lg object-cover"
             data-testid="img-app-logo"
