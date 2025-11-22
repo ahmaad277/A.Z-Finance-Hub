@@ -70,107 +70,6 @@ interface InvestmentDialogProps {
   dataEntryToken?: string | null;
 }
 
-// Hook لإدارة الحقول الرقمية بشكل صحيح (single source of truth)
-function useNumericFieldController(field: any, defaultValue: number = 0) {
-  const [displayValue, setDisplayValue] = useState<string>("");
-  const isTypingRef = useRef(false);
-  
-  // Sync display value with RHF field value (only when NOT typing)
-  useEffect(() => {
-    // Don't update display while user is typing
-    if (isTypingRef.current) return;
-    
-    if (field.value === undefined || field.value === null || field.value === 0) {
-      setDisplayValue("");
-    } else if (typeof field.value === 'number') {
-      setDisplayValue(String(field.value));
-    }
-  }, [field.value]);
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    isTypingRef.current = true;
-    const rawValue = e.target.value;
-    setDisplayValue(rawValue);
-    
-    // Parse and update RHF immediately (for validation & submission without blur)
-    const parsed = normalizeNumberInput(rawValue);
-    field.onChange(parsed);
-  };
-  
-  const handleBlur = () => {
-    isTypingRef.current = false;
-    
-    // Reformat display value on blur for consistency
-    const parsed = normalizeNumberInput(displayValue);
-    field.onChange(parsed);
-    setDisplayValue(parsed === 0 ? "" : String(parsed));
-  };
-  
-  return {
-    value: displayValue,
-    onChange: handleChange,
-    onBlur: handleBlur,
-    setDisplayValue, // Expose for direct updates (e.g., 5K+ button)
-  };
-}
-
-// مكون منفصل للـ Face Value field مع زر 5K+
-function FaceValueField({ form, t }: { form: any; t: any }) {
-  return (
-    <FormField
-      control={form.control}
-      name="faceValue"
-      render={({ field }) => {
-        const controller = useNumericFieldController(field, 0);
-        
-        return (
-          <FormItem>
-            <FormLabel>
-              {t("dialog.faceValue")}
-            </FormLabel>
-            <div className="flex gap-2">
-              <FormControl>
-                <Input 
-                  type="text" 
-                  inputMode="decimal"
-                  placeholder="100000" 
-                  value={controller.value}
-                  onChange={controller.onChange}
-                  onBlur={controller.onBlur}
-                  data-testid="input-face-value" 
-                />
-              </FormControl>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={(e) => {
-                  e.preventDefault();
-                  
-                  // Read from RHF (single source of truth)
-                  const currentValue = typeof field.value === 'number' ? field.value : 0;
-                  const newValue = currentValue + 5000;
-                  
-                  // Update RHF and display through controller
-                  field.onChange(newValue);
-                  controller.setDisplayValue(String(newValue));
-                }}
-                data-testid="button-add-5000"
-              >
-                +5K
-              </Button>
-            </div>
-            <FormDescription>
-              {t("dialog.faceValueDesc")}
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        );
-      }}
-    />
-  );
-}
-
 export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToken }: InvestmentDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -191,6 +90,11 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const [durationMonthsInput, setDurationMonthsInput] = useState<number>(0);
   const isResettingRef = useRef(false);
   const [customCashflows, setCustomCashflows] = useState<CustomCashflow[]>([]);
+  
+  // Local state for numeric field display values
+  const [faceValueDisplay, setFaceValueDisplay] = useState<string>("");
+  const [expectedIrrDisplay, setExpectedIrrDisplay] = useState<string>("");
+  const [totalExpectedProfitDisplay, setTotalExpectedProfitDisplay] = useState<string>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -222,18 +126,22 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       const months = calculateDurationMonths(startDate, endDate);
       setDurationMonthsInput(months);
       
+      const faceValue = parseFloat(investment.faceValue);
+      const totalProfit = parseFloat(investment.totalExpectedProfit);
+      const irr = parseFloat(investment.expectedIrr);
+      
       form.reset({
         platformId: investment.platformId,
         name: investment.name,
-        faceValue: parseFloat(investment.faceValue),
-        totalExpectedProfit: parseFloat(investment.totalExpectedProfit),
+        faceValue,
+        totalExpectedProfit: totalProfit,
         startDate: startDate.toISOString().split("T")[0],
         endDate: endDate.toISOString().split("T")[0],
         durationMonths: months,
         actualEndDate: investment.actualEndDate 
           ? new Date(investment.actualEndDate).toISOString().split("T")[0]
           : undefined,
-        expectedIrr: parseFloat(investment.expectedIrr),
+        expectedIrr: irr,
         status: investment.status as "active" | "late" | "defaulted" | "completed" | "pending",
         riskScore: investment.riskScore || 50,
         distributionFrequency: investment.distributionFrequency as "monthly" | "quarterly" | "semi_annually" | "annually" | "at_maturity" | "custom",
@@ -241,6 +149,11 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
         fundedFromCash: investment.fundedFromCash,
         isReinvestment: investment.isReinvestment,
       });
+      
+      // Sync display values
+      setFaceValueDisplay(String(faceValue));
+      setExpectedIrrDisplay(String(irr));
+      setTotalExpectedProfitDisplay(String(totalProfit));
       setUserEditedProfit(true);
     } else {
       form.reset({
@@ -260,6 +173,11 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
         isReinvestment: 0,
       });
       setDurationMonthsInput(0);
+      
+      // Clear display values
+      setFaceValueDisplay("");
+      setExpectedIrrDisplay("");
+      setTotalExpectedProfitDisplay("");
     }
     
     setTimeout(() => {
@@ -478,6 +396,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const handleCalculateProfit = () => {
     if (autoCalculatedProfit > 0) {
       form.setValue("totalExpectedProfit", autoCalculatedProfit);
+      setTotalExpectedProfitDisplay(String(autoCalculatedProfit));
       setUserEditedProfit(false);
       toast({
         title: language === 'ar' ? 'تم الحساب' : 'Calculated',
@@ -638,31 +557,98 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
             />
 
             <div className="grid gap-6 md:grid-cols-2">
-              <FaceValueField form={form} t={t} />
-
               <FormField
                 control={form.control}
-                name="expectedIrr"
-                render={({ field }) => {
-                  const controller = useNumericFieldController(field, 0);
-                  return (
-                    <FormItem>
-                      <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
+                name="faceValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t("dialog.faceValue")}
+                    </FormLabel>
+                    <div className="flex gap-2">
                       <FormControl>
                         <Input 
                           type="text" 
                           inputMode="decimal"
-                          placeholder="12.5" 
-                          value={controller.value}
-                          onChange={controller.onChange}
-                          onBlur={controller.onBlur}
-                          data-testid="input-irr" 
+                          placeholder="100000" 
+                          value={faceValueDisplay}
+                          onChange={(e) => {
+                            const rawValue = e.target.value;
+                            setFaceValueDisplay(rawValue);
+                            
+                            // Parse and update RHF immediately
+                            const parsed = normalizeNumberInput(rawValue);
+                            field.onChange(parsed);
+                          }}
+                          onBlur={() => {
+                            // Reformat on blur
+                            const parsed = normalizeNumberInput(faceValueDisplay);
+                            field.onChange(parsed);
+                            setFaceValueDisplay(parsed === 0 ? "" : String(parsed));
+                          }}
+                          data-testid="input-face-value" 
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          
+                          // Read from RHF (single source of truth)
+                          const currentValue = typeof field.value === 'number' ? field.value : 0;
+                          const newValue = currentValue + 5000;
+                          
+                          // Update both RHF and display
+                          field.onChange(newValue);
+                          setFaceValueDisplay(String(newValue));
+                        }}
+                        data-testid="button-add-5000"
+                      >
+                        +5K
+                      </Button>
+                    </div>
+                    <FormDescription>
+                      {t("dialog.faceValueDesc")}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="expectedIrr"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("dialog.expectedIRR")}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        inputMode="decimal"
+                        placeholder="12.5" 
+                        value={expectedIrrDisplay}
+                        onChange={(e) => {
+                          const rawValue = e.target.value;
+                          setExpectedIrrDisplay(rawValue);
+                          
+                          // Parse and update RHF immediately
+                          const parsed = normalizeNumberInput(rawValue);
+                          field.onChange(parsed);
+                        }}
+                        onBlur={() => {
+                          // Reformat on blur
+                          const parsed = normalizeNumberInput(expectedIrrDisplay);
+                          field.onChange(parsed);
+                          setExpectedIrrDisplay(parsed === 0 ? "" : String(parsed));
+                        }}
+                        data-testid="input-irr" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
@@ -776,59 +762,66 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               <FormField
                 control={form.control}
                 name="totalExpectedProfit"
-                render={({ field }) => {
-                  const controller = useNumericFieldController(field, 0);
-                  
-                  return (
-                    <FormItem>
-                      <FormLabel>
-                        {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
-                      </FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input 
-                            type="text" 
-                            inputMode="decimal"
-                            placeholder="12500" 
-                            value={controller.value}
-                            onChange={(e) => {
-                              controller.onChange(e);
-                              if (!isResettingRef.current) {
-                                setUserEditedProfit(true);
-                              }
-                            }}
-                            onBlur={controller.onBlur}
-                            data-testid="input-total-expected-profit" 
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="default"
-                          onClick={handleCalculateProfit}
-                          data-testid="button-calculate-profit"
-                          className="whitespace-nowrap"
-                        >
-                          <Calculator className="w-4 h-4 mr-2" />
-                          {t("dialog.calculateProfit")}
-                        </Button>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {language === 'ar' ? 'إجمالي الأرباح المتوقعة' : 'Total Expected Profit'}
+                    </FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          inputMode="decimal"
+                          placeholder="12500" 
+                          value={totalExpectedProfitDisplay}
+                          onChange={(e) => {
+                            const rawValue = e.target.value;
+                            setTotalExpectedProfitDisplay(rawValue);
+                            
+                            // Parse and update RHF immediately
+                            const parsed = normalizeNumberInput(rawValue);
+                            field.onChange(parsed);
+                            
+                            if (!isResettingRef.current) {
+                              setUserEditedProfit(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            // Reformat on blur
+                            const parsed = normalizeNumberInput(totalExpectedProfitDisplay);
+                            field.onChange(parsed);
+                            setTotalExpectedProfitDisplay(parsed === 0 ? "" : String(parsed));
+                          }}
+                          data-testid="input-total-expected-profit" 
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        onClick={handleCalculateProfit}
+                        data-testid="button-calculate-profit"
+                        className="whitespace-nowrap"
+                      >
+                        <Calculator className="w-4 h-4 mr-2" />
+                        {t("dialog.calculateProfit")}
+                      </Button>
+                    </div>
+                    {roiPercentage > 0 && displayDurationMonths > 0 && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="default" data-testid="badge-roi">
+                          {t("dialog.roi")}: {roiPercentage.toFixed(2)}% {t("dialog.over")} {displayDurationMonths} {t("dialog.months")}
+                        </Badge>
                       </div>
-                      {roiPercentage > 0 && displayDurationMonths > 0 && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="default" data-testid="badge-roi">
-                            {t("dialog.roi")}: {roiPercentage.toFixed(2)}% {t("dialog.over")} {displayDurationMonths} {t("dialog.months")}
-                          </Badge>
-                        </div>
-                      )}
-                      <FormDescription>
-                        {userEditedProfit 
-                          ? t("dialog.manuallyEdited")
-                          : t("dialog.calculatedAutomatically")}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                    )}
+                    <FormDescription>
+                      {userEditedProfit 
+                        ? t("dialog.manuallyEdited")
+                        : t("dialog.calculatedAutomatically")}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
