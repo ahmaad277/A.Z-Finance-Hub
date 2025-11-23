@@ -55,6 +55,30 @@ function useInvestmentMetrics(investment: InvestmentWithPlatform, cashflows: Cas
   }, [investment, cashflows]);
 }
 
+type ViewMode = "ultra-compact" | "compact" | "expanded";
+
+// Hook: Manage view mode with localStorage persistence
+function usePersistedViewMode(): [ViewMode, () => void] {
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const stored = localStorage.getItem("investment-view-mode");
+    return (stored === "ultra-compact" || stored === "compact" || stored === "expanded") 
+      ? stored 
+      : "compact"; // Default to compact view
+  });
+
+  const cycleMode = () => {
+    setViewMode(current => {
+      const next = current === "ultra-compact" ? "compact"
+                 : current === "compact" ? "expanded"
+                 : "ultra-compact";
+      localStorage.setItem("investment-view-mode", next);
+      return next;
+    });
+  };
+
+  return [viewMode, cycleMode];
+}
+
 interface InvestmentRowProps {
   investment: InvestmentWithPlatform;
   cashflows: CashflowWithInvestment[];
@@ -66,11 +90,9 @@ interface InvestmentRowProps {
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
 }
 
-type ViewMode = "ultra-compact" | "compact" | "expanded";
-
 export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete, onAddPayment, onRemovePayment, onMarkPaymentAsReceived }: InvestmentRowProps) {
   const { t, language } = useLanguage();
-  const [viewMode, setViewMode] = useState<ViewMode>("compact");
+  const [viewMode, cycleMode] = usePersistedViewMode();
   
   // Calculate all metrics once using hook
   const metrics = useInvestmentMetrics(investment, cashflows);
@@ -88,13 +110,6 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   
   const statusConfig = getInvestmentStatusConfig(investment.status);
   const platformBorderClasses = getPlatformBorderClasses(investment.platform?.name);
-  
-  // Handle view mode toggle (cycle through modes on click)
-  const handleToggleView = () => {
-    if (viewMode === "ultra-compact") setViewMode("compact");
-    else if (viewMode === "compact") setViewMode("expanded");
-    else setViewMode("ultra-compact");
-  };
 
   return (
     <div
@@ -108,7 +123,7 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
       {viewMode === "ultra-compact" && (
         <div 
           className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
-          onClick={handleToggleView}
+          onClick={cycleMode}
           data-testid={`ultra-compact-view-${investment.id}`}
         >
           {/* Platform + Status + Duration */}
@@ -156,87 +171,73 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
         </div>
       )}
 
-      {/* Compact View - 3-section layout */}
+      {/* Compact View - 3-column layout: Header | Metrics | Actions */}
       {viewMode === "compact" && (
         <div 
-          className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/20"
-          onClick={handleToggleView}
+          className="flex flex-col sm:flex-row sm:items-center gap-3 p-3"
           data-testid={`compact-view-${investment.id}`}
         >
-          {/* Sukuk Structure: Face Value & Expected Profit */}
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
-            <div>
-              <div className="text-muted-foreground">
-                {language === "ar" ? "القيمة الاسمية" : "Face Value"}
-              </div>
-              <div className="font-bold">
-                {formatCurrency(parseFloat(investment.faceValue || "0"))}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "رأس المال" : "Principal"}
-              </div>
+          {/* LEFT COLUMN: Platform + Status + Duration + Name */}
+          <div className="flex-1 min-w-0 cursor-pointer hover:bg-muted/20 -mx-3 -my-3 sm:mx-0 sm:my-0 p-3" onClick={cycleMode}>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {investment.platform && (
+                <Badge variant="outline" className={`text-xs shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                  {investment.platform.name}
+                </Badge>
+              )}
+              <Badge 
+                className={`${statusConfig.badge} text-xs shrink-0`}
+                variant="outline"
+              >
+                {t(`investments.${investment.status}`)}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {durationMonths}{language === "ar" ? " شهر" : " months"} • {formatDate(investment.endDate)}
+              </span>
             </div>
-            <div>
-              <div className="text-muted-foreground">
-                {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
-              </div>
-              <div className="font-bold text-chart-1">
-                {formatCurrency(totalExpectedProfit)}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
-              </div>
-            </div>
+            <h3 className="font-semibold text-sm line-clamp-1 mb-2" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+              {formatInvestmentDisplayName(investment, t("investments.number"))}
+            </h3>
           </div>
-          
-          {/* Profit Payment Structure & End Date */}
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
-            <div>
-              <div className="text-muted-foreground">
-                {language === "ar" ? "هيكل الدفع" : "Payment Structure"}
-              </div>
-              <div className="font-medium">
-                {investment.profitPaymentStructure === "periodic"
-                  ? language === "ar" ? "دفعات دورية" : "Periodic Payments"
-                  : language === "ar" ? "عند الاستحقاق" : "At Maturity"}
-              </div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">{t("investments.expectedEndDate")}</div>
-              <div className="font-medium">{formatDate(investment.endDate)}</div>
-            </div>
-          </div>
-          
-          {/* Received Returns */}
-          <div className="grid grid-cols-1 gap-2 text-xs pt-2 border-t border-border/50">
-            <div>
-              <div className="text-muted-foreground">{t("dashboard.totalReturns")}</div>
-              <div className="font-bold text-chart-2">
-                {formatCurrency(totalReturns)}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "مستلمة" : "Received"}
-              </div>
-            </div>
-          </div>
-          
-          {/* Annual Return & ROI */}
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
-            <div>
-              <div className="text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="font-bold text-chart-1">
+
+          {/* CENTER COLUMN: APR (green) + ROI (blue) */}
+          <div className="grid grid-cols-2 gap-4 min-w-[180px] shrink-0 cursor-pointer hover:bg-muted/20 -mx-3 sm:mx-0 p-3 sm:p-0" onClick={cycleMode}>
+            <div className="text-center">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.expectedIrr")}</div>
+              <div className="text-lg font-bold text-chart-1">
                 {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </div>
             </div>
-            <div>
-              <div className="text-muted-foreground">{t("investments.roi")}</div>
-              <div className={`font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+            <div className="text-center">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.roi")}</div>
+              <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
                 {formatPercentage(roi)}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          {/* RIGHT COLUMN: Face Value + Expected Profit (green) */}
+          <div className="grid grid-cols-2 gap-4 min-w-[200px] shrink-0 cursor-pointer hover:bg-muted/20 -mx-3 sm:mx-0 p-3 sm:p-0" onClick={cycleMode}>
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                {language === "ar" ? "القيمة الاسمية" : "Face Value"}
+              </div>
+              <div className="text-sm font-bold">
+                {formatCurrency(parseFloat(investment.faceValue))}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
+              </div>
+              <div className="text-sm font-bold text-chart-1">
+                {formatCurrency(totalExpectedProfit)}
+              </div>
+            </div>
+          </div>
+
+          {/* ACTIONS */}
+          <div className="flex items-center gap-2 shrink-0">
             {investment.status === "active" && onCompletePayment && (
               <Button
                 variant="default"
@@ -246,10 +247,10 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
                   onCompletePayment();
                 }}
                 data-testid={`button-complete-payment-${investment.id}`}
-                className="h-7 text-xs flex-1"
+                className="h-8"
               >
-                <CheckCircle className="h-3 w-3 mr-1" />
-                {t("investments.confirmPayment")}
+                <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">{t("investments.confirmPayment")}</span>
               </Button>
             )}
             <Button
@@ -260,10 +261,10 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
                 onEdit();
               }}
               data-testid={`button-edit-investment-${investment.id}`}
-              className="h-7 text-xs flex-1"
+              className="h-8"
             >
-              <Edit className="h-3 w-3 mr-1" />
-              {t("common.edit")}
+              <Edit className="h-3.5 w-3.5 sm:mr-1" />
+              <span className="hidden sm:inline">{t("common.edit")}</span>
             </Button>
             {onDelete && (
               <Button
@@ -274,193 +275,141 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
                   onDelete();
                 }}
                 data-testid={`button-delete-investment-${investment.id}`}
-                className="h-7 text-xs"
+                className="h-8"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
         </div>
       )}
 
-      {/* Desktop View */}
-      <div className="hidden lg:flex lg:items-center gap-3 p-3">
-        {/* Investment Name & Platform */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            {investment.platform && (
-              <Badge variant="outline" className="text-xs shrink-0">
-                {investment.platform.name}
-              </Badge>
-            )}
-            <Badge 
-              className={`${statusConfig.badge} text-xs shrink-0`}
-              variant="outline"
-              data-testid={`badge-status-${investment.status}`}
-            >
-              {t(`investments.${investment.status}`)}
-            </Badge>
-          </div>
-          <h3 className="font-semibold text-sm line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
-            {formatInvestmentDisplayName(investment, t("investments.number"))}
-          </h3>
-        </div>
-      
-        {/* Desktop: Duration */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[60px]">
-          <div className="text-xs text-muted-foreground">{t("investments.duration")}</div>
-          <div className="text-sm font-bold">{durationMonths}{language === "ar" ? "ش" : "m"}</div>
-        </div>
-        
-        {/* Desktop: Expected End Date */}
-        <div className="flex flex-col items-center justify-center px-2 min-w-[90px]">
-          <div className="text-xs text-muted-foreground">{t("investments.expectedEndDate")}</div>
-          <div className="text-sm font-medium">{formatDate(investment.endDate)}</div>
-        </div>
-        
-        {/* Desktop: Face Value */}
-        <div className="flex flex-col items-center justify-center px-2 min-w-[95px]">
-          <div className="text-xs text-muted-foreground">
-            {language === "ar" ? "القيمة الاسمية" : "Face Value"}
-          </div>
-          <div className="text-sm font-bold">{formatCurrency(parseFloat(investment.faceValue || "0"))}</div>
-          <div className="text-[10px] text-muted-foreground">
-            {language === "ar" ? "رأس المال" : "Principal"}
-          </div>
-        </div>
-        
-        {/* Desktop: Expected Profit */}
-        <div className="flex flex-col items-center justify-center px-2 min-w-[95px]">
-          <div className="text-xs text-muted-foreground">
-            {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
-          </div>
-          <div className="text-sm font-bold text-chart-1">
-            {formatCurrency(totalExpectedProfit)}
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            {language === "ar" ? "بدون رأس المال" : "Ex. principal"}
-          </div>
-        </div>
-        
-        {/* Desktop: Profit Payment Structure */}
-        <div className="flex flex-col items-center justify-center px-2 min-w-[85px]">
-          <div className="text-xs text-muted-foreground">
-            {language === "ar" ? "هيكل الدفع" : "Structure"}
-          </div>
-          <div className="text-sm font-medium">
-            {investment.profitPaymentStructure === "periodic"
-              ? language === "ar" ? "دوري" : "Periodic"
-              : language === "ar" ? "استحقاق" : "Maturity"}
-          </div>
-        </div>
-        
-        {/* Desktop: Received Returns */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[110px]">
-          <div className="text-xs text-muted-foreground">{t("dashboard.totalReturns")}</div>
-          <div className="text-sm font-bold text-chart-2">
-            {formatCurrency(totalReturns)}
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            {language === "ar" ? "مستلمة" : "Received"}
-          </div>
-        </div>
-        
-        {/* Desktop: Annual Return (APR) */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[90px]">
-          <div className="text-xs text-muted-foreground">
-            {t("investments.expectedIrr")}
-          </div>
-          <div className="text-sm font-bold text-chart-1">
-            {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
-          </div>
-        </div>
-
-        {/* Desktop: ROI */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[70px]">
-          <div className="text-xs text-muted-foreground">{t("investments.roi")}</div>
-          <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
-            {formatPercentage(roi)}
-          </div>
-        </div>
-        
-        {/* Desktop: Payment Info */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[100px]">
-          <div className="text-xs text-muted-foreground">{t("investments.avgPayment")}</div>
-          <div className="text-sm font-medium">{formatCurrency(avgPayment)}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            {totalPayments} {language === "ar" ? "دفعات" : "payments"}
-          </div>
-        </div>
-        
-        {/* Desktop: Payment Progress Boxes */}
-        <div className="flex flex-col items-center justify-center px-3 min-w-[120px]">
-          <div className="text-xs text-muted-foreground mb-1">
-            {language === "ar" ? "تقدم الدفعات" : "Progress"}
-          </div>
-          <div className="flex items-center gap-[2px] flex-wrap justify-center max-w-[100px]">
-            {Array.from({ length: totalPayments }).map((_, index) => (
-              <div
-                key={index}
-                className={`
-                  w-[6px] h-[6px] rounded-[1px] transition-all
-                  ${index < receivedPayments
-                    ? 'bg-chart-2'
-                    : 'bg-muted-foreground/30'
-                  }
-                `}
-                title={
-                  index < receivedPayments
-                    ? language === "ar" ? "مستلمة" : "Received"
-                    : language === "ar" ? "متبقية" : "Remaining"
-                }
-              />
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            <span className="text-chart-2 font-medium">{receivedPayments}</span>
-            {" / "}
-            <span className="text-muted-foreground">{totalPayments}</span>
-          </div>
-        </div>
-        
-        {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          {investment.status === "active" && onCompletePayment && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onCompletePayment}
-              data-testid={`button-complete-payment-${investment.id}`}
-              className="h-8"
-            >
-              <CheckCircle className="h-3.5 w-3.5 mr-1" />
-              <span className="hidden xl:inline">{t("investments.confirmPayment")}</span>
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-            data-testid={`button-edit-investment-${investment.id}`}
-            className="h-8"
+      {/* Expanded View - Compact + Timeline + Status Details */}
+      {viewMode === "expanded" && (
+        <div className="flex flex-col" data-testid={`expanded-view-${investment.id}`}>
+          {/* Reuse Compact View Layout */}
+          <div 
+            className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 cursor-pointer hover:bg-muted/20"
+            onClick={cycleMode}
           >
-            <Edit className="h-3.5 w-3.5 mr-1" />
-            <span className="hidden xl:inline">{t("common.edit")}</span>
-          </Button>
-          {onDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onDelete}
-              data-testid={`button-delete-investment-${investment.id}`}
-              className="h-8"
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-1" />
-              <span className="hidden xl:inline">{t("investments.deleteInvestment")}</span>
-            </Button>
-          )}
+            {/* LEFT COLUMN */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {investment.platform && (
+                  <Badge variant="outline" className={`text-xs shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                    {investment.platform.name}
+                  </Badge>
+                )}
+                <Badge 
+                  className={`${statusConfig.badge} text-xs shrink-0`}
+                  variant="outline"
+                >
+                  {t(`investments.${investment.status}`)}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {durationMonths}{language === "ar" ? " شهر" : " months"} • {formatDate(investment.endDate)}
+                </span>
+              </div>
+              <h3 className="font-semibold text-sm line-clamp-1 mb-2" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+                {formatInvestmentDisplayName(investment, t("investments.number"))}
+              </h3>
+            </div>
+
+            {/* CENTER COLUMN */}
+            <div className="grid grid-cols-2 gap-4 min-w-[180px] shrink-0">
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.expectedIrr")}</div>
+                <div className="text-lg font-bold text-chart-1">
+                  {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.roi")}</div>
+                <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+                  {formatPercentage(roi)}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="grid grid-cols-2 gap-4 min-w-[200px] shrink-0">
+              <div className="text-right">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  {language === "ar" ? "القيمة الاسمية" : "Face Value"}
+                </div>
+                <div className="text-sm font-bold">
+                  {formatCurrency(parseFloat(investment.faceValue))}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
+                </div>
+                <div className="text-sm font-bold text-chart-1">
+                  {formatCurrency(totalExpectedProfit)}
+                </div>
+              </div>
+            </div>
+
+            {/* ACTIONS */}
+            <div className="flex items-center gap-2 shrink-0">
+              {investment.status === "active" && onCompletePayment && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCompletePayment();
+                  }}
+                  data-testid={`button-complete-payment-${investment.id}`}
+                  className="h-8"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
+                  <span className="hidden sm:inline">{t("investments.confirmPayment")}</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                data-testid={`button-edit-investment-${investment.id}`}
+                className="h-8"
+              >
+                <Edit className="h-3.5 w-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">{t("common.edit")}</span>
+              </Button>
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  data-testid={`button-delete-investment-${investment.id}`}
+                  className="h-8"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Schedule Manager - Full detailed timeline */}
+          <div className="border-t border-border/50 p-3">
+            <PaymentScheduleManager
+              investment={investment}
+              cashflows={investmentCashflows}
+              onAddPayment={onAddPayment}
+              onRemovePayment={onRemovePayment}
+              onMarkAsReceived={onMarkPaymentAsReceived}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
