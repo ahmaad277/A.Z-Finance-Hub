@@ -202,45 +202,29 @@ export function InvestmentRow({
             </h3>
           </div>
 
-          {/* CENTER COLUMN - APR (blue) + ROI (green) stacked */}
-          <div className="flex flex-col gap-1 justify-center items-center">
-            {/* Top: APR (blue) */}
-            <div className="text-center">
-              <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="text-sm font-bold text-chart-1">
-                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
-              </div>
+          {/* CENTER COLUMN - APR (blue) + ROI (green) - Values only, no labels */}
+          <div className="flex flex-col gap-0.5 justify-center items-center">
+            {/* APR (blue) */}
+            <div className="text-sm font-bold text-chart-1">
+              {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
             </div>
             
-            {/* Bottom: ROI (green) */}
-            <div className="text-center">
-              <div className="text-[10px] text-muted-foreground">{t("investments.roiShort")}</div>
-              <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
-                {formatPercentage(roi)}
-              </div>
+            {/* ROI (green) */}
+            <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+              {formatPercentage(roi)}
             </div>
           </div>
 
-          {/* LEFT COLUMN - Face Value + Expected Profit stacked */}
-          <div className="flex flex-col gap-1 justify-center items-end">
-            {/* Top: Face Value */}
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground">
-                {t("investments.faceValue")}
-              </div>
-              <div className="text-sm font-bold">
-                {formatCurrency(parseFloat(investment.faceValue))}
-              </div>
+          {/* LEFT COLUMN - Face Value + Expected Profit - Values only, no labels */}
+          <div className="flex flex-col gap-0.5 justify-center items-end">
+            {/* Face Value */}
+            <div className="text-sm font-bold">
+              {formatCurrency(parseFloat(investment.faceValue))}
             </div>
             
-            {/* Bottom: Expected Profit (green) */}
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground">
-                {t("investments.totalExpectedProfit")}
-              </div>
-              <div className="text-sm font-bold text-chart-2">
-                {formatCurrency(totalExpectedProfit)}
-              </div>
+            {/* Expected Profit (green) */}
+            <div className="text-sm font-bold text-chart-2">
+              {formatCurrency(totalExpectedProfit)}
             </div>
           </div>
         </div>
