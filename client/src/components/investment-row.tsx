@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
+import { usePersistedViewMode } from "@/hooks/use-persisted-view-mode";
 
 // Hook: Calculate all investment metrics once
 function useInvestmentMetrics(investment: InvestmentWithPlatform, cashflows: CashflowWithInvestment[]) {
@@ -55,36 +56,6 @@ function useInvestmentMetrics(investment: InvestmentWithPlatform, cashflows: Cas
   }, [investment, cashflows]);
 }
 
-type ViewMode = "ultra-compact" | "compact" | "expanded";
-
-// Hook: Manage view mode with localStorage persistence (SSR-safe)
-function usePersistedViewMode(): [ViewMode, () => void] {
-  const [viewMode, setViewMode] = useState<ViewMode>("compact"); // Default for SSR
-
-  // Hydrate from localStorage after mount (client-side only)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("investment-view-mode");
-      if (stored === "ultra-compact" || stored === "compact" || stored === "expanded") {
-        setViewMode(stored);
-      }
-    }
-  }, []);
-
-  const cycleMode = () => {
-    setViewMode(current => {
-      const next = current === "ultra-compact" ? "compact"
-                 : current === "compact" ? "expanded"
-                 : "ultra-compact";
-      if (typeof window !== "undefined") {
-        localStorage.setItem("investment-view-mode", next);
-      }
-      return next;
-    });
-  };
-
-  return [viewMode, cycleMode];
-}
 
 interface InvestmentRowProps {
   investment: InvestmentWithPlatform;
@@ -95,11 +66,29 @@ interface InvestmentRowProps {
   onAddPayment?: (investmentId: string) => void;
   onRemovePayment?: (cashflowId: string) => void;
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
+  // Optional controlled view mode (if provided, component becomes controlled)
+  viewMode?: "ultra-compact" | "compact" | "expanded";
+  onCycleViewMode?: () => void;
 }
 
-export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete, onAddPayment, onRemovePayment, onMarkPaymentAsReceived }: InvestmentRowProps) {
+export function InvestmentRow({ 
+  investment, 
+  cashflows, 
+  onEdit, 
+  onCompletePayment, 
+  onDelete, 
+  onAddPayment, 
+  onRemovePayment, 
+  onMarkPaymentAsReceived,
+  viewMode: controlledViewMode,
+  onCycleViewMode,
+}: InvestmentRowProps) {
   const { t, language } = useLanguage();
-  const [viewMode, cycleMode] = usePersistedViewMode();
+  
+  // Use controlled mode if props provided, otherwise use internal state
+  const [internalViewMode, , internalCycleMode] = usePersistedViewMode();
+  const viewMode = controlledViewMode ?? internalViewMode;
+  const cycleMode = onCycleViewMode ?? internalCycleMode;
   
   // Calculate all metrics once using hook
   const metrics = useInvestmentMetrics(investment, cashflows);
@@ -409,8 +398,9 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           {onAddPayment && onRemovePayment && onMarkPaymentAsReceived && (
             <div className="border-t border-border/50 p-3">
               <PaymentScheduleManager
-                investment={investment}
+                investmentId={investment.id}
                 cashflows={investmentCashflows}
+                expectedProfit={metrics.totalExpectedProfit}
                 onAddPayment={onAddPayment}
                 onRemovePayment={onRemovePayment}
                 onMarkAsReceived={onMarkPaymentAsReceived}

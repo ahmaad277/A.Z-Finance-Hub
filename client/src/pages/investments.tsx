@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Filter, ArrowUpDown, Maximize2, Minimize2, Search } from "lucide-react";
+import { Plus, Filter, ArrowUpDown, Search, Maximize, Minimize, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/lib/language-provider";
 import { InvestmentRow } from "@/components/investment-row";
-import { InvestmentCompactRow } from "@/components/investment-compact-row";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { InvestmentDetailsDrawer } from "@/components/investment-details-drawer";
 import { CompletePaymentDialog } from "@/components/complete-payment-dialog";
@@ -27,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InvestmentWithPlatform, CashflowWithInvestment, Platform } from "@shared/schema";
 import { LateStatusDialog } from "@/components/late-status-dialog";
+import { usePersistedViewMode } from "@/hooks/use-persisted-view-mode";
 
 export default function Investments() {
   const { t, language } = useLanguage();
@@ -49,9 +49,12 @@ export default function Investments() {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date-desc");
-  const [compactView, setCompactView] = useState<boolean>(true); // Default to compact view
   const [selectedInvestment, setSelectedInvestment] = useState<InvestmentWithPlatform | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // View Mode Management (ultra-compact by default for maximum density)
+  // Using controlled mode to sync all investment rows
+  const [viewMode, setViewMode, cycleViewMode] = usePersistedViewMode();
 
   const { data: investments, isLoading: investmentsLoading } = useQuery<InvestmentWithPlatform[]>({
     queryKey: ["/api/investments"],
@@ -469,25 +472,51 @@ export default function Investments() {
     <div className="space-y-4 sm:space-y-6" data-testid="page-investments">
       {/* Page Header with Actions */}
       <PageHeader title={t("investments.title")} gradient>
-        <Button
-          onClick={() => setCompactView(!compactView)}
-          data-testid="button-toggle-view"
-          variant="outline"
-          className="gap-2"
-          size="sm"
-        >
-          {compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-          <span className="hidden md:inline">{compactView ? t("common.expand") : t("common.compact")}</span>
-        </Button>
-        <Button
-          onClick={handleAddNew}
-          data-testid="button-add-investment"
-          className="gap-2"
-          size="sm"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle Buttons */}
+          <div className="flex items-center rounded-lg border bg-background">
+            <Button
+              onClick={() => setViewMode("ultra-compact")}
+              data-testid="button-view-ultra-compact"
+              variant={viewMode === "ultra-compact" ? "default" : "ghost"}
+              size="icon"
+              className="h-8 w-8 rounded-r-none"
+              title={language === "ar" ? "مضغوط جداً" : "Ultra Compact"}
+            >
+              <Minimize className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={() => setViewMode("compact")}
+              data-testid="button-view-compact"
+              variant={viewMode === "compact" ? "default" : "ghost"}
+              size="icon"
+              className="h-8 w-8 rounded-none border-x"
+              title={language === "ar" ? "مضغوط" : "Compact"}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={() => setViewMode("expanded")}
+              data-testid="button-view-expanded"
+              variant={viewMode === "expanded" ? "default" : "ghost"}
+              size="icon"
+              className="h-8 w-8 rounded-l-none"
+              title={language === "ar" ? "موسّع" : "Expanded"}
+            >
+              <Maximize className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Button
+            onClick={handleAddNew}
+            data-testid="button-add-investment"
+            className="gap-2"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Search and Filters */}
@@ -594,47 +623,25 @@ export default function Investments() {
             )}
           </div>
         </Card>
-      ) : compactView ? (
-        <Card>
-          <CardContent className="p-0">
-            {/* Compact View - Ultra-Dense 40px Rows */}
-            {filteredAndSortedInvestments.map((investment) => {
-              const investmentCashflows = (cashflows || []).filter(cf => cf.investmentId === investment.id);
-              const paymentsReceived = investmentCashflows.filter(cf => cf.status === "received").length;
-              const totalPayments = investmentCashflows.length;
-
-              return (
-                <InvestmentCompactRow
-                  key={investment.id}
-                  investment={investment}
-                  paymentsReceived={paymentsReceived}
-                  totalPayments={totalPayments}
-                  onClick={() => setSelectedInvestment(investment)}
-                />
-              );
-            })}
-          </CardContent>
-        </Card>
       ) : (
-        <Card>
-          <CardContent className="p-2 sm:p-4">
-            <div className="space-y-1">
-              {filteredAndSortedInvestments.map((investment) => (
-                <InvestmentRow
-                  key={investment.id}
-                  investment={investment}
-                  cashflows={cashflows || []}
-                  onEdit={() => handleEdit(investment)}
-                  onCompletePayment={() => handleCompletePayment(investment)}
-                  onDelete={() => handleDelete(investment)}
-                  onAddPayment={handleAddPayment}
-                  onRemovePayment={handleRemovePayment}
-                  onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-1">
+          {/* Investment List - Uses 3-tier view system (ultra-compact/compact/expanded) */}
+          {filteredAndSortedInvestments.map((investment) => (
+            <InvestmentRow
+              key={investment.id}
+              investment={investment}
+              cashflows={cashflows || []}
+              viewMode={viewMode}
+              onCycleViewMode={cycleViewMode}
+              onEdit={() => handleEdit(investment)}
+              onCompletePayment={() => handleCompletePayment(investment)}
+              onDelete={() => handleDelete(investment)}
+              onAddPayment={handleAddPayment}
+              onRemovePayment={handleRemovePayment}
+              onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
+            />
+          ))}
+        </div>
       )}
 
       <InvestmentDialog
