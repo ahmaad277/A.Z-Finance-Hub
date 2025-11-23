@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -57,21 +57,28 @@ function useInvestmentMetrics(investment: InvestmentWithPlatform, cashflows: Cas
 
 type ViewMode = "ultra-compact" | "compact" | "expanded";
 
-// Hook: Manage view mode with localStorage persistence
+// Hook: Manage view mode with localStorage persistence (SSR-safe)
 function usePersistedViewMode(): [ViewMode, () => void] {
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const stored = localStorage.getItem("investment-view-mode");
-    return (stored === "ultra-compact" || stored === "compact" || stored === "expanded") 
-      ? stored 
-      : "compact"; // Default to compact view
-  });
+  const [viewMode, setViewMode] = useState<ViewMode>("compact"); // Default for SSR
+
+  // Hydrate from localStorage after mount (client-side only)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("investment-view-mode");
+      if (stored === "ultra-compact" || stored === "compact" || stored === "expanded") {
+        setViewMode(stored);
+      }
+    }
+  }, []);
 
   const cycleMode = () => {
     setViewMode(current => {
       const next = current === "ultra-compact" ? "compact"
                  : current === "compact" ? "expanded"
                  : "ultra-compact";
-      localStorage.setItem("investment-view-mode", next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("investment-view-mode", next);
+      }
       return next;
     });
   };
@@ -398,16 +405,18 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
             </div>
           </div>
 
-          {/* Payment Schedule Manager - Full detailed timeline */}
-          <div className="border-t border-border/50 p-3">
-            <PaymentScheduleManager
-              investment={investment}
-              cashflows={investmentCashflows}
-              onAddPayment={onAddPayment}
-              onRemovePayment={onRemovePayment}
-              onMarkAsReceived={onMarkPaymentAsReceived}
-            />
-          </div>
+          {/* Payment Schedule Manager - Only render if callbacks are provided */}
+          {onAddPayment && onRemovePayment && onMarkPaymentAsReceived && (
+            <div className="border-t border-border/50 p-3">
+              <PaymentScheduleManager
+                investment={investment}
+                cashflows={investmentCashflows}
+                onAddPayment={onAddPayment}
+                onRemovePayment={onRemovePayment}
+                onMarkAsReceived={onMarkPaymentAsReceived}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
