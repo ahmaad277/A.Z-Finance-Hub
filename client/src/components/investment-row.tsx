@@ -202,20 +202,20 @@ export function InvestmentRow({
             </h3>
           </div>
 
-          {/* CENTER COLUMN - APR (green) + ROI (blue) stacked */}
+          {/* CENTER COLUMN - APR (blue) + ROI (green) stacked */}
           <div className="flex flex-col gap-1 justify-center items-center">
-            {/* Top: APR (green) */}
+            {/* Top: APR (blue) */}
             <div className="text-center">
               <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="text-sm font-bold text-chart-2">
+              <div className="text-sm font-bold text-chart-1">
                 {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </div>
             </div>
             
-            {/* Bottom: ROI (blue) */}
+            {/* Bottom: ROI (green) */}
             <div className="text-center">
               <div className="text-[10px] text-muted-foreground">{t("investments.roiShort")}</div>
-              <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-1' : 'text-destructive'}`}>
+              <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
                 {formatPercentage(roi)}
               </div>
             </div>
