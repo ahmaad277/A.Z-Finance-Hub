@@ -174,6 +174,22 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
               </div>
             </div>
           </div>
+          
+          {/* Annual Return & ROI */}
+          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
+            <div>
+              <div className="text-muted-foreground">{t("investments.expectedIrr")}</div>
+              <div className="font-bold text-chart-1">
+                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">{t("investments.roi")}</div>
+              <div className={`font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+                {formatPercentage(roi)}
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2 pt-2">
             {investment.status === "active" && onCompletePayment && (
@@ -304,6 +320,16 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           </div>
         </div>
         
+        {/* Desktop: Annual Return (APR) */}
+        <div className="flex flex-col items-center justify-center px-3 min-w-[90px]">
+          <div className="text-xs text-muted-foreground">
+            {t("investments.expectedIrr")}
+          </div>
+          <div className="text-sm font-bold text-chart-1">
+            {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+          </div>
+        </div>
+
         {/* Desktop: ROI */}
         <div className="flex flex-col items-center justify-center px-3 min-w-[70px]">
           <div className="text-xs text-muted-foreground">{t("investments.roi")}</div>

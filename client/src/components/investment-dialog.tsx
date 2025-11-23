@@ -261,6 +261,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
 
       toast({
         title: t("dialog.save"),
@@ -306,6 +309,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
 
       toast({
         title: t("dialog.save"),
