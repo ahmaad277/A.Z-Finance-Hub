@@ -230,75 +230,97 @@ export function InvestmentRow({
         </div>
       )}
 
-      {/* Expanded View - Compact + Timeline + Status Details */}
+      {/* Expanded View - Exact Compact Copy at Top + Organized Details Below */}
       {viewMode === "expanded" && (
         <div className="flex flex-col" data-testid={`expanded-view-${investment.id}`}>
-          {/* Reuse Compact View Layout */}
+          {/* TOP SECTION: Exact copy of Compact View (3-column grid with label-free values) */}
           <div 
-            className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 cursor-pointer hover:bg-muted/20"
+            className="grid grid-cols-[auto_1fr_auto] gap-3 p-3 cursor-pointer hover:bg-muted/20"
             onClick={cycleMode}
           >
-            {/* LEFT COLUMN */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {/* RIGHT COLUMN - Platform/Status/Duration + Number/Name */}
+            <div className="flex flex-col gap-1 min-w-0">
+              {/* Top: Platform + Status + Duration */}
+              <div className="flex items-center gap-1 flex-wrap">
                 {investment.platform && (
-                  <Badge variant="outline" className={`text-xs shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                  <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
                     {investment.platform.name}
                   </Badge>
                 )}
                 <Badge 
-                  className={`${statusConfig.badge} text-xs shrink-0`}
+                  className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
                   variant="outline"
                 >
                   {t(`investments.${investment.status}`)}
                 </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {durationMonths}{language === "ar" ? " شهر" : " months"} • {formatDate(investment.endDate)}
+                <span className="text-[10px] text-muted-foreground">
+                  {durationMonths}{language === "ar" ? "ش" : "m"}
                 </span>
               </div>
-              <h3 className="font-semibold text-sm line-clamp-1 mb-2" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+              
+              {/* Bottom: Number + Name as title */}
+              <h3 className="font-semibold text-sm line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
                 {formatInvestmentDisplayName(investment, t("investments.number"))}
               </h3>
             </div>
 
-            {/* CENTER COLUMN */}
-            <div className="grid grid-cols-2 gap-4 min-w-[180px] shrink-0">
-              <div className="text-center">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.expectedIrr")}</div>
-                <div className="text-lg font-bold text-chart-1">
-                  {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
-                </div>
+            {/* CENTER COLUMN - APR (blue) + ROI (green) - Values only, no labels */}
+            <div className="flex flex-col gap-0.5 justify-center items-center">
+              {/* APR (blue) */}
+              <div className="text-sm font-bold text-chart-1">
+                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </div>
-              <div className="text-center">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.roi")}</div>
-                <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
-                  {formatPercentage(roi)}
-                </div>
+              
+              {/* ROI (green) */}
+              <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
+                {formatPercentage(roi)}
               </div>
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="grid grid-cols-2 gap-4 min-w-[200px] shrink-0">
-              <div className="text-right">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                  {language === "ar" ? "القيمة الاسمية" : "Face Value"}
-                </div>
-                <div className="text-sm font-bold">
-                  {formatCurrency(parseFloat(investment.faceValue))}
-                </div>
+            {/* LEFT COLUMN - Face Value + Expected Profit - Values only, no labels */}
+            <div className="flex flex-col gap-0.5 justify-center items-end">
+              {/* Face Value */}
+              <div className="text-sm font-bold">
+                {formatCurrency(parseFloat(investment.faceValue))}
               </div>
-              <div className="text-right">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                  {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
-                </div>
-                <div className="text-sm font-bold text-chart-1">
-                  {formatCurrency(totalExpectedProfit)}
-                </div>
+              
+              {/* Expected Profit (green) */}
+              <div className="text-sm font-bold text-chart-2">
+                {formatCurrency(totalExpectedProfit)}
+              </div>
+            </div>
+          </div>
+
+          {/* BOTTOM SECTION: Additional organized details */}
+          <div className="border-t border-border/50 px-3 py-2 space-y-2">
+            {/* Payment Progress */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{t("investments.paymentProgress")}</span>
+                <span className="font-medium">{receivedPayments}/{totalPayments}</span>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-chart-2 transition-all duration-300"
+                  style={{ width: `${totalPayments > 0 ? (receivedPayments / totalPayments) * 100 : 0}%` }}
+                />
               </div>
             </div>
 
-            {/* ACTIONS */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Timeline */}
+            <div className="flex items-center justify-between text-xs">
+              <div>
+                <span className="text-muted-foreground">{t("investments.startDate")}: </span>
+                <span className="font-medium">{formatDate(investment.startDate)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{t("investments.endDate")}: </span>
+                <span className="font-medium">{formatDate(investment.endDate)}</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 pt-1">
               {investment.status === "active" && onCompletePayment && (
                 <Button
                   variant="default"
