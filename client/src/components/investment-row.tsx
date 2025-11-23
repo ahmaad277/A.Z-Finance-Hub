@@ -115,64 +115,12 @@ export function InvestmentRow({
       `}
       data-testid={`row-investment-${investment.id}`}
     >
-      {/* Ultra-Compact Strip View (Mobile/Desktop) - Maximum density, no profit/ROI */}
+      {/* Ultra-Compact Strip View - Smallest view with APR(blue)+ROI(green) */}
       {viewMode === "ultra-compact" && (
         <div 
           className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
           onClick={cycleMode}
           data-testid={`ultra-compact-view-${investment.id}`}
-        >
-          {/* Platform + Status + Duration */}
-          <div className="flex items-center gap-1 shrink-0">
-            {investment.platform && (
-              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
-                {investment.platform.name}
-              </Badge>
-            )}
-            <Badge 
-              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
-              variant="outline"
-            >
-              {t(`investments.${investment.status}`)}
-            </Badge>
-            <span className="text-[10px] text-muted-foreground">
-              {durationMonths}{language === "ar" ? "ش" : "m"}
-            </span>
-          </div>
-
-          {/* Investment Number + Name */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
-              {formatInvestmentDisplayName(investment, t("investments.number"))}
-            </h3>
-          </div>
-
-          {/* APR (green) + Face Value */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-center">
-              <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="text-xs font-bold text-success">
-                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground">
-                {language === "ar" ? "قيمة اسمية" : "Face Value"}
-              </div>
-              <div className="text-xs font-bold">
-                {formatCurrency(parseFloat(investment.faceValue))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Compact View - Single-line strip with APR(blue)+ROI(green) */}
-      {viewMode === "compact" && (
-        <div 
-          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
-          onClick={cycleMode}
-          data-testid={`compact-view-${investment.id}`}
         >
           {/* Platform + Status */}
           <div className="flex items-center gap-1 shrink-0">
@@ -216,6 +164,58 @@ export function InvestmentRow({
           <div className="text-right shrink-0">
             <div className="text-xs font-bold">
               {formatCurrency(parseFloat(investment.faceValue))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Compact View - With Duration, APR (green) only */}
+      {viewMode === "compact" && (
+        <div 
+          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
+          onClick={cycleMode}
+          data-testid={`compact-view-${investment.id}`}
+        >
+          {/* Platform + Status + Duration */}
+          <div className="flex items-center gap-1 shrink-0">
+            {investment.platform && (
+              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                {investment.platform.name}
+              </Badge>
+            )}
+            <Badge 
+              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
+              variant="outline"
+            >
+              {t(`investments.${investment.status}`)}
+            </Badge>
+            <span className="text-[10px] text-muted-foreground">
+              {durationMonths}{language === "ar" ? "ش" : "m"}
+            </span>
+          </div>
+
+          {/* Investment Number + Name */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+              {formatInvestmentDisplayName(investment, t("investments.number"))}
+            </h3>
+          </div>
+
+          {/* APR (green) + Face Value */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-center">
+              <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
+              <div className="text-xs font-bold text-success">
+                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground">
+                {t("investments.faceValue")}
+              </div>
+              <div className="text-xs font-bold">
+                {formatCurrency(parseFloat(investment.faceValue))}
+              </div>
             </div>
           </div>
         </div>

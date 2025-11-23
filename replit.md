@@ -18,7 +18,7 @@ The application is a single-user personal tool built with a modern web stack, op
 
 **UI/UX Decisions:**
 - **Dashboard:** Simplified "Classic View" with a "Pro mode" toggle for advanced features.
-- **Investment Management:** Displays investments with status-based color coding, payment progress, and real-time ROI.
+- **Investment Management:** Displays investments with status-based color coding, payment progress, and real-time ROI. Features three view modes: (1) Ultra-Compact - smallest single-line strip with Platform+Status, Name, APR (blue) + ROI (green) inline with mini labels, and Face Value; (2) Compact - larger strip with Platform+Status+Duration, Name, APR (green) only, and Face Value with label; (3) Expanded - full details with timeline and metrics. View mode controls positioned in page header beside title for easy access.
 - **Unified Cashflows Interface:** An integrated page (`/cashflows`) merging Investment Cashflows and Cash Management with tabs for All Transactions, Investment Cashflows, and Cash Transactions, including a combined statistics dashboard.
 - **Analytics:** Features monthly returns trends, platform allocation with interactive three-mode switching (All Value/Active Value/Count), and performance comparisons against Vision 2040 targets, separating principal from profit.
 - **Alerts System:** Smart, user-configurable alerts with severity classification.
