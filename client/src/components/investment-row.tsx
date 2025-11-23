@@ -32,8 +32,10 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   
   // Get cashflows for this investment
   const investmentCashflows = cashflows.filter(cf => cf.investmentId === investment.id);
-  const receivedPayments = investmentCashflows.filter(cf => cf.status === "received").length;
-  const totalPayments = investmentCashflows.length;
+  // Count only PROFIT payments (exclude principal from payment progress)
+  const profitCashflows = investmentCashflows.filter(cf => cf.type === "profit");
+  const receivedPayments = profitCashflows.filter(cf => cf.status === "received").length;
+  const totalPayments = profitCashflows.length;
   
   // Calculate total expected return (sum of all cashflows - both received and pending)
   const totalExpectedReturn = investmentCashflows
@@ -42,17 +44,17 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   // Use totalExpectedProfit from investment record instead of calculating from cashflows
   const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
   
-  // Calculate total returns received so far
+  // Calculate total returns received so far (PROFIT ONLY - exclude principal)
   const totalReturns = investmentCashflows
-    .filter(cf => cf.status === "received")
+    .filter(cf => cf.status === "received" && cf.type === "profit")
     .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
   
   // Calculate ROI
   const roi = calculateROI(parseFloat(investment.faceValue), totalReturns);
   
-  // Calculate average payment amount
+  // Calculate average payment amount (PROFIT ONLY - exclude principal)
   const avgPayment = totalPayments > 0 
-    ? investmentCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
+    ? profitCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
     : 0;
   
   const statusConfig = getInvestmentStatusConfig(investment.status);
