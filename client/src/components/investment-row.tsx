@@ -19,10 +19,12 @@ interface InvestmentRowProps {
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
 }
 
+type ViewMode = "ultra-compact" | "compact" | "expanded";
+
 export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete, onAddPayment, onRemovePayment, onMarkPaymentAsReceived }: InvestmentRowProps) {
   const { t, language } = useLanguage();
   const isRtl = language === "ar";
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("compact");
   
   // Calculate investment duration in months
   const durationMonths = Math.round(
@@ -60,6 +62,13 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
   const statusConfig = getInvestmentStatusConfig(investment.status);
   const platformBorderClasses = getPlatformBorderClasses(investment.platform?.name);
   
+  // Handle view mode toggle (cycle through modes on click)
+  const handleToggleView = () => {
+    if (viewMode === "ultra-compact") setViewMode("compact");
+    else if (viewMode === "compact") setViewMode("expanded");
+    else setViewMode("ultra-compact");
+  };
+
   return (
     <div
       className={`
@@ -68,55 +77,65 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
       `}
       data-testid={`row-investment-${investment.id}`}
     >
-      {/* Compact Mobile View */}
-      <div 
-        className="flex items-center gap-2 p-2 lg:hidden cursor-pointer hover:bg-muted/20"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 mb-0.5">
+      {/* Ultra-Compact Strip View (Mobile/Desktop) - Maximum density, no profit/ROI */}
+      {viewMode === "ultra-compact" && (
+        <div 
+          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
+          onClick={handleToggleView}
+          data-testid={`ultra-compact-view-${investment.id}`}
+        >
+          {/* Platform + Status + Duration */}
+          <div className="flex items-center gap-1 shrink-0">
             {investment.platform && (
-              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
                 {investment.platform.name}
               </Badge>
             )}
             <Badge 
-              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4 shrink-0`}
+              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
               variant="outline"
-              data-testid={`badge-status-${investment.status}`}
             >
               {t(`investments.${investment.status}`)}
             </Badge>
+            <span className="text-[10px] text-muted-foreground">
+              {durationMonths}{language === "ar" ? "ش" : "m"}
+            </span>
           </div>
-          <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
-            {formatInvestmentDisplayName(investment, t("investments.number"))}
-          </h3>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="text-right">
-            <div className="text-xs font-bold">{formatCurrency(parseFloat(investment.faceValue))}</div>
-            <div className={`text-[10px] ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
-              {formatPercentage(roi)}
+
+          {/* Investment Number + Name */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+              {formatInvestmentDisplayName(investment, t("investments.number"))}
+            </h3>
+          </div>
+
+          {/* APR + Face Value */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-center">
+              <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
+              <div className="text-xs font-bold text-chart-1">
+                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground">
+                {language === "ar" ? "قيمة اسمية" : "Face Value"}
+              </div>
+              <div className="text-xs font-bold">
+                {formatCurrency(parseFloat(investment.faceValue))}
+              </div>
             </div>
           </div>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
         </div>
-      </div>
+      )}
 
-      {/* Expanded Mobile View */}
-      {isExpanded && (
-        <div className="lg:hidden p-3 pt-0 space-y-3 border-t border-border/50">
-          {/* Payment Schedule Manager with interactive payment boxes */}
-          <PaymentScheduleManager
-            investmentId={investment.id}
-            cashflows={cashflows}
-            expectedProfit={totalExpectedProfit}
-            onAddPayment={onAddPayment}
-            onRemovePayment={onRemovePayment}
+      {/* Compact View - 3-section layout */}
+      {viewMode === "compact" && (
+        <div 
+          className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/20"
+          onClick={handleToggleView}
+          data-testid={`compact-view-${investment.id}`}
+        >
             onMarkAsReceived={onMarkPaymentAsReceived}
           />
           
