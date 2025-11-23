@@ -57,7 +57,7 @@ const formSchema = insertInvestmentSchema.extend({
   message: "Face value must be greater than 0",
   path: ["faceValue"],
 }).refine((data) => data.expectedIrr > 0, {
-  message: "Expected IRR must be greater than 0",
+  message: "Annual Return must be greater than 0",
   path: ["expectedIrr"],
 });
 
