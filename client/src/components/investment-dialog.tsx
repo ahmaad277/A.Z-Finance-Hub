@@ -254,9 +254,13 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       return apiRequest("POST", "/api/investments", data);
     },
     onSuccess: () => {
+      // Invalidate all dashboard-related queries for real-time updates
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.refetchQueries({ queryKey: ["/api/investments"], type: 'all' });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
 
       toast({
         title: t("dialog.save"),
@@ -295,9 +299,13 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       return apiRequest("PATCH", `/api/investments/${investment?.id}`, data);
     },
     onSuccess: () => {
+      // Invalidate all dashboard-related queries for real-time updates
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.refetchQueries({ queryKey: ["/api/investments"], type: 'all' });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cashflows"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash/balance"] });
 
       toast({
         title: t("dialog.save"),
