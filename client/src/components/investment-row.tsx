@@ -137,24 +137,24 @@ export function InvestmentRow({
             </Badge>
           </div>
 
-          {/* Investment Name */}
+          {/* Investment Number (or Name if no number) */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
-              {formatInvestmentDisplayName(investment, t("investments.number"))}
+            <h3 className="font-semibold text-xs line-clamp-1">
+              {investment.investmentNumber ? `#${investment.investmentNumber}` : investment.name}
             </h3>
           </div>
 
-          {/* APR (blue) + ROI (green) - Inline with mini labels */}
+          {/* APR (blue) + ROI (green) - Inline with slightly larger font */}
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-baseline gap-0.5">
-              <span className="text-[8px] text-muted-foreground uppercase">{t("investments.aprShort")}</span>
-              <span className="text-[10px] font-bold text-chart-1">
+              <span className="text-[9px] text-muted-foreground uppercase">{t("investments.aprShort")}</span>
+              <span className="text-xs font-bold text-chart-1">
                 {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </span>
             </div>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-[8px] text-muted-foreground uppercase">{t("investments.roiShort")}</span>
-              <span className={`text-[10px] font-bold ${roi >= 0 ? 'text-success' : 'text-destructive'}`}>
+              <span className="text-[9px] text-muted-foreground uppercase">{t("investments.roiShort")}</span>
+              <span className={`text-xs font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
                 {formatPercentage(roi)}
               </span>
             </div>
@@ -169,52 +169,77 @@ export function InvestmentRow({
         </div>
       )}
 
-      {/* Compact View - With Duration, APR (green) only */}
+      {/* Compact View - Taller 3-column layout */}
       {viewMode === "compact" && (
         <div 
-          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
+          className="grid grid-cols-[auto_1fr_auto] gap-3 p-3 cursor-pointer hover:bg-muted/20"
           onClick={cycleMode}
           data-testid={`compact-view-${investment.id}`}
         >
-          {/* Platform + Status + Duration */}
-          <div className="flex items-center gap-1 shrink-0">
-            {investment.platform && (
-              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
-                {investment.platform.name}
+          {/* RIGHT COLUMN - Platform/Status/Duration + Number/Name */}
+          <div className="flex flex-col gap-1 min-w-0">
+            {/* Top: Platform + Status + Duration */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {investment.platform && (
+                <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                  {investment.platform.name}
+                </Badge>
+              )}
+              <Badge 
+                className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
+                variant="outline"
+              >
+                {t(`investments.${investment.status}`)}
               </Badge>
-            )}
-            <Badge 
-              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
-              variant="outline"
-            >
-              {t(`investments.${investment.status}`)}
-            </Badge>
-            <span className="text-[10px] text-muted-foreground">
-              {durationMonths}{language === "ar" ? "ش" : "m"}
-            </span>
-          </div>
-
-          {/* Investment Number + Name */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+              <span className="text-[10px] text-muted-foreground">
+                {durationMonths}{language === "ar" ? "ش" : "m"}
+              </span>
+            </div>
+            
+            {/* Bottom: Number + Name as title */}
+            <h3 className="font-semibold text-sm line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
               {formatInvestmentDisplayName(investment, t("investments.number"))}
             </h3>
           </div>
 
-          {/* APR (green) + Face Value */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* CENTER COLUMN - APR (green) + ROI (blue) stacked */}
+          <div className="flex flex-col gap-1 justify-center items-center">
+            {/* Top: APR (green) */}
             <div className="text-center">
               <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="text-xs font-bold text-success">
+              <div className="text-sm font-bold text-chart-2">
                 {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </div>
             </div>
+            
+            {/* Bottom: ROI (blue) */}
+            <div className="text-center">
+              <div className="text-[10px] text-muted-foreground">{t("investments.roiShort")}</div>
+              <div className={`text-sm font-bold ${roi >= 0 ? 'text-chart-1' : 'text-destructive'}`}>
+                {formatPercentage(roi)}
+              </div>
+            </div>
+          </div>
+
+          {/* LEFT COLUMN - Face Value + Expected Profit stacked */}
+          <div className="flex flex-col gap-1 justify-center items-end">
+            {/* Top: Face Value */}
             <div className="text-right">
               <div className="text-[10px] text-muted-foreground">
                 {t("investments.faceValue")}
               </div>
-              <div className="text-xs font-bold">
+              <div className="text-sm font-bold">
                 {formatCurrency(parseFloat(investment.faceValue))}
+              </div>
+            </div>
+            
+            {/* Bottom: Expected Profit (green) */}
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground">
+                {t("investments.totalExpectedProfit")}
+              </div>
+              <div className="text-sm font-bold text-chart-2">
+                {formatCurrency(totalExpectedProfit)}
               </div>
             </div>
           </div>

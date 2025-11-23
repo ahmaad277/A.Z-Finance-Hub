@@ -16,21 +16,19 @@ export function cn(...inputs: ClassValue[]) {
  * Usage: cn("text-lg font-bold", METRIC_COLOR_MAP.roi.colorLight, METRIC_COLOR_MAP.roi.colorDark)
  * 
  * Color scheme:
- * - APR: Uses CSS variable --chart-2 (automatically adapts to dark mode)
- *   - Light: rgb(74,222,128), Dark: rgb(22,162,73)
- * - ROI: Uses explicit Tailwind classes for light/dark modes
- *   - Light: rgb(37,99,235), Dark: rgb(96,165,250)
+ * - APR: Uses CSS variable --chart-1 (blue, automatically adapts to dark mode)
+ * - ROI: Uses CSS variable --chart-2 (green, automatically adapts to dark mode)
  */
 export const METRIC_COLOR_MAP = {
   apr: {
+    colorLight: "text-chart-1",
+    colorDark: "", // Not needed - CSS variable adapts automatically
+    bgColor: "bg-chart-1/10",
+  },
+  roi: {
     colorLight: "text-chart-2",
     colorDark: "", // Not needed - CSS variable adapts automatically
     bgColor: "bg-chart-2/10",
-  },
-  roi: {
-    colorLight: "text-blue-600",
-    colorDark: "dark:text-blue-400",
-    bgColor: "bg-blue-600/10",
   },
 } as const;
 
