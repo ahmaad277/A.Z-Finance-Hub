@@ -147,11 +147,11 @@ export function InvestmentRow({
             </h3>
           </div>
 
-          {/* APR + Face Value */}
+          {/* APR (green) + Face Value */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="text-center">
               <div className="text-[10px] text-muted-foreground">{t("investments.expectedIrr")}</div>
-              <div className="text-xs font-bold text-chart-1">
+              <div className="text-xs font-bold text-success">
                 {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
               </div>
             </div>
@@ -167,115 +167,56 @@ export function InvestmentRow({
         </div>
       )}
 
-      {/* Compact View - 3-column layout: Header | Metrics | Actions */}
+      {/* Compact View - Single-line strip with APR(blue)+ROI(green) */}
       {viewMode === "compact" && (
         <div 
-          className="flex flex-col sm:flex-row sm:items-center gap-3 p-3"
+          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted/20"
+          onClick={cycleMode}
           data-testid={`compact-view-${investment.id}`}
         >
-          {/* LEFT COLUMN: Platform + Status + Duration + Name */}
-          <div className="flex-1 min-w-0 cursor-pointer hover:bg-muted/20 -mx-3 -my-3 sm:mx-0 sm:my-0 p-3" onClick={cycleMode}>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {investment.platform && (
-                <Badge variant="outline" className={`text-xs shrink-0 ${getPlatformBadgeClasses(investment.platform.name)}`}>
-                  {investment.platform.name}
-                </Badge>
-              )}
-              <Badge 
-                className={`${statusConfig.badge} text-xs shrink-0`}
-                variant="outline"
-              >
-                {t(`investments.${investment.status}`)}
+          {/* Platform + Status */}
+          <div className="flex items-center gap-1 shrink-0">
+            {investment.platform && (
+              <Badge variant="outline" className={`text-[10px] px-1 py-0 h-4 ${getPlatformBadgeClasses(investment.platform.name)}`}>
+                {investment.platform.name}
               </Badge>
-              <span className="text-xs text-muted-foreground">
-                {durationMonths}{language === "ar" ? " شهر" : " months"} • {formatDate(investment.endDate)}
-              </span>
-            </div>
-            <h3 className="font-semibold text-sm line-clamp-1 mb-2" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
+            )}
+            <Badge 
+              className={`${statusConfig.badge} text-[10px] px-1 py-0 h-4`}
+              variant="outline"
+            >
+              {t(`investments.${investment.status}`)}
+            </Badge>
+          </div>
+
+          {/* Investment Name */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-xs line-clamp-1" title={formatInvestmentDisplayName(investment, t("investments.number"))}>
               {formatInvestmentDisplayName(investment, t("investments.number"))}
             </h3>
           </div>
 
-          {/* CENTER COLUMN: APR (green) + ROI (blue) */}
-          <div className="grid grid-cols-2 gap-4 min-w-[180px] shrink-0 cursor-pointer hover:bg-muted/20 -mx-3 sm:mx-0 p-3 sm:p-0" onClick={cycleMode}>
-            <div className="text-center">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.expectedIrr")}</div>
-              <div className="text-lg font-bold text-chart-1">
-                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("investments.roi")}</div>
-              <div className={`text-lg font-bold ${roi >= 0 ? 'text-chart-2' : 'text-destructive'}`}>
-                {formatPercentage(roi)}
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: Face Value + Expected Profit (green) */}
-          <div className="grid grid-cols-2 gap-4 min-w-[200px] shrink-0 cursor-pointer hover:bg-muted/20 -mx-3 sm:mx-0 p-3 sm:p-0" onClick={cycleMode}>
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                {language === "ar" ? "القيمة الاسمية" : "Face Value"}
-              </div>
-              <div className="text-sm font-bold">
-                {formatCurrency(parseFloat(investment.faceValue))}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                {language === "ar" ? "الربح المتوقع" : "Expected Profit"}
-              </div>
-              <div className="text-sm font-bold text-chart-1">
-                {formatCurrency(totalExpectedProfit)}
-              </div>
-            </div>
-          </div>
-
-          {/* ACTIONS */}
+          {/* APR (blue) + ROI (green) - Inline with mini labels */}
           <div className="flex items-center gap-2 shrink-0">
-            {investment.status === "active" && onCompletePayment && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCompletePayment();
-                }}
-                data-testid={`button-complete-payment-${investment.id}`}
-                className="h-8"
-              >
-                <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">{t("investments.confirmPayment")}</span>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              data-testid={`button-edit-investment-${investment.id}`}
-              className="h-8"
-            >
-              <Edit className="h-3.5 w-3.5 sm:mr-1" />
-              <span className="hidden sm:inline">{t("common.edit")}</span>
-            </Button>
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                data-testid={`button-delete-investment-${investment.id}`}
-                className="h-8"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[8px] text-muted-foreground uppercase">{t("investments.aprShort")}</span>
+              <span className="text-[10px] font-bold text-chart-1">
+                {formatPercentage(parseFloat(investment.expectedIrr || "0"))}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[8px] text-muted-foreground uppercase">{t("investments.roiShort")}</span>
+              <span className={`text-[10px] font-bold ${roi >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {formatPercentage(roi)}
+              </span>
+            </div>
+          </div>
+
+          {/* Face Value */}
+          <div className="text-right shrink-0">
+            <div className="text-xs font-bold">
+              {formatCurrency(parseFloat(investment.faceValue))}
+            </div>
           </div>
         </div>
       )}

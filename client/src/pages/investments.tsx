@@ -3,7 +3,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Filter, ArrowUpDown, Search, Maximize, Minimize, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -470,8 +469,12 @@ export default function Investments() {
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="page-investments">
-      {/* Page Header with Actions */}
-      <PageHeader title={t("investments.title")} gradient>
+      {/* Page Header with View Mode Toggles and Add Button */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          {t("investments.title")}
+        </h1>
+        
         <div className="flex items-center gap-2">
           {/* View Mode Toggle Buttons */}
           <div className="flex items-center rounded-lg border bg-background">
@@ -517,7 +520,7 @@ export default function Investments() {
             <span className="hidden sm:inline">{t("investments.addInvestment")}</span>
           </Button>
         </div>
-      </PageHeader>
+      </div>
 
       {/* Search and Filters */}
       <div className="space-y-3">
