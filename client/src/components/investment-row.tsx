@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
 import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -7,6 +7,53 @@ import { Badge } from "@/components/ui/badge";
 import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
+
+// Hook: Calculate all investment metrics once
+function useInvestmentMetrics(investment: InvestmentWithPlatform, cashflows: CashflowWithInvestment[]) {
+  return useMemo(() => {
+    // Calculate investment duration in months
+    const durationMonths = Math.round(
+      (new Date(investment.endDate).getTime() - new Date(investment.startDate).getTime()) / 
+      (1000 * 60 * 60 * 24 * 30)
+    );
+    
+    // Get cashflows for this investment
+    const investmentCashflows = cashflows.filter(cf => cf.investmentId === investment.id);
+    
+    // Count only PROFIT payments (exclude principal from payment progress)
+    const profitCashflows = investmentCashflows.filter(cf => cf.type === "profit");
+    const receivedPayments = profitCashflows.filter(cf => cf.status === "received").length;
+    const totalPayments = profitCashflows.length;
+    
+    // Use totalExpectedProfit from investment record
+    const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
+    
+    // Calculate total returns received so far (PROFIT ONLY - exclude principal)
+    const totalReturns = investmentCashflows
+      .filter(cf => cf.status === "received" && cf.type === "profit")
+      .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
+    
+    // Calculate ROI
+    const roi = calculateROI(parseFloat(investment.faceValue), totalReturns);
+    
+    // Calculate average payment amount (PROFIT ONLY - exclude principal)
+    const avgPayment = totalPayments > 0 
+      ? profitCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
+      : 0;
+
+    return {
+      durationMonths,
+      investmentCashflows,
+      profitCashflows,
+      receivedPayments,
+      totalPayments,
+      totalExpectedProfit,
+      totalReturns,
+      roi,
+      avgPayment,
+    };
+  }, [investment, cashflows]);
+}
 
 interface InvestmentRowProps {
   investment: InvestmentWithPlatform;
@@ -23,41 +70,21 @@ type ViewMode = "ultra-compact" | "compact" | "expanded";
 
 export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment, onDelete, onAddPayment, onRemovePayment, onMarkPaymentAsReceived }: InvestmentRowProps) {
   const { t, language } = useLanguage();
-  const isRtl = language === "ar";
   const [viewMode, setViewMode] = useState<ViewMode>("compact");
   
-  // Calculate investment duration in months
-  const durationMonths = Math.round(
-    (new Date(investment.endDate).getTime() - new Date(investment.startDate).getTime()) / 
-    (1000 * 60 * 60 * 24 * 30)
-  );
-  
-  // Get cashflows for this investment
-  const investmentCashflows = cashflows.filter(cf => cf.investmentId === investment.id);
-  // Count only PROFIT payments (exclude principal from payment progress)
-  const profitCashflows = investmentCashflows.filter(cf => cf.type === "profit");
-  const receivedPayments = profitCashflows.filter(cf => cf.status === "received").length;
-  const totalPayments = profitCashflows.length;
-  
-  // Calculate total expected return (sum of all cashflows - both received and pending)
-  const totalExpectedReturn = investmentCashflows
-    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
-  
-  // Use totalExpectedProfit from investment record instead of calculating from cashflows
-  const totalExpectedProfit = parseFloat(investment.totalExpectedProfit || "0");
-  
-  // Calculate total returns received so far (PROFIT ONLY - exclude principal)
-  const totalReturns = investmentCashflows
-    .filter(cf => cf.status === "received" && cf.type === "profit")
-    .reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0);
-  
-  // Calculate ROI
-  const roi = calculateROI(parseFloat(investment.faceValue), totalReturns);
-  
-  // Calculate average payment amount (PROFIT ONLY - exclude principal)
-  const avgPayment = totalPayments > 0 
-    ? profitCashflows.reduce((sum, cf) => sum + parseFloat(cf.amount || "0"), 0) / totalPayments
-    : 0;
+  // Calculate all metrics once using hook
+  const metrics = useInvestmentMetrics(investment, cashflows);
+  const {
+    durationMonths,
+    investmentCashflows,
+    profitCashflows,
+    receivedPayments,
+    totalPayments,
+    totalExpectedProfit,
+    totalReturns,
+    roi,
+    avgPayment,
+  } = metrics;
   
   const statusConfig = getInvestmentStatusConfig(investment.status);
   const platformBorderClasses = getPlatformBorderClasses(investment.platform?.name);
@@ -136,9 +163,6 @@ export function InvestmentRow({ investment, cashflows, onEdit, onCompletePayment
           onClick={handleToggleView}
           data-testid={`compact-view-${investment.id}`}
         >
-            onMarkAsReceived={onMarkPaymentAsReceived}
-          />
-          
           {/* Sukuk Structure: Face Value & Expected Profit */}
           <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/50">
             <div>
