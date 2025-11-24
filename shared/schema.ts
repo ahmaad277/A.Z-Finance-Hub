@@ -34,8 +34,8 @@ export const investments = pgTable("investments", {
   investmentNumber: integer("investment_number").unique(), // Sequential number based on portfolio entry order
   faceValue: numeric("face_value", { precision: 15, scale: 2 }).notNull(), // القيمة الاسمية - Principal amount (merged from 'amount')
   totalExpectedProfit: numeric("total_expected_profit", { precision: 15, scale: 2 }).notNull(), // إجمالي الأرباح المتوقعة
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(), // Expected end date
+  startDate: timestamp("start_date"), // Optional for AI-entered investments pending review
+  endDate: timestamp("end_date"), // Optional for AI-entered investments pending review
   durationMonths: integer("duration_months").notNull(), // Duration in months for validation & quick reference
   actualEndDate: timestamp("actual_end_date"), // Actual completion date
   expectedIrr: numeric("expected_irr", { precision: 5, scale: 2 }).notNull(), // percentage
@@ -49,6 +49,7 @@ export const investments = pgTable("investments", {
   needsReview: integer("needs_review").notNull().default(0), // 0 = no review needed, 1 = needs review (Check! indicator)
   lateDate: timestamp("late_date"), // Date when investment status became 'late'
   defaultedDate: timestamp("defaulted_date"), // Date when investment status became 'defaulted'
+  tags: text("tags").array(), // Tags for categorization (e.g., ["AI Entry", "Needs Review"])
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`), // When investment was added to portfolio
 });
 
@@ -61,8 +62,8 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   defaultedDate: true,
   createdAt: true,
 }).extend({
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
   durationMonths: z.number().int().positive(),
   faceValue: z.coerce.number().positive(),
   totalExpectedProfit: z.coerce.number().nonnegative(),
@@ -70,6 +71,7 @@ export const insertInvestmentSchema = createInsertSchema(investments).omit({
   distributionFrequency: z.enum(['monthly', 'quarterly', 'semi_annually', 'annually', 'at_maturity', 'custom']),
   profitPaymentStructure: z.enum(['periodic', 'at_maturity']),
   status: z.enum(['active', 'late', 'defaulted', 'completed', 'pending']).optional(),
+  tags: z.array(z.string()).optional().nullable(),
 });
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 export type Investment = typeof investments.$inferSelect;

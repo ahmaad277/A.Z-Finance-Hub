@@ -270,6 +270,10 @@ const translations = {
     "investments.number": "Investment #",
     "investments.paymentProgress": "Payment Progress",
     "investments.paymentValue": "Payment Value",
+    "investments.tags": "Tags",
+    "investments.tagsPlaceholder": "e.g., AI Entry, Needs Review (comma-separated)",
+    "investments.filterByTags": "Filter by Tags",
+    "investments.allTags": "All Tags",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -1347,6 +1351,10 @@ const translations = {
     "investments.number": "استثمار #",
     "investments.paymentProgress": "تقدم الدفعات",
     "investments.paymentValue": "قيمة الدفعة",
+    "investments.tags": "الوسوم",
+    "investments.tagsPlaceholder": "مثال: إدخال AI، بحاجة لمراجعة (مفصولة بفواصل)",
+    "investments.filterByTags": "فلترة حسب الوسوم",
+    "investments.allTags": "جميع الوسوم",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",

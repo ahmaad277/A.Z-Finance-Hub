@@ -203,6 +203,7 @@ export function calculateDashboardMetrics(
   // 2. Filter investments by date range if provided
   if (dateRange) {
     filteredInvestments = filteredInvestments.filter(inv => {
+      if (!inv.startDate) return false; // Skip investments without start date
       const startDate = new Date(inv.startDate);
       return startDate >= dateRange.start && startDate <= dateRange.end;
     });
@@ -256,6 +257,7 @@ export function calculateDashboardMetrics(
   const totalActiveValue = activeFilteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const activeAPR = totalActiveValue > 0
     ? activeFilteredInvestments.reduce((sum, inv) => {
+        if (!inv.startDate || !inv.endDate) return sum; // Skip investments without dates
         const amount = parseFloat(inv.faceValue);
         const profit = parseFloat(inv.totalExpectedProfit || "0");
         const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
@@ -269,6 +271,7 @@ export function calculateDashboardMetrics(
   const allInvestmentsValue = filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0);
   const weightedAPR = allInvestmentsValue > 0
     ? filteredInvestments.reduce((sum, inv) => {
+        if (!inv.startDate || !inv.endDate) return sum; // Skip investments without dates
         const amount = parseFloat(inv.faceValue);
         const profit = parseFloat(inv.totalExpectedProfit || "0");
         const durationMonths = calculateDurationMonths(inv.startDate, inv.endDate);
@@ -284,11 +287,12 @@ export function calculateDashboardMetrics(
   const totalProfitAmount = actualReturns;
   
   // 7. Calculate averages
-  const totalDuration = filteredInvestments.reduce((sum, inv) => {
-    return sum + calculateDurationMonths(inv.startDate, inv.endDate);
+  const investmentsWithDates = filteredInvestments.filter(inv => inv.startDate && inv.endDate);
+  const totalDuration = investmentsWithDates.reduce((sum, inv) => {
+    return sum + calculateDurationMonths(inv.startDate!, inv.endDate!);
   }, 0);
-  const avgDuration = filteredInvestments.length > 0 
-    ? Math.round((totalDuration / filteredInvestments.length) * 100) / 100 
+  const avgDuration = investmentsWithDates.length > 0 
+    ? Math.round((totalDuration / investmentsWithDates.length) * 100) / 100 
     : 0;
   const avgAmount = filteredInvestments.length > 0 
     ? filteredInvestments.reduce((sum, inv) => sum + parseFloat(inv.faceValue), 0) / filteredInvestments.length 
