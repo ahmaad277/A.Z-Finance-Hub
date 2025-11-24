@@ -53,6 +53,7 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality.
 - **Data-Entry Sharing System:** Secure token-based system for external users to manage investments with UI isolation and multi-layer security.
 - **Platform Fee Management System:** Automatic profit deduction based on configurable platform fees. The system stores NET PROFIT (`totalExpectedProfit`) after fee deduction. Gross profit is reverse-calculated for display.
+- **Intelligent Sukuk Seed System:** Comprehensive seed script (`server/seed-sukuk.ts`) for bulk investment entry with smart cashflow generation. Corrects ROI vs IRR calculations, infers distribution frequency from duration/payment-count ratio (monthly: <1.5 months interval, quarterly: 1.5-4.5 months, end-of-term: >4.5 months), and generates accurate cashflow schedules aligned with investment timelines.
 
 ## External Dependencies
 - **Charting:** Recharts.
