@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { formatCurrency, formatPercentage, formatDate, calculateROI, getInvestmentStatusConfig, formatInvestmentDisplayName } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-provider";
-import { Edit, CheckCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Edit, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PaymentScheduleManager } from "@/components/payment-schedule-manager";
 import type { InvestmentWithPlatform, CashflowWithInvestment } from "@shared/schema";
 import { getPlatformBadgeClasses, getPlatformBorderClasses } from "@/lib/platform-colors";
 import { usePersistedViewMode } from "@/hooks/use-persisted-view-mode";
@@ -293,12 +292,49 @@ export function InvestmentRow({
 
           {/* BOTTOM SECTION: Additional organized details */}
           <div className="border-t border-border/50 px-3 py-2 space-y-2">
-            {/* Payment Progress */}
+            {/* Payment Progress - Redesigned: Payment Value (left) + Progress (center) + Count with +/- buttons (right) */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
+                {/* Left: Payment Value */}
+                <div>
+                  <span className="text-muted-foreground">{t("investments.paymentValue")}: </span>
+                  <span className="font-medium">{formatCurrency(avgPayment)}</span>
+                </div>
+                
+                {/* Center: Payment Progress label */}
                 <span className="text-muted-foreground">{t("investments.paymentProgress")}</span>
-                <span className="font-medium">{receivedPayments}/{totalPayments}</span>
+                
+                {/* Right: Count with +/- buttons */}
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Decrement payment count
+                    }}
+                    data-testid={`button-decrease-payment-${investment.id}`}
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                  <span className="font-medium min-w-[3ch] text-center">{receivedPayments}/{totalPayments}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Increment payment count
+                    }}
+                    data-testid={`button-increase-payment-${investment.id}`}
+                  >
+                    <ChevronUp className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
+              
+              {/* Progress Bar */}
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-chart-2 transition-all duration-300"
@@ -319,23 +355,8 @@ export function InvestmentRow({
               </div>
             </div>
 
-            {/* Actions */}
+            {/* Actions - Moved to bottom after additional info */}
             <div className="flex items-center gap-2 pt-1">
-              {investment.status === "active" && onCompletePayment && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCompletePayment();
-                  }}
-                  data-testid={`button-complete-payment-${investment.id}`}
-                  className="h-8"
-                >
-                  <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
-                  <span className="hidden sm:inline">{t("investments.confirmPayment")}</span>
-                </Button>
-              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -365,20 +386,6 @@ export function InvestmentRow({
               )}
             </div>
           </div>
-
-          {/* Payment Schedule Manager - Only render if callbacks are provided */}
-          {onAddPayment && onRemovePayment && onMarkPaymentAsReceived && (
-            <div className="border-t border-border/50 p-3">
-              <PaymentScheduleManager
-                investmentId={investment.id}
-                cashflows={investmentCashflows}
-                expectedProfit={metrics.totalExpectedProfit}
-                onAddPayment={onAddPayment}
-                onRemovePayment={onRemovePayment}
-                onMarkAsReceived={onMarkPaymentAsReceived}
-              />
-            </div>
-          )}
         </div>
       )}
     </div>

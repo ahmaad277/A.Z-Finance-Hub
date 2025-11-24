@@ -268,6 +268,8 @@ const translations = {
     "investments.months": "months",
     "investments.completePayment": "Complete Payment",
     "investments.number": "Investment #",
+    "investments.paymentProgress": "Payment Progress",
+    "investments.paymentValue": "Payment Value",
     
     // Cashflows
     "cashflows.title": "Cashflows",
@@ -1343,6 +1345,8 @@ const translations = {
     "investments.months": "شهر",
     "investments.completePayment": "إتمام الدفعة",
     "investments.number": "استثمار #",
+    "investments.paymentProgress": "تقدم الدفعات",
+    "investments.paymentValue": "قيمة الدفعة",
     
     // Cashflows
     "cashflows.title": "التدفقات النقدية",
