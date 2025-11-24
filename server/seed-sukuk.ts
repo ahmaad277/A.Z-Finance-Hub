@@ -244,33 +244,37 @@ async function seedSukukInvestments() {
   console.log('📋 PHASE 2: Inserting 18 active investments...\n');
   
   const activeInvestments = [
-    // Format: { name, faceValue, totalAmountReceived, months, paymentCount, receivedCount }
-    { name: 'منار العلم للتعليم', faceValue: 5000, totalAmountReceived: 8135.75, months: 38, paymentCount: 7, receivedCount: 4 },
-    { name: 'استثمارات الخليج القابضة', faceValue: 5000, totalAmountReceived: 7951.37, months: 28, paymentCount: 5, receivedCount: 4 },
-    { name: 'أزق سكن العقارية (الرضا السكني)', faceValue: 5000, totalAmountReceived: 6151.34, months: 24, paymentCount: 1, receivedCount: 0 },
-    { name: 'عبدالخليف احمد العريج وشريكه', faceValue: 5000, totalAmountReceived: 5610.29, months: 13, paymentCount: 3, receivedCount: 0 },
-    { name: 'محمد عمر بانعيم للتجارة', faceValue: 20000, totalAmountReceived: 22154.87, months: 18, paymentCount: 18, receivedCount: 11 },
-    { name: 'بيان الإنشاء للمقاولات (بيان 3)', faceValue: 5000, totalAmountReceived: 6251.93, months: 24, paymentCount: 1, receivedCount: 0 },
-    { name: 'مصنع الأنسجة المتطورة', faceValue: 4000, totalAmountReceived: 4396.34, months: 12, paymentCount: 4, receivedCount: 3 },
-    { name: 'دار الهمة للمشاريع المحدودة', faceValue: 8000, totalAmountReceived: 10571.94, months: 30, paymentCount: 6, receivedCount: 2 },
-    { name: 'الراسيات للتطوير العقاري (مشروع الراسيات برينديس)', faceValue: 10000, totalAmountReceived: 12583.52, months: 23, paymentCount: 1, receivedCount: 0 },
-    { name: 'بامن للتطوير والاستثمار العقاري', faceValue: 5000, totalAmountReceived: 6518.86, months: 26, paymentCount: 1, receivedCount: 0 },
-    { name: 'منابر إيجار للتطوير العقاري (مشروع بدء 41)', faceValue: 10000, totalAmountReceived: 12885.89, months: 27, paymentCount: 1, receivedCount: 0 },
-    { name: 'الدرر الخليجية للمقاولات (مشروع الصدفة)', faceValue: 5000, totalAmountReceived: 5673.33, months: 13, paymentCount: 1, receivedCount: 0 },
-    { name: 'نيو هوم للتطوير العقاري (مشروع نيو هوم حطين)', faceValue: 10000, totalAmountReceived: 13045.67, months: 31, paymentCount: 1, receivedCount: 0 },
-    { name: 'الراسيات للتطوير العقاري (رقم الإصدار 35)', faceValue: 10000, totalAmountReceived: 12083.62, months: 19, paymentCount: 1, receivedCount: 0 },
-    { name: 'رفيعة العقارية (مشروع رفيعة 03)', faceValue: 20000, totalAmountReceived: 27780.37, months: 34, paymentCount: 1, receivedCount: 0 },
-    { name: 'خيال العقارية (مشروع خيال باير)', faceValue: 10000, totalAmountReceived: 12804.06, months: 24, paymentCount: 1, receivedCount: 0 },
-    { name: 'مهاد للتطوير العقاري (مشروع مهاد السيف)', faceValue: 20000, totalAmountReceived: 27135.56, months: 31, paymentCount: 1, receivedCount: 0 },
-    { name: 'شركة محمد عمر بانعيم للتجارة (رقم الإصدار 27)', faceValue: 20000, totalAmountReceived: 22339.88, months: 18, paymentCount: 6, receivedCount: 2 },
+    // NEW FORMAT: { name, faceValue, profit, roi (from image), months, paymentCount, receivedCount }
+    // ROI comes directly from the image, NOT calculated
+    // IRR = ROI / (months / 12) to get annual rate
+    
+    { name: 'منار العلم للتعليم', faceValue: 5000, profit: 3135.75, roi: 62.7, months: 38, paymentCount: 7, receivedCount: 4 },
+    { name: 'استثمارات الخليج القابضة', faceValue: 5000, profit: 2951.37, roi: 59.0, months: 28, paymentCount: 5, receivedCount: 4 },
+    { name: 'أزق سكن العقارية (الرضا السكني)', faceValue: 5000, profit: 1151.34, roi: 23.0, months: 24, paymentCount: 24, receivedCount: 0 },
+    { name: 'عبدالخليف احمد العريج وشريكه', faceValue: 5000, profit: 610.29, roi: 12.2, months: 13, paymentCount: 13, receivedCount: 0 },
+    { name: 'محمد عمر بانعيم للتجارة', faceValue: 20000, profit: 2154.87, roi: 10.8, months: 18, paymentCount: 18, receivedCount: 11 },
+    { name: 'بيان الإنشاء للمقاولات (بيان 3)', faceValue: 5000, profit: 1251.93, roi: 25.0, months: 24, paymentCount: 24, receivedCount: 0 },
+    { name: 'مصنع الأنسجة المتطورة', faceValue: 4000, profit: 396.34, roi: 9.9, months: 12, paymentCount: 12, receivedCount: 3 },
+    { name: 'دار الهمة للمشاريع المحدودة', faceValue: 8000, profit: 2571.94, roi: 32.1, months: 30, paymentCount: 30, receivedCount: 2 },
+    { name: 'الراسيات للتطوير العقاري (مشروع الراسيات برينديس)', faceValue: 10000, profit: 2583.52, roi: 25.8, months: 23, paymentCount: 1, receivedCount: 0 },
+    { name: 'بامن للتطوير والاستثمار العقاري', faceValue: 5000, profit: 1518.86, roi: 30.4, months: 26, paymentCount: 1, receivedCount: 0 },
+    { name: 'منابر إيجار للتطوير العقاري (مشروع بدء 41)', faceValue: 10000, profit: 2885.89, roi: 28.9, months: 27, paymentCount: 1, receivedCount: 0 },
+    { name: 'الدرر الخليجية للمقاولات (مشروع الصدفة)', faceValue: 5000, profit: 673.33, roi: 13.5, months: 13, paymentCount: 1, receivedCount: 0 },
+    { name: 'نيو هوم للتطوير العقاري (مشروع نيو هوم حطين)', faceValue: 10000, profit: 3045.67, roi: 30.5, months: 31, paymentCount: 1, receivedCount: 0 },
+    { name: 'الراسيات للتطوير العقاري (رقم الإصدار 35)', faceValue: 10000, profit: 2083.62, roi: 20.8, months: 19, paymentCount: 1, receivedCount: 0 },
+    { name: 'رفيعة العقارية (مشروع رفيعة 03)', faceValue: 20000, profit: 7780.37, roi: 38.9, months: 34, paymentCount: 1, receivedCount: 0 },
+    { name: 'خيال العقارية (مشروع خيال باير)', faceValue: 10000, profit: 2804.06, roi: 28.0, months: 24, paymentCount: 1, receivedCount: 0 },
+    { name: 'مهاد للتطوير العقاري (مشروع مهاد السيف)', faceValue: 20000, profit: 7135.56, roi: 35.7, months: 31, paymentCount: 1, receivedCount: 0 },
+    { name: 'شركة محمد عمر بانعيم للتجارة (رقم الإصدار 27)', faceValue: 20000, profit: 2339.88, roi: 11.7, months: 18, paymentCount: 18, receivedCount: 2 },
   ];
   
   // Active investments started in the past (approximate dates)
   const today = new Date();
   
   for (const inv of activeInvestments) {
-    const profit = inv.totalAmountReceived - inv.faceValue;
-    const totalROI = (profit / inv.faceValue) * 100;
+    // Use ROI directly from the image
+    const profit = inv.profit;
+    const totalROI = inv.roi;
     const irr = calculateIRR(totalROI, inv.months);
     
     // Calculate frequency based on duration and payment count
