@@ -53,7 +53,13 @@ The application is a single-user personal tool built with a modern web stack, op
 - **Portfolio Checkpoint System:** Full snapshot backup/restore functionality.
 - **Data-Entry Sharing System:** Secure token-based system for external users to manage investments with UI isolation and multi-layer security.
 - **Platform Fee Management System:** Automatic profit deduction based on configurable platform fees. The system stores NET PROFIT (`totalExpectedProfit`) after fee deduction. Gross profit is reverse-calculated for display.
-- **Intelligent Sukuk Seed System:** Comprehensive seed script (`server/seed-sukuk.ts`) for bulk investment entry with smart cashflow generation. Corrects ROI vs IRR calculations, infers distribution frequency from duration/payment-count ratio (monthly: <1.5 months interval, quarterly: 1.5-4.5 months, end-of-term: >4.5 months), and generates accurate cashflow schedules aligned with investment timelines.
+- **Intelligent Sukuk Seed System (v1.0.2):** Comprehensive seed script (`server/seed-sukuk.ts`) for AI-assisted bulk investment entry with smart cashflow generation. Key features:
+  - **Correct Financial Calculations:** Profit = Total Amount - Face Value; ROI% = total return from images; IRR = annual rate (ROI% ÷ years)
+  - **Smart Frequency Inference:** Analyzes duration/payment ratio with tolerance bands (monthly: <1.5 months, quarterly: 1.5-4.5 months, custom: >4.5 months)
+  - **Proportional Cashflow Distribution:** Uses `Math.round((i + 1) * intervalMonths)` to ensure exactly `paymentCount` cashflows ending precisely on `endDate`
+  - **Accurate Timeline Alignment:** For active investments, uses fractional intervals (`duration/paymentCount`) to back-calculate start dates, ensuring all received cashflows fall on/before today and awaited cashflows in the future
+  - **Two-Phase System:** Phase 1 inserts 26 completed investments with all cashflows received; Phase 2 adds 18 active investments with partial cashflows and correct received/awaited status
+  - **AI Entry Tagging:** All seed entries tagged with "AI Entry" for tracking
 
 ## External Dependencies
 - **Charting:** Recharts.
