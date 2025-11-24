@@ -328,6 +328,12 @@ export default function Investments() {
     }
   };
   
+  // Toggle payment status (for +/- buttons in expanded view)
+  const handleTogglePaymentStatus = (cashflowId: string, newStatus: "received" | "awaited") => {
+    // Simply update the cashflow status without showing dialogs
+    updateCashflowMutation.mutate({ cashflowId, status: newStatus });
+  };
+  
   // Handler for late status dialog confirmation
   const handleLateStatusConfirm = (data: {
     cashflowId: string;
@@ -642,6 +648,7 @@ export default function Investments() {
               onAddPayment={handleAddPayment}
               onRemovePayment={handleRemovePayment}
               onMarkPaymentAsReceived={handleMarkPaymentAsReceived}
+              onTogglePaymentStatus={handleTogglePaymentStatus}
             />
           ))}
         </div>

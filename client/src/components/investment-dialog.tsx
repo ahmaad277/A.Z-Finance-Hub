@@ -91,6 +91,15 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
   const isResettingRef = useRef(false);
   const [customCashflows, setCustomCashflows] = useState<CustomCashflow[]>([]);
 
+  // Get last used platform from localStorage
+  const getLastPlatformId = () => {
+    try {
+      return localStorage.getItem('lastSelectedPlatformId') || "";
+    } catch {
+      return "";
+    }
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -147,8 +156,10 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
       
       setUserEditedProfit(true);
     } else {
+      // For new investments, use last selected platform
+      const lastPlatformId = getLastPlatformId();
       form.reset({
-        platformId: "",
+        platformId: lastPlatformId,
         name: "",
         faceValue: undefined,
         totalExpectedProfit: undefined,
@@ -553,14 +564,24 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
         <Form {...form}>
           <form onSubmit={(e) => {
             form.handleSubmit(onSubmit)(e);
-          }} className="space-y-6">
+          }} className="space-y-3">
             <FormField
               control={form.control}
               name="platformId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("dialog.platform")}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Save to localStorage for future use
+                      try {
+                        localStorage.setItem('lastSelectedPlatformId', value);
+                      } catch (e) {
+                        console.error('Failed to save platform selection:', e);
+                      }
+                    }} 
+                    value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-platform">
                         <SelectValue placeholder={t("dialog.selectPlatform")} />
@@ -593,14 +614,14 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               )}
             />
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="faceValue"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("dialog.faceValue")}
+                      {t("dialog.faceValue")} ({t("dialog.faceValueDesc")})
                     </FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
@@ -629,9 +650,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         +5K
                       </Button>
                     </div>
-                    <FormDescription>
-                      {t("dialog.faceValueDesc")}
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -660,7 +678,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
             </div>
 
             {/* Duration Mode Toggle */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <FormLabel>{t("dialog.durationMode")}</FormLabel>
                 <Tabs value={durationMode} onValueChange={(value) => setDurationMode(value as DurationMode)}>
@@ -677,7 +695,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
 
               {durationMode === 'months' ? (
                 // Months Mode
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -708,21 +726,18 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                   </div>
 
                   <div>
-                    <FormLabel>{t("dialog.expectedEndDate")}</FormLabel>
+                    <FormLabel>{t("dialog.expectedEndDate")} ({t("dialog.calculatedAutomatically")})</FormLabel>
                     <div className="mt-2 p-3 bg-muted rounded-md">
                       <p className="text-sm">
                         {formValues.endDate ? formValues.endDate : (language === 'ar' ? 'لم يتم الحساب بعد' : 'Not calculated yet')}
                       </p>
                     </div>
-                    <FormDescription>
-                      {t("dialog.calculatedAutomatically")}
-                    </FormDescription>
                   </div>
                 </div>
               ) : (
                 // Dates Mode
-                <div className="space-y-4">
-                  <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="grid gap-3 md:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="startDate"
@@ -825,11 +840,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         </Badge>
                       </div>
                     )}
-                    <FormDescription>
-                      {userEditedProfit 
-                        ? t("dialog.manuallyEdited")
-                        : t("dialog.calculatedAutomatically")}
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -853,7 +863,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               />
             )}
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="distributionFrequency"
@@ -907,7 +917,7 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
               </div>
             )}
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="status"
@@ -938,7 +948,9 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                 name="riskScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("investments.riskScore")}</FormLabel>
+                    <FormLabel>
+                      {t("investments.riskScore")} ({language === 'ar' ? '0-100' : '0-100'})
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -961,9 +973,6 @@ export function InvestmentDialog({ open, onOpenChange, investment, dataEntryToke
                         data-testid="input-risk-score"
                       />
                     </FormControl>
-                    <FormDescription>
-                      {language === 'ar' ? '0-100 (0 = آمن، 100 = عالي المخاطر)' : '0-100 (0 = Safe, 100 = High Risk)'}
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

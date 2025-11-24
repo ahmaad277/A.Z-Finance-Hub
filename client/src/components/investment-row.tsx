@@ -65,6 +65,7 @@ interface InvestmentRowProps {
   onAddPayment?: (investmentId: string) => void;
   onRemovePayment?: (cashflowId: string) => void;
   onMarkPaymentAsReceived?: (cashflowId: string) => void;
+  onTogglePaymentStatus?: (cashflowId: string, newStatus: "received" | "awaited") => void;
   // Optional controlled view mode (if provided, component becomes controlled)
   viewMode?: "ultra-compact" | "compact" | "expanded";
   onCycleViewMode?: () => void;
@@ -79,6 +80,7 @@ export function InvestmentRow({
   onAddPayment, 
   onRemovePayment, 
   onMarkPaymentAsReceived,
+  onTogglePaymentStatus,
   viewMode: controlledViewMode,
   onCycleViewMode,
 }: InvestmentRowProps) {
@@ -312,8 +314,18 @@ export function InvestmentRow({
                     className="h-5 w-5"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Decrement payment count
+                      if (!onTogglePaymentStatus) return;
+                      
+                      // Find the most recent "received" profit cashflow and mark it as "awaited"
+                      const receivedCashflows = profitCashflows
+                        .filter(cf => cf.status === "received")
+                        .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+                      
+                      if (receivedCashflows.length > 0) {
+                        onTogglePaymentStatus(receivedCashflows[0].id, "awaited");
+                      }
                     }}
+                    disabled={!onTogglePaymentStatus || receivedPayments === 0}
                     data-testid={`button-decrease-payment-${investment.id}`}
                   >
                     <ChevronDown className="h-3 w-3" />
@@ -325,8 +337,18 @@ export function InvestmentRow({
                     className="h-5 w-5"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Increment payment count
+                      if (!onTogglePaymentStatus) return;
+                      
+                      // Find the oldest "awaited" profit cashflow and mark it as "received"
+                      const awaitedCashflows = profitCashflows
+                        .filter(cf => cf.status === "awaited")
+                        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+                      
+                      if (awaitedCashflows.length > 0) {
+                        onTogglePaymentStatus(awaitedCashflows[0].id, "received");
+                      }
                     }}
+                    disabled={!onTogglePaymentStatus || receivedPayments === totalPayments}
                     data-testid={`button-increase-payment-${investment.id}`}
                   >
                     <ChevronUp className="h-3 w-3" />
